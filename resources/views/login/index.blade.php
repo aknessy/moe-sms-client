@@ -6,14 +6,15 @@
 
 @section('content')
 <div class="flex h-full w-full items-center justify-center px-6 py-12 lg:px-8">
-    <div class="w-80 flex-col items-center">
+    <div class="w-80 flex-col items-center">        
         <div class="sm:mx-auto sm:w-full sm:max-w-sm mb-2">
-            <img class="mx-auto h-20 w-auto" src="{{ asset('/images/app_favicon.png') }}" alt="Your Company">
-            <h2 class="mt-5 text-center text-2xl/9 font-bold tracking-tight text-brown-600">System Login</h2>
+            <img class="mx-auto h-20 w-auto" src="{{ asset('/images/app_favicon.png') }}" alt="">
+            <h2 class="mb-0 text-center text-lg font-bold block mt-4 text-slate-700 uppercase">Ministry of Establishment</h2>
+            <h3 class="text-center tracking-tight font-semibold text-brown-400">System Login</h3>
         </div>
         <div class="w-full bg-brown-50 rounded-lg border border-brown-100 shadow-sm">
             <div class="bg-brown-100 border-b border-b-brown-100 rounded-t-lg px-4 py-4">
-                <p class="font-semibold text-center text-brown-300">Fill-in your credentials to proceed</p>
+                <p class="text-center text-brown-400">Fill-in your credentials to proceed</p>
             </div>
             <div class="mt-0  sm:mx-auto sm:w-full sm:max-w-sm px-4 py-5">
                 <form class="space-y-6" action="#" method="POST">
@@ -46,14 +47,17 @@
                         <button type="reset" class="rounded-md border border-brown-200 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-brown-600 hover:text-white hover:bg-brown-300 hover:border-gray-50 focus:text-white focus:bg-brown-300 focus:border-gray-50 active:border-gray-50 active:text-white active:bg-brown-300">
                             Reset
                         </button>
-                        <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-800 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                        <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
                             Submit
                         </button>
                     </div>
                 </form>
             </div>
         </div>
-        <p class="mt-10 text-center text-sm/6 text-brown-400">&copy;Ministry of Establishment</p>
+        <p class="flex flex-col mt-5 text-center text-sm/6 text-brown-300">
+            <span class="font-normal text-xs block">Staff Management App</span>
+            <span class="block text-xs">version: {{ $app_version }}</span>
+        </p>
     </div>
 </div>
 

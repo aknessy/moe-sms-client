@@ -10,7 +10,10 @@ class LoginController
 
     public function index()
     {
-        return view('layouts/login', ['page_title' => self::$page_title]);
+        return view('login/index', [
+            'page_title' => self::$page_title . ' - Login',
+            'app_version' => config('app.app_version')
+        ]);
     }
 
     public function login(Request $request)
