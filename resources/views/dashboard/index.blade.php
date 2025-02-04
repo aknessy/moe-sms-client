@@ -1,3 +1,5 @@
+
+
 <x-dashboard pageTitle="{{ $page_title }}">
     <x-slot name="slot">
         <h1 class="text-xl font-semibold">App Management Dashboard - Settings</h1>
@@ -21,13 +23,15 @@
                     </li>
                 </ol>
             </nav>
-            <div class="flex-col lg:flex w-full py-4">
-                <div class="w-full lg:w-2/5 px-4 py-2 bg-brown-50 rounded-md">
-                    <div class="flex flex-col items-start space-y-1">
+            <div class="gap-x-4 flex w-full py-4 flex-1">
+                <div class="w-full flex flex-col lg:w-2/5 px-4 py-2 bg-brown-50 rounded-md">
+                    <div class="flex flex-col items-start">
                         <h2 class="text-md font-semibold mb-0">Profile Avatar</h2>
-                        <p class="font-normal text-lg text-slate-500">Choose a prefered avatar</p>
+                        <p class="font-normal text-lg text-slate-500 m-0">Choose a prefered avatar</p>
                     </div>
-                    
+                    <div class="py-4">
+
+                    </div>
                 </div>
                 <div class="w-full lg:w-3/5 px-4 py-2 bg-brown-50 rounded-md"></div>
             </div>
