@@ -3,7 +3,7 @@
     <input type="checkbox" id="menu-toggle" class="hidden peer">
 
     <!-- Sidebar -->
-    <div class="h-screen min-h-full hidden peer-checked:flex md:flex flex-col w-64 bg-brown-600 transition-all duration-300 ease-in-out">
+    <div class="h-screen min-h-full hidden peer-checked:flex md:flex flex-col w-64 bg-brown-400 transition-all duration-300 ease-in-out">
         <div class="flex items-center justify-between h-16 bg-brown-500 px-4">
             <span class="text-white font-bold uppercase">Sidebar</span>
             <label for="menu-toggle" class="text-white cursor-pointer">
@@ -16,8 +16,8 @@
             <!-- <span class="text-white font-bold uppercase">Sidebar</span> -->
         </div>
         <div class="flex flex-col flex-1 overflow-y-auto">
-            <nav class="flex-1 px-2 py-4 bg-brown-600">
-                <a href="#" class="flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700 group">
+            <nav class="flex-1 px-2 py-4 bg-brown-400 gap-3">
+                <a href="#" class="flex items-center px-4 py-2 text-gray-200 hover:bg-brown-300 group">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 group-hover:transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -27,7 +27,7 @@
                 </a>
 
                 <!-- Login -->
-                <a href="#" class="flex items-center px-4 py-2 text-gray-100 hover:bg-gray-700 group">
+                <a href="#" class="flex items-center px-4 py-2 text-gray-200 hover:bg-brown-300 group">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="group-hover:hidden h-6 w-6 mr-2">
                         <path stroke-linecap="round" stroke-linejoin="round"
