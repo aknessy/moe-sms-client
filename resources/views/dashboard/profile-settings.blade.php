@@ -32,7 +32,7 @@
                         <h5 class="text-brown-900 font-normal text-sm">douglas.acosta@domain.com</h5>
                     </div>
                     <div class="mt-5 flex flex-col gap-y-3">
-                        <a href="#" class="flex items-center justify-start space-x-3 rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md  focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                        <a href="{{ route('profile-settings') }}" class="flex items-center justify-start space-x-3 rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md  focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
                             <span class="rounded-full w-6 h-6 bg-brown-300 text-white  p-1 flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
                                   <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
@@ -41,7 +41,7 @@
                             </span>
                             <span class="">Personal Information</span>
                         </a>
-                        <a href="#" class="flex items-center justify-start space-x-3 rounded-lg bg-transparent py-2 px-4 text-center text-sm hover:text-slate-700 transition-al disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                        <a href="{{ route('change-password') }}" class="flex items-center justify-start space-x-3 rounded-lg bg-transparent py-2 px-4 text-center text-sm hover:text-slate-700 transition-al disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
                             <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -20 0c0 -5.523 4.477 -10 10 -10zm2 5a3 3 0 0 0 -2.98 2.65l-.015 .174l-.005 .176l.005 .176c.019 .319 .087 .624 .197 .908l.09 .209l-3.5 3.5l-.082 .094a1 1 0 0 0 0 1.226l.083 .094l1.5 1.5l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-.792 -.793l.585 -.585l.793 .792l.094 .083a1 1 0 0 0 1.403 -1.403l-.083 -.094l-.792 -.793l.792 -.792a3 3 0 1 0 1.293 -5.708zm0 2a1 1 0 1 1 0 2a1 1 0 0 1 0 -2z"></path>
                             </svg>
@@ -71,8 +71,8 @@
                             </div>
                             <div class="form-input-area py-3 px-3 mt-3 border rounded-md border-brown-100 gap-y-4">
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                    <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-semibold font-sans text-md text-brown-900">Surname</label>
+                                    <div class="w-full max-w-sm">
+                                        <label class="font-semibold font-sans text-sm text-brown-900">Surname</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="last-name" placeholder="Surname" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
@@ -80,8 +80,8 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-semibold font-sans text-md text-brown-900">First name</label>
+                                    <div class="w-full max-w-sm">
+                                        <label class="font-semibold font-sans text-sm text-brown-900">First name</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="first-name" placeholder="First Name" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
@@ -89,8 +89,8 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-semibold font-sans text-md text-brown-900">Other names</label>
+                                    <div class="w-full max-w-sm">
+                                        <label class="font-semibold font-sans text-sm text-brown-900">Other names</label>
                                         <div class="relative">
                                             <input type="password" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="other-names" placeholder="Other Names" value />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
@@ -101,7 +101,7 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-semibold font-sans text-md text-brown-900">Email</label>
+                                        <label class="font-semibold font-sans text-sm text-brown-900">Email</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="email" placeholder="Email" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
@@ -114,7 +114,7 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-semibold font-sans text-md text-brown-900">Phone</label>
+                                        <label class="font-semibold font-sans text-sm text-brown-900">Phone</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-brown-300 hover:border-brown-300 shadow-sm focus:shadow" name="phone" placeholder="Phone number" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
@@ -128,7 +128,7 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-semibold font-sans text-md text-brown-900">Department</label>
+                                        <label class="font-semibold font-sans text-sm text-brown-900">Department</label>
                                         <div class="relative">
                                             <select class="w-full bg-brown-50 placeholder:text-brown-400 text-slate-700 text-sm border border-brown-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-brown-300 hover:border-brown-400 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="department">
                                                 <option value="brazil">Brazil</option>
@@ -145,7 +145,7 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-semibold font-sans text-md text-brown-900">Unit</label>
+                                        <label class="font-semibold font-sans text-sm text-brown-900">Unit</label>
                                         <div class="relative">
                                             <select class="w-full bg-brown-50 placeholder:text-brown-400 text-slate-700 text-sm border border-brown-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-brown-300 hover:border-brown-400 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="department">
                                                 <option value="brazil">Brazil</option>
@@ -159,6 +159,50 @@
                                                 <path d="M15 6l-3 -3l-3 3"></path>
                                                 <path d="M12 3v6"></path>
                                             </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="w-full">
+                                    <p class="font-semibold font-sans text-sm text-brown-900">Gender</p>
+                                    <div class="flex gap-10">
+                                        <div class="inline-flex items-center">
+                                            <label
+                                                class="relative flex cursor-pointer items-center rounded-full p-3"
+                                                for="on"
+                                                data-ripple-dark="true"
+                                            >
+                                                <input name="gender" value="male"
+                                                type="radio"
+                                                class="before:content[''] peer h-5 w-5 cursor-pointer appearance-none rounded-full border border-slate-300 checked:border-slate-400 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-slate-400 before:opacity-0 before:transition-opacity hover:before:opacity-10"
+                                                id="on"/>
+                                                <span class="absolute bg-slate-800 w-3 h-3 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity duration-200 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></span>
+                                            </label>
+                                            <label
+                                                class="text-slate-600 cursor-pointer text-sm"
+                                                for="on"
+                                            >
+                                            Female
+                                        </label>
+                                        </div>
+                                        <div class="inline-flex items-center">
+                                            <label
+                                                class="relative flex cursor-pointer items-center rounded-full p-3"
+                                                for="on"
+                                                data-ripple-dark="true"
+                                                >
+                                                    <input name="gender" value="male"
+                                                    type="radio"
+                                                    class="before:content[''] peer h-5 w-5 cursor-pointer appearance-none rounded-full border border-slate-300 checked:border-slate-400 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-slate-400 before:opacity-0 before:transition-opacity hover:before:opacity-10"
+                                                    id="on"
+                                                    />
+                                                    <span class="absolute bg-slate-800 w-3 h-3 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity duration-200 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></span>
+                                                </label>
+                                                <label
+                                                    class="text-slate-600 cursor-pointer text-sm"
+                                                    for="on"
+                                                >
+                                                Male
+                                            </label>
                                         </div>
                                     </div>
                                 </div>

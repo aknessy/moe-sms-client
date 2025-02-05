@@ -18,4 +18,12 @@ class ProfileSettingsController extends Controller
                 'resources' => $resources,
             ]);
     }
+
+    public function changePassword(Request $request){
+        return view('dashboard/change-password',
+        [
+            'page_title' => self::$page_title . ' - Change Password',
+            'app_version' => config('app.app_version'),
+        ]); 
+    }
 }
