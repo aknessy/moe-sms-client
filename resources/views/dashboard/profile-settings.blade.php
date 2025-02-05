@@ -31,15 +31,21 @@
                         <h4 class="font-normal text-lg">Ministry of Establishment</h4>
                         <h5 class="text-brown-900 font-normal text-sm">douglas.acosta@domain.com</h5>
                     </div>
-                    <div class="mt-5 flex flex-col gap-y-2">
-                        <a href="#" class="flex items-center justify-start space-x-3 rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none peer">
-                            <span class="rounded-full w-6 h-6 bg-brown-300 peer-hover:bg-slate-700 text-white peer-hover:text-brown-300 p-1 flex items-center justify-center">
+                    <div class="mt-5 flex flex-col gap-y-3">
+                        <a href="#" class="flex items-center justify-start space-x-3 rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md  focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                            <span class="rounded-full w-6 h-6 bg-brown-300 text-white  p-1 flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
                                   <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
                                   <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
                                 </svg>
                             </span>
                             <span class="">Personal Information</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-start space-x-3 rounded-lg bg-transparent py-2 px-4 text-center text-sm hover:text-slate-700 transition-al disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -20 0c0 -5.523 4.477 -10 10 -10zm2 5a3 3 0 0 0 -2.98 2.65l-.015 .174l-.005 .176l.005 .176c.019 .319 .087 .624 .197 .908l.09 .209l-3.5 3.5l-.082 .094a1 1 0 0 0 0 1.226l.083 .094l1.5 1.5l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-.792 -.793l.585 -.585l.793 .792l.094 .083a1 1 0 0 0 1.403 -1.403l-.083 -.094l-.792 -.793l.792 -.792a3 3 0 1 0 1.293 -5.708zm0 2a1 1 0 1 1 0 2a1 1 0 0 1 0 -2z"></path>
+                            </svg>
+                            <span class="">Password</span>
                         </a>
                     </div>
                 </div>
@@ -170,5 +176,6 @@
                 </div>
             </div>
         </div>
+        <x-footer appVersion="{{ $app_version }}"/>
     </x-slot>
 </x-dashboard>
