@@ -18,11 +18,31 @@
                     </ol>
                 </nav>
                 <div class="w-2/3 sm:w-full">
-                    <h1 class="text-lg/3 font-semibold flex space-y-2 justify-end m-0">App Management - Profile Settings</h1>
+                    <h1 class="text-lg/3 font-semibold flex space-y-2 justify-end m-0">Staff Management - User Profile Settings</h1>
                 </div>
             </div>
             <div class="lg:gap-x-8 gap-x-2 flex w-full py-4 flex-1">
-                <div class="w-full flex flex-col lg:w-2/5 px-4 py-2 bg-brown-50 border border-brown-100 rounded-md"></div>
+                <div class="w-full flex flex-col lg:w-2/5 px-4 py-4 bg-brown-50 border border-brown-100 rounded-md">
+                    <div class="flex flex-col items-center gap-y-2">
+                        <div class="bg-white px-1 py-1 rounded-full h-36 w-36">
+                            <img src="{{ Vite::asset('resources/images/avatars/avatar-2.png') }}" class="h-full w-full rounded-full" alt="Placeholder Image" />
+                        </div>
+                        <h3 class="font-bold font-sans text-2xl">Douglas Costa</h3>
+                        <h4 class="font-normal text-lg">Ministry of Establishment</h4>
+                        <h5 class="text-brown-900 font-normal text-sm">douglas.acosta@domain.com</h5>
+                    </div>
+                    <div class="mt-5 flex flex-col gap-y-2">
+                        <a href="#" class="flex items-center justify-start space-x-3 rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none peer">
+                            <span class="rounded-full w-6 h-6 bg-brown-300 peer-hover:bg-slate-700 text-white peer-hover:text-brown-300 p-1 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
+                                  <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                                  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                                </svg>
+                            </span>
+                            <span class="">Personal Information</span>
+                        </a>
+                    </div>
+                </div>
                 <div class="w-full lg:w-3/5 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
                     <div class="flex flex-col items-start">
                         <h2 class="text-lg font-semibold mb-0">Personal Information</h2>
@@ -44,42 +64,94 @@
                                 </div>
                             </div>
                             <div class="form-input-area py-3 px-3 mt-3 border rounded-md border-brown-100 gap-y-4">
-                                <div class="mb-2 w-full lg:flex lg:space-x-4 space-x-2">
+                                <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm min-w-[200px]">
                                         <label class="font-semibold font-sans text-md text-brown-900">Surname</label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="last-name" placeholder="Surname" />
-                                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
-                                                <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -20 0c0 -5.523 4.477 -10 10 -10zm2 5a3 3 0 0 0 -2.98 2.65l-.015 .174l-.005 .176l.005 .176c.019 .319 .087 .624 .197 .908l.09 .209l-3.5 3.5l-.082 .094a1 1 0 0 0 0 1.226l.083 .094l1.5 1.5l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-.792 -.793l.585 -.585l.793 .792l.094 .083a1 1 0 0 0 1.403 -1.403l-.083 -.094l-.792 -.793l.792 -.792a3 3 0 1 0 1.293 -5.708zm0 2a1 1 0 1 1 0 2a1 1 0 0 1 0 -2z"></path>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="last-name" placeholder="Surname" value="" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
+                                                <path d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"></path>
                                             </svg>
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm min-w-[200px]">
                                         <label class="font-semibold font-sans text-md text-brown-900">First name</label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="first-name" placeholder="First Name" />
-                                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
-                                                <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -20 0c0 -5.523 4.477 -10 10 -10zm2 5a3 3 0 0 0 -2.98 2.65l-.015 .174l-.005 .176l.005 .176c.019 .319 .087 .624 .197 .908l.09 .209l-3.5 3.5l-.082 .094a1 1 0 0 0 0 1.226l.083 .094l1.5 1.5l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-.792 -.793l.585 -.585l.793 .792l.094 .083a1 1 0 0 0 1.403 -1.403l-.083 -.094l-.792 -.793l.792 -.792a3 3 0 1 0 1.293 -5.708zm0 2a1 1 0 1 1 0 2a1 1 0 0 1 0 -2z"></path>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="first-name" placeholder="First Name" value="" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
+                                                <path d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"></path>
                                             </svg>
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm min-w-[200px]">
                                         <label class="font-semibold font-sans text-md text-brown-900">Other names</label>
                                         <div class="relative">
-                                            <input type="password" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="other-names" placeholder="Other Names" />
-                                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
-                                                <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -20 0c0 -5.523 4.477 -10 10 -10zm2 5a3 3 0 0 0 -2.98 2.65l-.015 .174l-.005 .176l.005 .176c.019 .319 .087 .624 .197 .908l.09 .209l-3.5 3.5l-.082 .094a1 1 0 0 0 0 1.226l.083 .094l1.5 1.5l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-.792 -.793l.585 -.585l.793 .792l.094 .083a1 1 0 0 0 1.403 -1.403l-.083 -.094l-.792 -.793l.792 -.792a3 3 0 1 0 1.293 -5.708zm0 2a1 1 0 1 1 0 2a1 1 0 0 1 0 -2z"></path>
+                                            <input type="password" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="other-names" placeholder="Other Names" value />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
+                                                <path d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"></path>
                                             </svg>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mb-2 w-full lg:flex lg:space-x-4 space-x-2">
+                                <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm min-w-[200px]">
                                         <label class="font-semibold font-sans text-md text-brown-900">Email</label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="email" placeholder="Email" />
-                                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
-                                                <path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -20 0c0 -5.523 4.477 -10 10 -10zm2 5a3 3 0 0 0 -2.98 2.65l-.015 .174l-.005 .176l.005 .176c.019 .319 .087 .624 .197 .908l.09 .209l-3.5 3.5l-.082 .094a1 1 0 0 0 0 1.226l.083 .094l1.5 1.5l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l.083 -.094a1 1 0 0 0 0 -1.226l-.083 -.094l-.792 -.793l.585 -.585l.793 .792l.094 .083a1 1 0 0 0 1.403 -1.403l-.083 -.094l-.792 -.793l.792 -.792a3 3 0 1 0 1.293 -5.708zm0 2a1 1 0 1 1 0 2a1 1 0 0 1 0 -2z"></path>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" name="email" placeholder="Email" value="" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
+                                                <path d="M8 9h8"></path>
+                                                <path d="M8 13h6"></path>
+                                                <path d="M13.5 19.5l-1.5 1.5l-3 -3h-3a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v6"></path>
+                                                <path d="M22 22l-5 -5"></path>
+                                                <path d="M17 22l5 -5"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-sm min-w-[200px]">
+                                        <label class="font-semibold font-sans text-md text-brown-900">Phone</label>
+                                        <div class="relative">
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-brown-50 placeholder:text-brown-400 text-brown-600 text-sm border border-brown-200 rounded-md transition duration-300 ease focus:outline-none focus:border-brown-300 hover:border-brown-300 shadow-sm focus:shadow" name="phone" placeholder="Phone number" value="" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
+                                                <path d="M3 3m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"></path>
+                                                <path d="M8 4l2 0"></path>
+                                                <path d="M9 17l0 .01"></path>
+                                                <path d="M21 6l-2 3l2 3l-2 3l2 3"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                    <div class="w-full max-w-sm min-w-[200px]">
+                                        <label class="font-semibold font-sans text-md text-brown-900">Department</label>
+                                        <div class="relative">
+                                            <select class="w-full bg-brown-50 placeholder:text-brown-400 text-slate-700 text-sm border border-brown-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-brown-300 hover:border-brown-400 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="department">
+                                                <option value="brazil">Brazil</option>
+                                                <option value="bucharest">Bucharest</option>
+                                                <option value="london">London</option>
+                                                <option value="washington">Washington</option>
+                                            </select>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
+                                                <path d="M9 18l3 3l3 -3"></path>
+                                                <path d="M12 15v6"></path>
+                                                <path d="M15 6l-3 -3l-3 3"></path>
+                                                <path d="M12 3v6"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-sm min-w-[200px]">
+                                        <label class="font-semibold font-sans text-md text-brown-900">Unit</label>
+                                        <div class="relative">
+                                            <select class="w-full bg-brown-50 placeholder:text-brown-400 text-slate-700 text-sm border border-brown-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-brown-300 hover:border-brown-400 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="department">
+                                                <option value="brazil">Brazil</option>
+                                                <option value="bucharest">Bucharest</option>
+                                                <option value="london">London</option>
+                                                <option value="washington">Washington</option>
+                                            </select>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-brown-700">
+                                                <path d="M9 18l3 3l3 -3"></path>
+                                                <path d="M12 15v6"></path>
+                                                <path d="M15 6l-3 -3l-3 3"></path>
+                                                <path d="M12 3v6"></path>
                                             </svg>
                                         </div>
                                     </div>
@@ -87,7 +159,7 @@
                             </div>
                             <div class="py-3 px-4 flex items-center justify-end gap-2">
                                 <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
-                                    Save Preference
+                                    Save Changes
                                 </button>
                                 <button type="reset" class="rounded-md border border-brown-200 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-brown-600 hover:text-white hover:bg-brown-300 hover:border-gray-50 focus:text-white focus:bg-brown-300 focus:border-gray-50 active:border-gray-50 active:text-white active:bg-brown-300">
                                     Reset
