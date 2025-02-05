@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Resources extends Model
+class Resource extends Model
 {
     /** @use HasFactory<\Database\Factories\ResourcesFactory> */
     use HasFactory;
@@ -18,5 +18,6 @@ class Resources extends Model
     protected $fillable = [
         'type',
         'name',
+        'url'
     ];
 }
