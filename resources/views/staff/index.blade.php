@@ -1,5 +1,3 @@
-
-
 <x-dashboard pageTitle="{{ $page_title }}">
     <x-slot name="slot">
         <div class="w-full flex flex-col bg-transparent">
@@ -20,9 +18,24 @@
                     </ol>
                 </nav>
                 <div class="w-2/3 sm:w-full">
-                    <h1 class="text-lg/3 font-semibold flex space-y-2 justify-end m-0">Staff Management - Statistics</h1>
+                    <h1 class="text-lg/3 font-semibold flex space-y-2 justify-end m-0">Staff Management - User Profile Settings</h1>
+                </div>
+            </div>
+            <div class="lg:gap-x-8 gap-x-2 flex w-full py-4 flex-1">
+                <div class="w-full lg:w-3/5 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
+                    <div class="flex flex-col items-start">
+                        <h2 class="text-lg font-semibold mb-0">Staff Management</h2>
+                        <p class="font-normal text-md text-slate-500 m-0">Create a new staff by filling their basic information</p>
+                    </div>
+                    <div class="py-4 block">
+                        <form type="post" accept-charset="" action="">
+                        @csrf
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <x-footer appVersion="{{ $app_version }}"/>
     </x-slot>
 </x-dashboard>
