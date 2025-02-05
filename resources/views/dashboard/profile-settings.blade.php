@@ -1,4 +1,4 @@
-<x-dashboard>
+<x-dashboard pageTitle="{{ $page_title }}">
     <x-slot name="slot">
         <h1 class="text-xl font-semibold">App Management - Profile Settings</h1>
         <div class="w-full flex flex-col bg-transparent py-4">
@@ -18,20 +18,26 @@
                 </ol>
             </nav>
             <div class="gap-x-4 flex w-full py-4 flex-1">
-                <div class="w-full flex flex-col lg:w-2/5 px-4 py-2 bg-brown-50 rounded-md">
+                <div class="w-full flex flex-col lg:w-2/5 px-4 py-2 bg-transparent rounded-md">
                     <div class="flex flex-col items-start">
                         <h2 class="text-md font-semibold mb-0">Profile Avatar</h2>
                         <p class="font-normal text-lg text-slate-500 m-0">Choose a prefered avatar</p>
                     </div>
                     <div class="py-4">
-                        <form type="post" accept-charset="" typeof="">
+                        <form type="post" accept-charset="" action="">
                             @csrf
-                            <div class="grid grid-cols-4 gap-4">
+                            <div class="grid grid-cols-4 gap-2">
                                 @foreach($resources as $avatar)
-                                    <div class="bg-transparent rounded-lg">
-                                        <img src="{{ Vite::asset($avatar->url) }}" class="h-24 w-24 rounded-lg" alt="{{ $avata->name }}" />
+                                    <div class="bg-transparent rounded-lg hover:bg-brown-50 p-2 cursor-pointer">
+                                        <img src="{{ Vite::asset($avatar->url) }}" class="h-20 w-20 rounded-lg" alt="{{ $avatar->name }}" />
+                                        <input type="hidden" name="res-avatar" value="{{ $avatar->id }}" />
                                     </div>
                                 @endforeach
+                            </div>
+                            <div class="py-3 px-4">
+                                <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                                    Save Preference
+                                </button>
                             </div>
                         </form>
                     </div>

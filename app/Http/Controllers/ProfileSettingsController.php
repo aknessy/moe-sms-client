@@ -15,7 +15,7 @@ class ProfileSettingsController extends Controller
             [
                 'page_title' => self::$page_title . ' - Dashboard',
                 'app_version' => config('app.app_version'),
-                compact('resources')
+                'resources' => $resources
             ]);
     }
 }
