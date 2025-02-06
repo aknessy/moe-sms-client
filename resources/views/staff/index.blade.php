@@ -21,8 +21,8 @@
                     <h5 class="font-semibold font-sans flex space-y-2 justify-end m-0 uppercase">Staff Management - Add New Entry</h5>
                 </div>
             </div>
-            <div class="lg:gap-x-8 gap-x-2 flex w-full py-4">
-                <form type="post" accept-charset="" action="" enctype="multipart/form-data">
+            <div>
+                <form type="post" accept-charset="" action="" class="lg:gap-x-8 gap-x-2 flex w-full py-4">
                     @csrf
 
                     <div class="w-full flex flex-col lg:w-1/3">
