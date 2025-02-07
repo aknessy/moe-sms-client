@@ -39,4 +39,16 @@ class StaffController extends Controller
             'app_version' => config('app.app_version')
         ]);
     }
+
+    public function next_of_kin(){
+        return view('staff/next_of_kin', [
+            'page_title' => self::$page_title . ' - Next of Kin',
+            'active_page' => 'next-of-kin',
+            'app_version' => config('app.app_version')
+        ]);
+    }
+
+    public function referee(){
+        
+    }
 }

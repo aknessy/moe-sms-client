@@ -15,9 +15,9 @@ Route::prefix('dashboard')->group(function(){
         Route::get('/basic-info', [\App\Http\Controllers\StaffController::class, 'index'])->name('basic-info');
         Route::get('/edu-progress', [\App\Http\Controllers\StaffController::class, 'edu_progress'])->name('edu-progress');
         Route::get('/promotion', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('promotion');
-        Route::get('/leave-record', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('leave-record');
-        Route::get('/referee', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('referee');
-        Route::get('/next-of-kin', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('next-of-kin');
+        Route::get('/leave-record', [\App\Http\Controllers\StaffController::class, 'leave'])->name('leave-record');
+        Route::get('/referee', [\App\Http\Controllers\StaffController::class, 'referee'])->name('referee');
+        Route::get('/next-of-kin', [\App\Http\Controllers\StaffController::class, 'next_of_kin'])->name('next-of-kin');
 
         Route::post('/create',[\App\Http\Controllers\StaffController::class, 'create'])->name('create');
     });
