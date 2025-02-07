@@ -12,9 +12,10 @@ Route::prefix('dashboard')->group(function(){
 
     Route::prefix('staff')->group(function(){
         Route::get('/', [\App\Http\Controllers\StaffController::class, 'index']);
-        Route::get('/basic-info', [\App\Http\Controllers\StaffController::class, 'index']);
+        Route::get('/basic-info', [\App\Http\Controllers\StaffController::class, 'index'])->name('basic-info');
         Route::get('/edu-progress', [\App\Http\Controllers\StaffController::class, 'edu_progress']);
-
+        Route::get('/promotions', [\App\Http\Controllers\StaffController::class, 'promotions']);
+        
         Route::post('/create',[\App\Http\Controllers\StaffController::class, 'create']);
     });
 });

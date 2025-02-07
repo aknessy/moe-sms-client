@@ -21,4 +21,11 @@ class StaffController extends Controller
             'app_version' => config('app.app_version')
         ]);
     }
+
+    public function promotions(){
+        return view('staff/promotions', [
+            'page_title' => self::$page_title . ' - Promotions',
+            'app_version' => config('app.app_version')
+        ]);
+    }
 }
