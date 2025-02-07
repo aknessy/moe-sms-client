@@ -46,18 +46,12 @@
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="w-full">
-                                    <div id="cloneable" class="w-full relative">
+                                    <div id="cloneable" class="w-full relative mb-3">
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
-                                                <label class="cloneableInstitutionTypeLabel font-sans text-sm text-slate-800">Institution Type</label>
+                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Designation</label>
                                                 <div class="relative">
-                                                    <select class="w-full bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="institution-type[]">
-                                                        <option value="">Select Option</option>
-                                                        <option value="Tertiary">Tertiary</option>
-                                                        <option value="Secondary">Secondary</option>
-                                                        <option value="Primary">Primary</option>
-                                                        <option value="Others">Others</option>
-                                                    </select>
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="designation[]" placeholder="E.g Admin. Officer I" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>
@@ -65,6 +59,38 @@
                                                         <path d="M12 3v6"></path>
                                                     </svg>
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                            <div class="w-full max-w-sm">
+                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Grade Level</label>
+                                                <div class="relative">
+                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="grade-level[]" placeholder="Grade Level" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                        <path d="M9 18l3 3l3 -3"></path>
+                                                        <path d="M12 15v6"></path>
+                                                        <path d="M15 6l-3 -3l-3 3"></path>
+                                                        <path d="M12 3v6"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="w-full max-w-sm">
+                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Step</label>
+                                                <div class="relative">
+                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="step[]" placeholder="Step" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                        <path d="M9 18l3 3l3 -3"></path>
+                                                        <path d="M12 15v6"></path>
+                                                        <path d="M15 6l-3 -3l-3 3"></path>
+                                                        <path d="M12 3v6"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full max-w-sm">
+                                            <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Effective From</label>
+                                            <div class="relative">
+                                                <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="grade-level[]" placeholder="E.g Admin. Officer I" value="" />
                                             </div>
                                         </div>
                                     </div>

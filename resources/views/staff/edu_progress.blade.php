@@ -95,6 +95,22 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                            <div class="w-full min-w-max">
+                                                <label class="cloneableInstitutionNameLabel font-sans text-sm text-slate-800">Qualification Obtained</label>
+                                                <div class="relative">
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="qual-obtained[]" placeholder="E.g B.sc Public Administration" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                        <path d="M3 7v-2h13v2"></path>
+                                                        <path d="M10 5v14"></path>
+                                                        <path d="M12 19h-4"></path>
+                                                        <path d="M15 13v-1h6v1"></path>
+                                                        <path d="M18 12v7"></path>
+                                                        <path d="M17 19h2"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div id="clonesContainer" class="flex flex-col items-start gap-x-2 w-full relative"></div>
