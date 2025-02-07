@@ -109,7 +109,6 @@
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="w-full">
                                     <div id="cloneable" class="w-full relative">
-                                        <button type="button" class="absolute top-1/2 right-0 rounded-full bg-red-300 border-red-400 text-white w-7 h-7 border text-center hover:bg-red-400 active:bg-red-400 focus:bg-red-400 hover:border-red-500">x</button>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
                                                 <label class="cloneableInstitutionTypeLabel font-sans text-sm text-slate-800">Institution Type</label>
@@ -160,7 +159,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="clonesContainer" class="flex items-center justify-center space-x-2 w-full relative"></div>
+                                    <div id="clonesContainer" class="flex flex-col items-start gap-x-2 w-full relative"></div>
                                 </div>
                                 <div class="py-3 px-4 flex items-center justify-between">
                                     <button id="addInstitution" type="button" class="rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
@@ -189,6 +188,7 @@
     $(function(){
         let counter = 1;
         let labels = ['cloneableInstitutionTypeLabel','cloneableInstitutionNameLabel','cloneableInstitutionToLabel','cloneableInstitutionFromLabel'];
+        let btn = `<button type="button" class="removeClones rounded-full w-6 h-6 absolute top-1/2 right-0 text-center bg-red-300 text-white border border-red-400 hover:bg-red-400 focus:bg-red-400 active:bg-red-400 hover:border-red-500 focus:border-red-500 active:border-red-500">x</button>`;
 
         // Click event for the clone button
         $("#addInstitution").click(function(){
@@ -196,11 +196,15 @@
             counter++;
 
             // Clone the container and update its ID
-            let newContainer = $("#cloneable").clone().attr("id", "container" + counter);
-
+            let newContainer = $("#cloneable").clone().attr("id", "cloneable" + counter);
+            newContainer.append(btn);
 
             // Append the cloned container to the desired area
             $("#clonesContainer").append(newContainer);
+        });
+
+        $("#clonesContainer").on("click", ".removeClones", function(){
+            $(this).parent().remove();
         });
     })
 </script>
