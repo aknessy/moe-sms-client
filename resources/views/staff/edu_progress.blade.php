@@ -35,7 +35,7 @@
                             <span class="">Upload Bulk</span>
                         </a>
                         <div class="w-full flex flex-col bg-brown-50 px-4 py-4 border border-brown-100 rounded-md">
-                            <x-staff-sidebar />
+                            <x-staff-sidebar activePage="{{ $active_page }}" />
                         </div>
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">

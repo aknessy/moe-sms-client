@@ -11,6 +11,7 @@ class StaffController extends Controller
     public function index(){
         return view('staff/index', [
             'page_title' => self::$page_title . ' - Staff',
+            'active_page' => 'index',
             'app_version' => config('app.app_version')
         ]);
     }
@@ -18,6 +19,7 @@ class StaffController extends Controller
     public function edu_progress(){
         return view('staff/edu_progress', [
             'page_title' => self::$page_title . ' - Edu Progress',
+            'active_page' => 'edu-progress',
             'app_version' => config('app.app_version')
         ]);
     }
@@ -25,6 +27,7 @@ class StaffController extends Controller
     public function promotions(){
         return view('staff/promotions', [
             'page_title' => self::$page_title . ' - Promotions',
+            'active_page' => 'promotion',
             'app_version' => config('app.app_version')
         ]);
     }

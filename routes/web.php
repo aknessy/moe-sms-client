@@ -13,10 +13,13 @@ Route::prefix('dashboard')->group(function(){
     Route::prefix('staff')->group(function(){
         Route::get('/', [\App\Http\Controllers\StaffController::class, 'index']);
         Route::get('/basic-info', [\App\Http\Controllers\StaffController::class, 'index'])->name('basic-info');
-        Route::get('/edu-progress', [\App\Http\Controllers\StaffController::class, 'edu_progress']);
-        Route::get('/promotions', [\App\Http\Controllers\StaffController::class, 'promotions']);
-        
-        Route::post('/create',[\App\Http\Controllers\StaffController::class, 'create']);
+        Route::get('/edu-progress', [\App\Http\Controllers\StaffController::class, 'edu_progress'])->name('edu-progress');
+        Route::get('/promotion', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('promotion');
+        Route::get('/leave-record', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('leave-record');
+        Route::get('/referee', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('referee');
+        Route::get('/next-of-kin', [\App\Http\Controllers\StaffController::class, 'promotions'])->name('next-of-kin');
+
+        Route::post('/create',[\App\Http\Controllers\StaffController::class, 'create'])->name('create');
     });
 });
 
