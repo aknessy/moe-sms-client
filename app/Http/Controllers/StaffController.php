@@ -31,4 +31,12 @@ class StaffController extends Controller
             'app_version' => config('app.app_version')
         ]);
     }
+
+    public function leave(Request $request){
+        return view('staff/leave', [
+            'page_title' => self::$page_title . ' - Leave',
+            'active_page' => 'leave',
+            'app_version' => config('app.app_version')
+        ]);
+    }
 }
