@@ -111,7 +111,7 @@
                                     <div id="cloneable" class="w-full">
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
-                                                <label class="font-sans text-sm text-slate-800">Institution Type</label>
+                                                <label class="cloneableInstitutionTypeLabel font-sans text-sm text-slate-800">Institution Type</label>
                                                 <div class="relative">
                                                     <select class="w-full bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="institution-type[]">
                                                         <option value="">Select Option</option>
@@ -131,7 +131,7 @@
                                         </div>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full min-w-max">
-                                                <label class="font-sans text-sm text-slate-800">Institution Name</label>
+                                                <label class="cloneableInstitutionNameLabel font-sans text-sm text-slate-800">Institution Name</label>
                                                 <div class="relative">
                                                     <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-name[]" placeholder="Name of Institution" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -145,13 +145,13 @@
                                                 </div>
                                             </div>
                                             <div class="w-full min-w-max">
-                                                <label class="font-sans text-sm text-slate-800">From</label>
+                                                <label class="cloneableInstitutionFromLabel font-sans text-sm text-slate-800">From</label>
                                                 <div class="relative">
                                                     <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-start-date[]" placeholder="Start Date" value="" />
                                                 </div>
                                             </div>
                                             <div class="w-full min-w-max">
-                                                <label class="font-sans text-sm text-slate-800">To</label>
+                                                <label class="cloneableInstitutionToLabel font-sans text-sm text-slate-800">To</label>
                                                 <div class="relative">
                                                     <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-end-date[]" placeholder="End Date" value="" />
                                                 </div>
@@ -162,7 +162,7 @@
                                     <div id="clonesContainer" class="flex items-center justify-center space-x-2 w-full"></div>
                                 </div>
                                 <div class="py-3 px-4 flex items-center justify-between">
-                                    <button type="reset" class="add-institution rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
+                                    <button id="addInstitution" type="button" class="rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
                                         Add Institution
                                     </button>
                                     <div class="flex items-center justify-center gap-2">
@@ -186,6 +186,20 @@
 </x-dashboard>
 <script>
     $(function(){
+        let counter = 1;
+        let labels = ['cloneableInstitutionTypeLabel','cloneableInstitutionNameLabel','cloneableInstitutionToLabel','cloneableInstitutionFromLabel'];
 
+        // Click event for the clone button
+        $("#addInstitution").click(function(){
+            // Increment the counter
+            counter++;
+
+            // Clone the container and update its ID
+            let newContainer = $("#cloneable").clone().attr("id", "container" + counter);
+
+            
+            // Append the cloned container to the desired area
+            $("#clonesContainer").append(newContainer);
+        });
     })
 </script>
