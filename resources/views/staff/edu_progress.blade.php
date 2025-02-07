@@ -108,7 +108,8 @@
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="w-full">
-                                    <div id="cloneable" class="w-full">
+                                    <div id="cloneable" class="w-full relative">
+                                        <button type="button" class="absolute top-1/2 right-0 rounded-full bg-red-300 border-red-400 text-white w-7 h-7 border text-center hover:bg-red-400 active:bg-red-400 focus:bg-red-400 hover:border-red-500">x</button>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
                                                 <label class="cloneableInstitutionTypeLabel font-sans text-sm text-slate-800">Institution Type</label>
@@ -159,7 +160,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="clonesContainer" class="flex items-center justify-center space-x-2 w-full"></div>
+                                    <div id="clonesContainer" class="flex items-center justify-center space-x-2 w-full relative"></div>
                                 </div>
                                 <div class="py-3 px-4 flex items-center justify-between">
                                     <button id="addInstitution" type="button" class="rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
@@ -197,7 +198,7 @@
             // Clone the container and update its ID
             let newContainer = $("#cloneable").clone().attr("id", "container" + counter);
 
-            
+
             // Append the cloned container to the desired area
             $("#clonesContainer").append(newContainer);
         });
