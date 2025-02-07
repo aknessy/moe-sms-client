@@ -25,6 +25,8 @@
                 <form type="post" accept-charset="" action="" class="lg:gap-x-8 gap-x-2 flex w-full py-4">
                     @csrf
 
+                    <input type="hidden" name="form-type" value="basic-information" />
+
                     <div class="w-full flex flex-col lg:w-1/3">
                         <a href="#" class="flex items-center justify-start space-x-3 py-2 px-4 text-center text-slate-500 text-xs hover:text-slate-900 hover:underline transition-all">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
@@ -169,7 +171,7 @@
                                                 <path d="M8 4l2 0"></path>
                                                 <path d="M9 17l0 .01"></path>
                                                 <path d="M21 6l-2 3l2 3l-2 3l2 3"></path>
-                                                </svg>
+                                            </svg>
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">

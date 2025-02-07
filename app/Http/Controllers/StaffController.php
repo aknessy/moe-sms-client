@@ -14,4 +14,11 @@ class StaffController extends Controller
             'app_version' => config('app.app_version')
         ]);
     }
+
+    public function edu_progress(){
+        return view('staff/edu_progress', [
+            'page_title' => self::$page_title . ' - Edu Progress',
+            'app_version' => config('app.app_version')
+        ]);
+    }
 }
