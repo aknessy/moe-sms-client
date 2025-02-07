@@ -107,61 +107,64 @@
                         </div>
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
-                                <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                    <div class="w-full">
-                                        <label class="font-sans text-sm text-slate-800">Institution Type</label>
-                                        <div class="relative">
-                                            <select class="w-full bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="institution-type[]">
-                                                <option value="">Select Option</option>
-                                                <option value="Tertiary">Tertiary</option>
-                                                <option value="Secondary">Secondary</option>
-                                                <option value="Primary">Primary</option>
-                                                <option value="Others">Others</option>
-                                            </select>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
-                                                <path d="M9 18l3 3l3 -3"></path>
-                                                <path d="M12 15v6"></path>
-                                                <path d="M15 6l-3 -3l-3 3"></path>
-                                                <path d="M12 3v6"></path>
-                                            </svg>
+                                <div class="w-full">
+                                    <div id="cloneable" class="w-full">
+                                        <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                            <div class="w-full">
+                                                <label class="font-sans text-sm text-slate-800">Institution Type</label>
+                                                <div class="relative">
+                                                    <select class="w-full bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="institution-type[]">
+                                                        <option value="">Select Option</option>
+                                                        <option value="Tertiary">Tertiary</option>
+                                                        <option value="Secondary">Secondary</option>
+                                                        <option value="Primary">Primary</option>
+                                                        <option value="Others">Others</option>
+                                                    </select>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                        <path d="M9 18l3 3l3 -3"></path>
+                                                        <path d="M12 15v6"></path>
+                                                        <path d="M15 6l-3 -3l-3 3"></path>
+                                                        <path d="M12 3v6"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                            <div class="w-full min-w-max">
+                                                <label class="font-sans text-sm text-slate-800">Institution Name</label>
+                                                <div class="relative">
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-name[]" placeholder="Name of Institution" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                        <path d="M3 7v-2h13v2"></path>
+                                                        <path d="M10 5v14"></path>
+                                                        <path d="M12 19h-4"></path>
+                                                        <path d="M15 13v-1h6v1"></path>
+                                                        <path d="M18 12v7"></path>
+                                                        <path d="M17 19h2"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="w-full min-w-max">
+                                                <label class="font-sans text-sm text-slate-800">From</label>
+                                                <div class="relative">
+                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-start-date[]" placeholder="Start Date" value="" />
+                                                </div>
+                                            </div>
+                                            <div class="w-full min-w-max">
+                                                <label class="font-sans text-sm text-slate-800">To</label>
+                                                <div class="relative">
+                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-end-date[]" placeholder="End Date" value="" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                    <div class="w-full min-w-max">
-                                        <label class="font-sans text-sm text-slate-800">Institution Name</label>
-                                        <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-name[]" placeholder="Name of Institution" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
-                                                <path d="M3 7v-2h13v2"></path>
-                                                <path d="M10 5v14"></path>
-                                                <path d="M12 19h-4"></path>
-                                                <path d="M15 13v-1h6v1"></path>
-                                                <path d="M18 12v7"></path>
-                                                <path d="M17 19h2"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div class="w-full min-w-max">
-                                        <label class="font-sans text-sm text-slate-800">From</label>
-                                        <div class="relative">
-                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-start-date[]" placeholder="Start Date" value="" />
-                                        </div>
-                                    </div>
-                                    <div class="w-full min-w-max">
-                                        <label class="font-sans text-sm text-slate-800">To</label>
-                                        <div class="relative">
-                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-end-date[]" placeholder="End Date" value="" />
-                                        </div>
-                                    </div>
-                                </div>
 
+                                    <div id="clonesContainer" class="flex items-center justify-center space-x-2 w-full"></div>
+                                </div>
                                 <div class="py-3 px-4 flex items-center justify-between">
-                                    <div>
-                                        <button type="reset" class="add-institution rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
-                                            Add Institution
-                                        </button>
-                                    </div>
+                                    <button type="reset" class="add-institution rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
+                                        Add Institution
+                                    </button>
                                     <div class="flex items-center justify-center gap-2">
                                         <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
                                             Save Changes
