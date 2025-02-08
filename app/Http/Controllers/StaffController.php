@@ -49,6 +49,10 @@ class StaffController extends Controller
     }
 
     public function referee(){
-        
+        return view('staff/referees', [
+            'page_title' => self::$page_title . ' - Referees',
+            'active_page' => 'referee',
+            'app_version' => config('app.app_version')
+        ]);
     }
 }

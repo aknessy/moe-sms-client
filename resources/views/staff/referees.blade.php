@@ -40,8 +40,8 @@
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
-                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Leave</h2>
-                            <p class="font-normal text-md text-slate-500 m-0">Staff record of Leave</p>
+                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Referees</h2>
+                            <p class="font-normal text-md text-slate-500 m-0">Staff referees</p>
                         </div>
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -49,48 +49,45 @@
                                     <div id="cloneable" class="w-full relative mb-3">
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
-                                                <label class="font-semibold font-sans text-sm text-slate-800">Leave Type</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Referee Name</label>
                                                 <div class="relative">
-                                                    <select class="w-full bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="leave-type[]">
-                                                        <option value="0">Select Option</option>
-                                                        <option value="Annual Leave">Annual Leave</option>
-                                                        <option value="Study Leave">Study Leave</option>
-                                                        <option value="Maternity Leave">Maternity Leave</option>
-                                                        <option value="Retirement Leave">Retirement Leave</option>
-                                                    </select>
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="referee-name[]" placeholder="Name of Referee" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
-                                                        <path d="M9 18l3 3l3 -3"></path>
-                                                        <path d="M12 15v6"></path>
-                                                        <path d="M15 6l-3 -3l-3 3"></path>
-                                                        <path d="M12 3v6"></path>
+                                                        <path d="M9 21v-6a2 2 0 0 1 2 -2h1.341"></path>
+                                                        <path d="M19.682 10.682l-7.682 -7.682l-9 9h2v7a2 2 0 0 0 2 2h5"></path>
+                                                        <path d="M22 16c0 4 -2.5 6 -3.5 6s-3.5 -2 -3.5 -6c1 0 2.5 -.5 3.5 -1.5c1 1 2.5 1.5 3.5 1.5z"></path>
                                                     </svg>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                            <div class="w-full max-w-sm">
-                                                <label class="font-semibold font-sans text-sm text-slate-800">Effective From</label>
+                                            <div class="w-full">
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Referee Address</label>
                                                 <div class="relative">
-                                                    <input id="leaveStart" data-target="leaveEnd" type="date" class="leaveStart w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="effective-from[]" placeholder="Start date" value="" />
-                                                </div>
-                                            </div>
-                                            <div class="w-full max-w-sm">
-                                                <label class="font-semibold font-sans text-sm text-slate-800">Expires on</label>
-                                                <div class="relative">
-                                                    <input id="leaveEnd" data-target="leaveDays" type="date" class="leaveEnd w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="expires-on[]" placeholder="End date" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="referee-address[]" placeholder="Address of Referee" value="" />
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                            <div class="w-full">
-                                                <label class="font-semibold font-sans text-sm text-slate-800">Duration <small><em>(In days)</em></small></label>
+                                            <div class="w-full max-w-sm">
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Referee Phone</label>
                                                 <div class="relative">
-                                                    <input type="number" min="7" class="leaveDays w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="leave-duration[]" placeholder="Leave Duration" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="referee-phone[]" placeholder="Referee Phone" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
-                                                        <path d="M9 18l3 3l3 -3"></path>
-                                                        <path d="M12 15v6"></path>
-                                                        <path d="M15 6l-3 -3l-3 3"></path>
-                                                        <path d="M12 3v6"></path>
+                                                        <path d="M3 3m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"></path>
+                                                        <path d="M8 4l2 0"></path>
+                                                        <path d="M9 17l0 .01"></path>
+                                                        <path d="M21 6l-2 3l2 3l-2 3l2 3"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="w-full max-w-sm">
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Referee Email</label>
+                                                <div class="relative">
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="referee-email[]" placeholder="Referee Email" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                        <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
+                                                        <path d="M4 13h3l3 3h4l3 -3h3"></path>
                                                     </svg>
                                                 </div>
                                             </div>
@@ -148,3 +145,4 @@
         });
     });
 </script>
+<?php
