@@ -40,8 +40,8 @@
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
-                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Promotions</h2>
-                            <p class="font-normal text-md text-slate-500 m-0">Staff record of promotions</p>
+                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Leave</h2>
+                            <p class="font-normal text-md text-slate-500 m-0">Staff record of Leave</p>
                         </div>
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -49,9 +49,15 @@
                                     <div id="cloneable" class="w-full relative mb-3">
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
-                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Designation</label>
+                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Leave Type</label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="designation[]" placeholder="E.g Admin. Officer I" value="" />
+                                                    <select class="w-full bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="leave-type[]">
+                                                        <option value="0">Select Option</option>
+                                                        <option value="Annual Leave">Annual Leave</option>
+                                                        <option value="Study Leave">Study Leave</option>
+                                                        <option value="Maternity Leave">Maternity Leave</option>
+                                                        <option value="Retirement Leave">Retirement Leave</option>
+                                                    </select>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>

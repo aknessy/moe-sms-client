@@ -35,7 +35,7 @@ class StaffController extends Controller
     public function leave(Request $request){
         return view('staff/leave', [
             'page_title' => self::$page_title . ' - Leave',
-            'active_page' => 'leave',
+            'active_page' => 'leave-record',
             'app_version' => config('app.app_version')
         ]);
     }
