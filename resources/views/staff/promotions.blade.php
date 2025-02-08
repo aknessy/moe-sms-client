@@ -18,7 +18,7 @@
                     </ol>
                 </nav>
                 <div class="w-2/3 sm:w-full">
-                    <h5 class="font-semibold font-sans flex space-y-2 justify-end m-0 uppercase">Staff Management - Add New Entry</h5>
+                    <h5 class="font-normal font-sans flex space-y-2 justify-end m-0 uppercase">Add Staff Record</h5>
                 </div>
             </div>
             <div>
@@ -49,7 +49,7 @@
                                     <div id="cloneable" class="w-full relative mb-3">
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
-                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Designation</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Designation</label>
                                                 <div class="relative">
                                                     <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="designation[]" placeholder="E.g Admin. Officer I" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -63,7 +63,7 @@
                                         </div>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full max-w-sm">
-                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Grade Level</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Grade Level</label>
                                                 <div class="relative">
                                                     <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="grade-level[]" placeholder="Grade Level" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -75,7 +75,7 @@
                                                 </div>
                                             </div>
                                             <div class="w-full max-w-sm">
-                                                <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Step</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Step</label>
                                                 <div class="relative">
                                                     <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="step[]" placeholder="Step" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -88,7 +88,7 @@
                                             </div>
                                         </div>
                                         <div class="w-full">
-                                            <label class="cloneableInstitutionTypeLabel font-semibold font-sans text-sm text-slate-800">Effective From</label>
+                                            <label class="font-semibold font-sans text-sm text-slate-800">Effective From</label>
                                             <div class="relative">
                                                 <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="grade-level[]" placeholder="E.g Admin. Officer I" value="" />
                                             </div>
@@ -103,7 +103,7 @@
                                     </button>
                                     <div class="flex items-center justify-center gap-2">
                                         <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
-                                            Save & Continuer
+                                            Save & Continue
                                         </button>
                                         <button type="reset" class="rounded-md border border-brown-200 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-brown-600 hover:text-white hover:bg-brown-300 hover:border-gray-50 focus:text-white focus:bg-brown-300 focus:border-gray-50 active:border-gray-50 active:text-white active:bg-brown-300">
                                             Reset

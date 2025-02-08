@@ -12,13 +12,13 @@
                             </a>
                             <span class="pointer-events-none mx-2 text-slate-600">/</span>
                         </li>
-                        <li class="flex items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
+                        <li class="flex font-alkalami items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
                             <a href="#">Profile Settings</a>
                         </li>
                     </ol>
                 </nav>
                 <div class="w-2/3 sm:w-full">
-                    <h5 class="font-semibold font-sans flex space-y-2 justify-end m-0 uppercase">Staff Management - Add New Entry</h5>
+                    <h5 class="font-normal font-alkalami flex space-y-2 justify-end m-0 uppercase">Add Staff Record</h5>
                 </div>
             </div>
             <div>
@@ -40,14 +40,14 @@
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
-                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Basic Information</h2>
-                            <p class="font-normal text-md text-slate-500 m-0">Create a new staff by filling their basic information</p>
+                            <h2 class="text-lg font-alkalami font-semibold mb-0 text-slate-600">Basic Information</h2>
+                            <p class="font-normal font-sans text-md text-slate-500 m-0">Create a new staff by filling their basic information</p>
                         </div>
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full">
-                                        <label class="font-sans text-sm text-slate-800">Establishment/Computer Number</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Establishment/Computer Number</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="computer-number" placeholder="Computer Number" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -58,7 +58,7 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Surname</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Surname</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="last-name" placeholder="Surname" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -67,7 +67,7 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">First name</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">First name</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="first-name" placeholder="First Name" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -76,7 +76,7 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Other names</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Other names</label>
                                         <div class="relative">
                                             <input type="password" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="other-names" placeholder="Other Names" value />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -87,13 +87,13 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Date of Employment</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Date of Employment</label>
                                         <div class="relative">
                                             <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="date-of-employment" placeholder="YYYY/MM/DD" value="" />
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Date of Birth</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Date of Birth</label>
                                         <div class="relative">
                                             <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value="" />
                                         </div>
@@ -101,7 +101,7 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Phone Number</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Phone Number</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="phone-number" placeholder="Surname" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -113,7 +113,7 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Email</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Email</label>
                                         <div class="relative">
                                             <input type="email" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="phone-number" placeholder="Surname" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -157,7 +157,7 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Pension Fund Administrator</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Pension Fund Administrator</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="pfa" placeholder="PFA" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -168,7 +168,7 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-sans text-sm text-slate-800">Retirement Savings Account No.</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Retirement Savings Account No.</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="rsa" placeholder="Rsa" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -181,7 +181,7 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full">
-                                        <label class="font-sans text-sm text-slate-800">NHIS No.</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">NHIS No.</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="nhis" placeholder="NHIS" value="" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -194,7 +194,7 @@
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full">
-                                        <label class="font-sans text-sm text-slate-800">Permanent Home Address</label>
+                                        <label class="font-semibold font-sans text-sm text-slate-800">Permanent Home Address</label>
                                         <div class="relative">
                                             <textarea class="h-full min-h-[100px] w-full resize-none rounded-[7px] border border-slate-300 px-3 py-2.5 font-sans text-sm font-normal text-slate-700 outline outline-0 transition-all focus:border-1 focus:border-slate-400 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50" placeholder="Permanent Address"></textarea>
                                         </div>

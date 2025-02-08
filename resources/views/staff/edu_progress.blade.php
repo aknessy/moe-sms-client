@@ -12,13 +12,13 @@
                             </a>
                             <span class="pointer-events-none mx-2 text-slate-600">/</span>
                         </li>
-                        <li class="flex items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
+                        <li class="flex font-alkalami items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
                             <a href="#">Education</a>
                         </li>
                     </ol>
                 </nav>
                 <div class="w-2/3 sm:w-full">
-                    <h5 class="font-semibold font-sans flex space-y-2 justify-end m-0 uppercase">Staff Management - Add New Entry</h5>
+                    <h5 class="font-normal font-alkalami flex space-y-2 justify-end m-0 uppercase">Add Staff Record</h5>
                 </div>
             </div>
             <div>
@@ -40,8 +40,8 @@
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
-                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Education Progression</h2>
-                            <p class="font-normal text-md text-slate-500 m-0">Staff Educational progress</p>
+                            <h2 class="font-alkalami text-lg font-semibold mb-0 text-slate-600">Education Progression</h2>
+                            <p class="font-sans font-normal text-md text-slate-500 m-0">Staff Educational progress</p>
                         </div>
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -49,7 +49,7 @@
                                     <div id="cloneable" class="w-full relative">
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full">
-                                                <label class="cloneableInstitutionTypeLabel font-sans text-sm text-slate-800">Institution Type</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Institution Type</label>
                                                 <div class="relative">
                                                     <select class="w-full bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="institution-type[]">
                                                         <option value="">Select Option</option>
@@ -69,7 +69,7 @@
                                         </div>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full min-w-max">
-                                                <label class="cloneableInstitutionNameLabel font-sans text-sm text-slate-800">Institution Name</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Institution Name</label>
                                                 <div class="relative">
                                                     <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-name[]" placeholder="Name of Institution" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
@@ -83,13 +83,13 @@
                                                 </div>
                                             </div>
                                             <div class="w-full min-w-max">
-                                                <label class="cloneableInstitutionFromLabel font-sans text-sm text-slate-800">From</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">From</label>
                                                 <div class="relative">
                                                     <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-start-date[]" placeholder="Start Date" value="" />
                                                 </div>
                                             </div>
                                             <div class="w-full min-w-max">
-                                                <label class="cloneableInstitutionToLabel font-sans text-sm text-slate-800">To</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">To</label>
                                                 <div class="relative">
                                                     <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="institution-end-date[]" placeholder="End Date" value="" />
                                                 </div>
@@ -97,7 +97,7 @@
                                         </div>
                                         <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                             <div class="w-full min-w-max">
-                                                <label class="cloneableInstitutionNameLabel font-sans text-sm text-slate-800">Qualification Obtained</label>
+                                                <label class="font-semibold font-sans text-sm text-slate-800">Qualification Obtained</label>
                                                 <div class="relative">
                                                     <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="qual-obtained[]" placeholder="E.g B.sc Public Administration" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">

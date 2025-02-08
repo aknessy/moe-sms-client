@@ -12,13 +12,13 @@
                             </a>
                             <span class="pointer-events-none mx-2 text-slate-600">/</span>
                         </li>
-                        <li class="flex items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
+                        <li class="flex items-center font-alkalami text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
                             <a href="#">Education</a>
                         </li>
                     </ol>
                 </nav>
                 <div class="w-2/3 sm:w-full">
-                    <h5 class="font-semibold font-sans flex space-y-2 justify-end m-0 uppercase">Staff Management - Add New Entry</h5>
+                    <h5 class="font-normal font-alkalami flex space-y-2 justify-end m-0 uppercase">Add Staff Record</h5>
                 </div>
             </div>
             <div>
@@ -40,8 +40,8 @@
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
-                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Referees</h2>
-                            <p class="font-normal text-md text-slate-500 m-0">Staff referees</p>
+                            <h2 class="text-lg font-alkalami font-semibold mb-0 text-slate-600">Referees</h2>
+                            <p class="font-normal font-sans text-md text-slate-500 m-0">Staff referees</p>
                         </div>
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -98,7 +98,7 @@
                                 </div>
                                 <div class="py-3 px-4 flex items-center justify-between">
                                     <button id="addLeave" type="button" class="rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
-                                        Add Leave
+                                        Add Referee
                                     </button>
                                     <div class="flex items-center justify-center gap-2">
                                         <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">

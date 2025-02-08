@@ -12,13 +12,13 @@
                             </a>
                             <span class="pointer-events-none mx-2 text-slate-600">/</span>
                         </li>
-                        <li class="flex items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
+                        <li class="font-alkalami flex items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
                             <a href="#">Education</a>
                         </li>
                     </ol>
                 </nav>
                 <div class="w-2/3 sm:w-full">
-                    <h5 class="font-semibold font-sans flex space-y-2 justify-end m-0 uppercase">Staff Management - Add New Entry</h5>
+                    <h5 class="font-normal font-alkalami flex space-y-2 justify-end m-0 uppercase">Add Staff Record</h5>
                 </div>
             </div>
             <div>
@@ -40,8 +40,8 @@
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
-                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Leave</h2>
-                            <p class="font-normal text-md text-slate-500 m-0">Staff record of Leave</p>
+                            <h2 class="font-alkalami text-lg font-semibold mb-0 text-slate-600">Leave</h2>
+                            <p class="font-sans font-normal text-md text-slate-500 m-0">Staff record of Leave</p>
                         </div>
                         <div class="py-4 block">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
