@@ -8,7 +8,7 @@ class StaffController extends Controller
 {
     static string $page_title = 'MOE | Staff Management';
 
-    private $uri;
+    private string $uri;
     public function __construct(Request $request)
     {
         $this->uri = $request->getRequestUri();
