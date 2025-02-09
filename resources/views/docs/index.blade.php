@@ -47,7 +47,6 @@
                                                 <option value="Personal Certificates">Age Declaration/Certificate of Origin</option>
                                                 <option value="Promotions">Promotions</option>
                                                 <option value="Leave">Leave Approvals</option>
-                                                <option value="Others">Husband</option>
                                             </select>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
                                                 <path d="M9 18l3 3l3 -3"></path>
