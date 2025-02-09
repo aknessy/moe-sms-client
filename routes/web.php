@@ -21,5 +21,7 @@ Route::prefix('dashboard')->group(function(){
 
         Route::post('/create',[\App\Http\Controllers\StaffController::class, 'create'])->name('create');
     });
+
+    Route::get('/config', [\App\Http\Controllers\ConfigurationController::class, 'index']);
 });
 

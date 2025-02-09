@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Resource;
-class ProfileSettingsController extends Controller
+class ProfileSettingsController
 {
     static string $page_title = 'MOE | Staff Management';
 
