@@ -1,4 +1,4 @@
-<div class="flex items-center justify-between h-16bg-brown-50 border-b border-brown-100">
+<div class="flex items-center justify-between h-16 bg-brown-50 border-b border-brown-100">
 	<div class="flex items-center pl-4 pt-2 pb-2 gap-x-4">
 		<label for="menu-toggle"
 			class="md:hidden mr-4 bg-gray-800 text-white p-2 rounded focus:outline-none cursor-pointer">

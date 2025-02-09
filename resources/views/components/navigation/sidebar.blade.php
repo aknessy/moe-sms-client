@@ -22,7 +22,7 @@
         </div>
         <div class="flex flex-col flex-1 overflow-y-auto">
             <nav class="flex-1 pl-3 px-0 py-4 bg-brown-400 gap-4">
-                <a href="{{ url('dashboard') }}" class="flex items-center px-4 py-2 group mb-3 {{ ($segments[1] == 'dashboard' && null == $segments[2]) ? $currentPageClasses : $defaultPageClasses }}">
+                <a href="{{ url('dashboard') }}" class="flex items-center px-4 py-2 group mb-3  active:outline-none focus:outline-none {{ ($segments[1] == 'dashboard' && null == $segments[2]) ? $currentPageClasses : $defaultPageClasses }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 group-hover:transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -31,7 +31,7 @@
                     Dashboard
                 </a>
                 <!-- Favourites -->
-                <a href="{{ url('dashboard/staff') }}" class="flex items-center px-4 py-2 group mb-3 {{ ($segments[1] == 'dashboard' && $segments[2] == 'staff') ? $currentPageClasses : $defaultPageClasses }}">
+                <a href="{{ url('dashboard/staff') }}" class="flex items-center px-4 py-2 group mb-3 active:outline-none focus:outline-none {{ ($segments[1] == 'dashboard' && $segments[2] == 'staff') ? $currentPageClasses : $defaultPageClasses }}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="h-6 w-6 mr-2 group-hover:hidden">
                         <path d="M4 19v-10.5a3.5 3.5 0 1 1 7 0v10.5"></path>
                         <path d="M4 13h7"></path>
@@ -45,7 +45,7 @@
                     </svg>
                     <span>Add Staff Record</span>
                 </a>
-                <a href="{{ url('config') }}" class="flex items-center px-4 py-2 group {{ ($segments[1] == 'dashboard' && $segments[2] == 'config') ? $currentPageClasses : $defaultPageClasses }}">
+                <a href="{{ url('config') }}" class="flex items-center px-4 py-2 group active:outline-none focus:outline-none {{ ($segments[1] == 'dashboard' && $segments[2] == 'config') ? $currentPageClasses : $defaultPageClasses }}">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                          class="h-6 w-6 mr-2 group-hover:hidden">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

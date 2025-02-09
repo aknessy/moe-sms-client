@@ -1,4 +1,4 @@
-<x-dashboard segments="{{ $uri_segments }}" pageTitle="{{ $page_title }}">
+<x-dashboard :segments="$uri_segments" pageTitle="{{ $page_title }}">
     <x-slot name="slot">
         <div class="w-full flex flex-col bg-transparent">
             <div class="flex items-center justify-between">
