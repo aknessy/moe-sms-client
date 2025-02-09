@@ -62,20 +62,49 @@
                                     <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                         <div class="w-full">
                                             <label class="font-semibold font-sans text-sm text-slate-800">Pick File</label>
+                                            <div class="relative">
+                                                <input
+                                                    type="file"
+                                                    placeholder="Pick Document"
+                                                    class="file-input file-input-bordered w-full max-w-x"
+                                                    accept="image/*" size=""/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                    <path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"></path>
+                                                </svg>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div id="clonesContainer" class="flex flex-col items-start gap-x-2 w-full relative"></div>
 
-                                <div class="py-3 px-4 flex items-center justify-end gap-2">
-                                    <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
-                                        Preview Uploaded
-                                    </button>
-                                    <button type="reset" class="rounded-md border border-brown-200 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-brown-600 hover:text-white hover:bg-brown-300 hover:border-gray-50 focus:text-white focus:bg-brown-300 focus:border-gray-50 active:border-gray-50 active:text-white active:bg-brown-300">
-                                        Reset
+                                <div class="flex items-center justify-between">
+                                    <div class="mt-3 mb-3 inline-flex items-center">
+                                        <label class="flex items-center cursor-pointer relative peer-checked:bg-slate-600 peer-checked:text-white" for="check-2">
+                                            <input id="check-2" type="checkbox" class="peer h-5 w-5 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-slate-800 checked:border-slate-800"/>
+                                            <span class="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"
+                                                   stroke="currentColor" stroke-width="1">
+                                                    <path fill-rule="evenodd"
+                                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                      clip-rule="evenodd"></path>
+                                                </svg>
+                                            </span>
+                                        </label>
+                                        <label class="cursor-pointer ml-2 text-slate-600 text-sm" for="check-2">Select multiple files at once</label>
+                                    </div>
+                                    <button id="addFileBtn" type="button" class="hidden btn-sm rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
+                                        Add Image
                                     </button>
                                 </div>
+{{--                                <div class="py-3 px-4 flex items-center justify-end gap-2">--}}
+{{--                                    <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">--}}
+{{--                                        Preview Uploaded--}}
+{{--                                    </button>--}}
+{{--                                    <button type="reset" class="rounded-md border border-brown-200 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-brown-600 hover:text-white hover:bg-brown-300 hover:border-gray-50 focus:text-white focus:bg-brown-300 focus:border-gray-50 active:border-gray-50 active:text-white active:bg-brown-300">--}}
+{{--                                        Reset--}}
+{{--                                    </button>--}}
+{{--                                </div>--}}
                             </div>
                         </div>
                     </div>
@@ -88,7 +117,31 @@
 </x-dashboard>
 <script>
     $(function(){
+        $('#check-2').change(function(){
+            $('#addFileBtn').toggleClass('hidden');
+        })
 
+        let counter = 1;
+        let classes = 'py-3 px-3 border border-brown-200 rounded-lg';
+        let btn = `<button type="button" class="removeClones rounded-full w-6 h-6 absolute top-1/2 bottom-2 -right-3 text-center bg-red-300 text-white border border-red-400 hover:bg-red-400 focus:bg-red-400 active:bg-red-400 hover:border-red-500 focus:border-red-500 active:border-red-500 shadow-lg">x</button>`;
+
+        // Click event for the clone button
+        $("#addFileBtn").click(function(){
+            // Increment the counter
+            counter++;
+
+            // Clone the container and update its ID
+            let newContainer = $("#cloneable").clone().attr("id", "cloneable" + counter);
+            $(newContainer).append(btn);
+            $(newContainer).find('label').append(' ' + counter);
+            $(newContainer).addClass(classes)
+            // Append the cloned container to the desired area
+            $("#clonesContainer").append(newContainer);
+        });
+
+        $("#clonesContainer").on("click", ".removeClones", function(){
+            $(this).parent().remove();
+        });
     })
 </script>
 
