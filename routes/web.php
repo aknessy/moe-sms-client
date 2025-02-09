@@ -18,6 +18,7 @@ Route::prefix('dashboard')->group(function(){
         Route::get('/leave-record', [\App\Http\Controllers\StaffController::class, 'leave'])->name('leave-record');
         Route::get('/referee', [\App\Http\Controllers\StaffController::class, 'referee'])->name('referee');
         Route::get('/next-of-kin', [\App\Http\Controllers\StaffController::class, 'next_of_kin'])->name('next-of-kin');
+        Route::get('/career', [\App\Http\Controllers\StaffController::class, 'career'])->name('career');
 
         Route::post('/create',[\App\Http\Controllers\StaffController::class, 'create'])->name('create');
     });

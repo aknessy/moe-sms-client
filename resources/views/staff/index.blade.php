@@ -86,13 +86,7 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-semibold font-sans text-sm text-slate-800">Date of Employment</label>
-                                        <div class="relative">
-                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="date-of-employment" placeholder="YYYY/MM/DD" value="" />
-                                        </div>
-                                    </div>
-                                    <div class="w-full max-w-sm">
+                                    <div class="w-full">
                                         <label class="font-semibold font-sans text-sm text-slate-800">Date of Birth</label>
                                         <div class="relative">
                                             <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value="" />

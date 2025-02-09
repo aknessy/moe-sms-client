@@ -36,6 +36,18 @@
         </svg>
         <span class="">Promotion</span>
     </a>
+    <a href="{{ route('career') }}" class="font-sans flex items-center justify-start space-x-3 {{ $activePage == 'career' ? $active_page_classes : $default_page_classes }}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="{{ $activePage == 'career' ? $svg_classes : '' }}">
+            <path d="M9 5m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+            <path d="M4 7l1 0"></path>
+            <path d="M4 11l1 0"></path>
+            <path d="M19 7l1 0"></path>
+            <path d="M19 11l1 0"></path>
+            <path d="M4 15l16 0"></path>
+            <path d="M4 19l16 0"></path>
+        </svg>
+        <span class="">Working Career</span>
+    </a>
     <a href="{{ route('leave-record') }}" class="font-sans flex items-center justify-start space-x-3 {{ $activePage == 'leave-record' ? $active_page_classes : $default_page_classes }}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="{{ $activePage == 'leave-record' ? $svg_classes : '' }}">
             <path d="M13 12v.01"></path>

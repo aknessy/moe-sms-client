@@ -9,7 +9,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css2?family=figtree:400;500;600;700&display=swap" rel="stylesheet">
         <link href="https://fonts.bunny.net/css?family=alike-angular:400|alkalami:400" rel="stylesheet" />
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" defer></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
