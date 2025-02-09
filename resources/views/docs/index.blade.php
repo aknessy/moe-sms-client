@@ -27,7 +27,7 @@
 
                     <div class="w-full flex flex-col lg:w-1/3">
                         <div class="w-full flex flex-col bg-brown-50 px-4 py-4 border border-brown-100 rounded-md">
-                            <x-docs-sidebar activePage="{{ $active_page }}" />
+                            <x-docs-sidebar activePage="{{ $active_page }}" :uuid="$uri_segments[3]" />
                         </div>
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
@@ -58,15 +58,15 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                    <div class="w-full">
-                                        <label class="font-semibold font-sans text-sm text-slate-800">Date of Birth</label>
-                                        <div class="relative">
-                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value="" />
+                                <div id="cloneable" class="w-full relative mb-3">
+                                    <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                        <div class="w-full">
+                                            <label class="font-semibold font-sans text-sm text-slate-800">Pick File</label>
                                         </div>
                                     </div>
                                 </div>
+
+                                <div id="clonesContainer" class="flex flex-col items-start gap-x-2 w-full relative"></div>
 
                                 <div class="py-3 px-4 flex items-center justify-end gap-2">
                                     <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">

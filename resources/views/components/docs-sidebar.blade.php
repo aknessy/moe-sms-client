@@ -5,7 +5,7 @@ $default_page_classes = ' bg-transparent py-2 px-4 text-center text-sm hover:tex
 $active_page_classes = 'rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md  focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none';
 ?>
 <div class="mt-5 flex flex-col gap-y-3">
-    <a href="{{ route('docs') }}" class="font-sans flex items-center justify-start space-x-3 {{ $activePage == 'index' ? $active_page_classes : $default_page_classes }}">
+    <a href="{{ route('docs', ['uuid' => $uuid]) }}" class="font-sans flex items-center justify-start space-x-3 {{ $activePage == 'index' ? $active_page_classes : $default_page_classes }}">
         <span >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="{{ $activePage == 'index' ? $svg_classes : '' }}">
                 <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
@@ -16,7 +16,7 @@ $active_page_classes = 'rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700
         </span>
         <span class="">Document Files</span>
     </a>
-    <a href="{{ route('passport') }}" class="font-sans flex items-center justify-start space-x-3 {{ $activePage == 'passport' ? $active_page_classes : $default_page_classes }}">
+    <a href="{{ route('passport', ['uuid' => $uuid]) }}" class="font-sans flex items-center justify-start space-x-3 {{ $activePage == 'passport' ? $active_page_classes : $default_page_classes }}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="{{ $activePage == 'edu-progress' ? $svg_classes : '' }}">
             <path d="M5 4m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"></path>
             <path d="M9 4m0 1a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1z"></path>

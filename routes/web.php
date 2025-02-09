@@ -24,8 +24,8 @@ Route::prefix('dashboard')->group(function(){
     });
 
     Route::prefix('docs')->group(function(){
-        Route::get('/{staff}', [\App\Http\Controllers\DocumentController::class, 'index'])->name('docs');
-        Route::get('/passport/{staff}', [\App\Http\Controllers\DocumentController::class, 'passport'])->name('passport');
+        Route::get('/{uuid}', [\App\Http\Controllers\DocumentController::class, 'index'])->name('docs');
+        Route::get('/passport/{uuid}', [\App\Http\Controllers\DocumentController::class, 'passport'])->name('passport');
     });
 
     Route::get('/config', [\App\Http\Controllers\ConfigurationController::class, 'index']);
