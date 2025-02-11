@@ -35,7 +35,7 @@
                             <h2 class="text-lg font-alkalami font-semibold mb-0 text-slate-600">Upload Document</h2>
                             <p class="font-normal font-sans text-md text-slate-500 m-0">Upload docs for <small><em>staff name</em></small></p>
                         </div>
-                        <div class="py-4 block">
+                        <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/user-png.png')}}');">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full">
@@ -63,10 +63,11 @@
                                             <label class="font-semibold font-sans text-sm text-slate-800">Pick File</label>
                                             <div class="relative">
                                                 <input
+                                                    name="file"
                                                     type="file"
                                                     placeholder="Pick Document"
                                                     class="file-input file-input-bordered w-full max-w-x"
-                                                    accept="image/*" size=""/>
+                                                     accept="application/pdf, image/*" size=""/>
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
                                                     <path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"></path>
                                                 </svg>
@@ -116,11 +117,17 @@
 </x-dashboard>
 <script>
     $(function(){
+        let counter = 1;
+
         $('#check-2').change(function(){
             $('#addFileBtn').toggleClass('hidden');
+
+            if(!$(this).is(':checked')) {
+                $('#clonesContainer').empty();
+                counter = 1;
+            }
         })
 
-        let counter = 1;
         let classes = 'py-3 px-3 border border-brown-200 rounded-lg';
         let btn = `<button type="button" class="removeClones rounded-full w-6 h-6 absolute top-1/2 bottom-2 -right-3 text-center bg-red-300 text-white border border-red-400 hover:bg-red-400 focus:bg-red-400 active:bg-red-400 hover:border-red-500 focus:border-red-500 active:border-red-500 shadow-lg">x</button>`;
 

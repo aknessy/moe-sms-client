@@ -54,7 +54,7 @@
                         <h2 class="text-lg font-semibold mb-0">Credentials Information</h2>
                         <p class="font-normal text-md text-slate-500 m-0">System Login Credentials</p>
                     </div>
-                    <div class="py-4 block">
+                    <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/user-png.png')}}');">
                         <form type="post" accept-charset="" action="">
                             @csrf
 
@@ -63,7 +63,7 @@
                                     <p class="m-0 p-0 text-slate-100 text-sm">Your Login Credentials can only be altered or changed by an administrator</p>
                                 </div>
                             </div>
-                            <div class="form-input-area py-3 px-3 mt-3 border rounded-md border-brown-100 gap-y-4">                                
+                            <div class="form-input-area py-3 px-3 mt-3 border rounded-md border-brown-100 gap-y-4">
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full max-w-sm min-w-[200px]">
                                         <label class="font-semibold font-sans text-md text-brown-900">Username</label>
@@ -90,7 +90,7 @@
                                             </svg>
                                         </div>
                                     </div>
-                                </div>                                
+                                </div>
                             </div>
                             <div class="py-3 px-4 flex items-center justify-end gap-2">
                                 <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" disabled>

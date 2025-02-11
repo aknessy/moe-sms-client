@@ -22,4 +22,15 @@ class DocumentController extends Controller
             'app_version' => config('app.app_version')
         ]);
     }
+
+    public function passport($uuid){
+        $uri_segment = explode('/', $this->uri);
+
+        return view('docs/passport', [
+            'page_title' => self::$page_title,
+            'active_page' => 'passport',
+            'uri_segments' => $uri_segment,
+            'app_version' => config('app.app_version')
+        ]);
+    }
 }

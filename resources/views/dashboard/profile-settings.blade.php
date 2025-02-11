@@ -54,7 +54,7 @@
                         <h2 class="text-lg font-semibold text-slate-600 mb-0">Personal Information</h2>
                         <p class="font-normal text-md text-slate-500 m-0">User's personal Information</p>
                     </div>
-                    <div class="py-4 block">
+                    <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/user-png.png')}}');">
                         <form type="post" accept-charset="" action="">
                             @csrf
 
