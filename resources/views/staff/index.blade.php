@@ -1,4 +1,4 @@
-<x-dashboard pageTitle="{{ $page_title }}">
+<x-dashboard pageTitle="{{ $page_title }}" :segments="$uri_segments">
     <x-slot name="slot">
         <div class="w-full flex flex-col bg-transparent">
             <div class="flex items-center justify-between">
@@ -43,7 +43,7 @@
                             <h2 class="text-lg font-alkalami font-semibold mb-0 text-slate-600">Basic Information</h2>
                             <p class="font-normal font-sans text-md text-slate-500 m-0">Create a new staff by filling their basic information</p>
                         </div>
-                        <div class="py-4 block">
+                        <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full">
@@ -86,13 +86,7 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-semibold font-sans text-sm text-slate-800">Date of Employment</label>
-                                        <div class="relative">
-                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="date-of-employment" placeholder="YYYY/MM/DD" value="" />
-                                        </div>
-                                    </div>
-                                    <div class="w-full max-w-sm">
+                                    <div class="w-full">
                                         <label class="font-semibold font-sans text-sm text-slate-800">Date of Birth</label>
                                         <div class="relative">
                                             <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value="" />

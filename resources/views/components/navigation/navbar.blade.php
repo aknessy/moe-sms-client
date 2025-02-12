@@ -1,4 +1,4 @@
-<div class="flex items-center justify-between h-16bg-brown-50 border-b border-brown-100">
+<div class="flex items-center justify-between h-16 bg-brown-50 border-b border-brown-100">
 	<div class="flex items-center pl-4 pt-2 pb-2 gap-x-4">
 		<label for="menu-toggle"
 			class="md:hidden mr-4 bg-gray-800 text-white p-2 rounded focus:outline-none cursor-pointer">
@@ -11,7 +11,7 @@
 		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
 			<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
 		</svg>
-    	<span class="text-xl font-bold text-gray-800">Dashboard</span>
+    	<span class="text-xl font-bold text-gray-800">Welcome, {{ $name ?? 'Guest' }}!</span>
 	</div>
 	<div class="flex items-center pr-4 pt-2 pb-2">
 		<div class="relative inline-block text-left">
