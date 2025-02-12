@@ -35,7 +35,7 @@
                             <h2 class="text-lg font-alkalami font-semibold mb-0 text-slate-600">Upload Document</h2>
                             <p class="font-normal font-sans text-md text-slate-500 m-0">Upload docs for <small><em>staff name</em></small></p>
                         </div>
-                        <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/user-png.png')}}');">
+                        <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
                                     <div class="w-full">

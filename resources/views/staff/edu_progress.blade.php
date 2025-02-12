@@ -43,7 +43,7 @@
                             <h2 class="font-alkalami text-lg font-semibold mb-0 text-slate-600">Education Progression</h2>
                             <p class="font-sans font-normal text-md text-slate-500 m-0">Staff Educational progress</p>
                         </div>
-                        <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/user-png.png')}}');">
+                        <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="w-full">
                                     <div id="cloneable" class="w-full relative">
