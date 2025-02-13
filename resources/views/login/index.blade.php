@@ -1,6 +1,6 @@
 <x-layout title="{{ $page_title }}">
     <x-slot name="slot">
-        <div class="flex h-full w-full items-center justify-center px-6 py-12 lg:px-8">
+        <div class="flex h-full w-full items-center justify-center px-6 py-12 lg:px-8 bg-no-repeat bg-contain bg-center" style="background-image: url('{{Vite::asset('resources/images/login-bg-state.png')}}');">
             <div class="w-80 flex-col items-center">
                 <div class="sm:mx-auto sm:w-full sm:max-w-sm mb-2">
                     <img class="mx-auto h-20 w-auto" src="{{ Vite::asset('resources/images/app_favicon.png') }}" alt="">
