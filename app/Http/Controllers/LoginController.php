@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class LoginController
@@ -18,11 +19,21 @@ class LoginController
 
     public function login(Request $request)
     {
-        $credentials = $request->only('userhandle', 'secrethash');
+        $input_fields = $request->validate([
+            'userhandle' => 'required|string|exists:users,name',
+            'secrethash' => 'required|string'
+        ]);
+
+        $credentials = [
+            'name' => $request->input('userhandle'),
+            'password' => $request->input('secrethash')
+        ];
+
         if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
             return redirect()->intended('dashboard');
         }
 
-        return redirect('login')->with('error', 'Invalid credentials');
+        return back()->withErrors(['login' => 'Invalid credentials'])->onlyInput('userhandle');
     }
 }
