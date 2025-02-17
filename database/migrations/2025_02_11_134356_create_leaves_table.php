@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('leaves', function (Blueprint $table) {
             $table->id();
-            $table->foreignUlid('uuid')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('basic_information_ulid')->constrained()->cascadeOnDelete();
             $table->json('leave_record');
             $table->timestamps();
         });

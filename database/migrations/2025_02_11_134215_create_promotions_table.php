@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('promotions', function (Blueprint $table) {
             $table->id();
-            $table->foreignUlid('uuid')->constrained()->cascadeOnDelete();
-            $table->json('promotion_record');
+            $table->foreignUlid('basic_information_ulid')->constrained()->cascadeOnDelete();
+            $table->string('designation');
+            $table->integer('grade_level');
+            $table->integer('step');
+            $table->date('effective_from');
             $table->timestamps();
         });
     }

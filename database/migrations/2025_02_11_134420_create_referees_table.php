@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('referees', function (Blueprint $table) {
             $table->id();
-            $table->foreignUlid('uuid')->constrained()->cascadeOnDelete();
-            $table->json('referees_record')->nullable();
+            $table->foreignUlid('basic_information_ulid')->constrained()->cascadeOnDelete();
+            $table->string('referee_name');
+            $table->string('referee_address');
+            $table->string('referee_phone');
+            $table->string('referee_email');
             $table->timestamps();
         });
     }

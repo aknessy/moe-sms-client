@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class BasicInformation extends Model
@@ -31,15 +32,15 @@ class BasicInformation extends Model
      */
     public function career(): HasOne
     {
-        return $this->hasOne(Career::class, 'uuid', 'uuid');
+        return $this->hasOne(Career::class, 'basic_information_ulid', 'ulid');
     }
 
     /**
      * Get the record of educational progress associated with a staff
      */
-    public function eduProgress(): HasOne
+    public function eduProgress(): HasMany
     {
-        return $this->hasOne(EduProgress::class, 'uuid', 'uuid');
+        return $this->hasMany(EduProgress::class, 'basic_information_ulid', 'ulid');
     }
 
     /**
@@ -47,22 +48,22 @@ class BasicInformation extends Model
      */
     public function leave(): HasOne
     {
-        return $this->hasOne(Leave::class, 'uuid', 'uuid');
+        return $this->hasOne(Leave::class, 'basic_information_ulid', 'ulid');
     }
 
     /**
      * Get the promotions associated with a staff
      */
-    public function promotion(): HasOne
+    public function promotion(): HasMany
     {
-        return $this->hasOne(Promotion::class, 'uuid', 'uuid');
+        return $this->hasMany(Promotion::class, 'basic_information_ulid', 'ulid');
     }
 
     /**
      * Get a staff referees
      */
-    public function referee(): HasOne
+    public function referee(): HasMany
     {
-        return $this->hasOne(Referee::class, 'uuid', 'uuid');
+        return $this->hasMany(Referee::class, 'basic_information_ulid', 'ulid');
     }
 }

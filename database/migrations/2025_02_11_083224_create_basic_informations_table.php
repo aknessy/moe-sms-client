@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('basic_informations', function (Blueprint $table) {
             $table->id();
-            $table->ulid('uuid')->unique();
+            $table->ulid('ulid')->unique();
             $table->string('computer_number');
             $table->string('surname');
             $table->string('firstname');

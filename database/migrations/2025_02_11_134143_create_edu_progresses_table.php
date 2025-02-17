@@ -13,8 +13,12 @@ return new class extends Migration
     {
         Schema::create('edu_progresses', function (Blueprint $table) {
             $table->id();
-            $table->foreignUlid('uuid')->constrained()->cascadeOnDelete();
-            $table->json('educational_record');
+            $table->foreignUlid('basic_information_ulid')->constrained()->cascadeOnDelete();
+            $table->string('institution_type');
+            $table->string('institution_name');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->string('qualification');
             $table->timestamps();
         });
     }

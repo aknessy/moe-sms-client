@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EduProgress extends Model
 {
     protected $fillable = [
-        'uuid',
+        'basic_information_ulid',
         'educational_record',
         'created_at',
         'updated_at'
@@ -19,6 +19,6 @@ class EduProgress extends Model
      */
     public function staff(): BelongsTo
     {
-        return $this->belongsTo(BasicInformation::class, 'uuid', 'uuid');
+        return $this->belongsTo(BasicInformation::class, 'ulid', 'basic_information_ulid');
     }
 }

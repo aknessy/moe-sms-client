@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('careers', function (Blueprint $table) {
+        Schema::create('next_of_kin', function (Blueprint $table) {
             $table->id();
             $table->foreignUlid('basic_information_ulid')->constrained()->cascadeOnDelete();
-            $table->date('date_of_employement');
-            $table->string('rank');
-            $table->integer('grade_level');
-            $table->string('ministerial_dept');
-            $table->string('mode_of_employment');
-            $table->string('address_of_ministerial_dept');
+            $table->string('nok_name');
+            $table->string('nok_relationship');
+            $table->string('nok_address');
+            $table->string('nok_phone_number');
             $table->timestamps();
         });
     }
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('careers');
+        Schema::dropIfExists('next_of_kin');
     }
 };
