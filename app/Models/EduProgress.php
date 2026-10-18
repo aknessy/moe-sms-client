@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EduProgress extends Model
 {
+    // "progress" is uncountable, so Eloquent would otherwise look for `edu_progress`.
+    protected $table = 'edu_progresses';
+
     protected $fillable = [
         'basic_information_ulid',
         'educational_record',

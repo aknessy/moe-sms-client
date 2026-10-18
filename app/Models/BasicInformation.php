@@ -8,12 +8,19 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class BasicInformation extends Model
 {
+    // "information" is uncountable, so Eloquent would otherwise look for `basic_information`.
+    protected $table = 'basic_informations';
+
     protected $fillable = [
       'uuid',
       'computer_number',
       'surname',
       'firstname',
       'othernames',
+      'department',
+      'division',
+      'designation',
+      'grade_level',
       'date_of_birth',
       'phone_number',
       'email',

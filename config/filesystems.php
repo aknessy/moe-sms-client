@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Laravel's built-in storage/{path} route is unauthenticated, which would
+            // expose uploaded staff documents. Served through a guarded route instead.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

@@ -1,6 +1,123 @@
 <?php
-    $currentPageClasses = 'bg-brown-50 text-slate-800 rounded-l-lg';
-    $defaultPageClasses = 'text-gray-100 hover:bg-brown-300';
+    // Tab carries the content area's background so the two merge, lifted on every edge but the right.
+    $currentPageClasses = 'text-sm font-medium bg-base-200 text-base-content rounded-l-lg shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.18),0_-4px_6px_-2px_rgba(0,0,0,0.18),0_4px_6px_-2px_rgba(0,0,0,0.18)]';
+    $defaultPageClasses = 'text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white';
+    // Active sub-menu item: a darker shade of the sidebar green, so it stays
+    // subordinate to the parent's content-coloured tab.
+    $currentSubPageClasses = 'text-sm font-medium bg-[#1B5E20]/30 text-white rounded-l-lg';
+
+    // Not every page passes :segments down from the dashboard component, so fall back to the request.
+    $segments = $segments ?? explode('/', request()->getRequestUri());
+    $section = $segments[1] ?? null;
+    $subSection = $segments[2] ?? null;
+    $leafSection = $segments[3] ?? null;
+    $inDashboard = $section == 'dashboard';
+
+    // The whole menu lives here: one entry per item, so adding a page is a one-line change.
+    // A group is open (and tab-highlighted) whenever the url sits inside one of its `sections`.
+    $menu = [
+        [
+            'label' => 'Dashboard',
+            'icon' => 'dashboard',
+            'route' => 'dashboard',
+            'sections' => [null],
+        ],
+        [
+            'label' => 'Human Resources',
+            'icon' => 'users',
+            'sections' => ['human-resources'],
+            'children' => [
+                ['label' => 'Leave Management', 'route' => 'hr-leave'],
+                ['label' => 'Promotion Exercises', 'route' => 'hr-promotions'],
+                ['label' => 'Performance Appraisal', 'route' => 'hr-appraisal'],
+                ['label' => 'Recruitment', 'route' => 'hr-recruitment'],
+                ['label' => 'Training & Capacity', 'route' => 'hr-training'],
+                ['label' => 'Establishment Strength', 'route' => 'hr-establishment'],
+            ],
+        ],
+        [
+            'label' => 'Registry',
+            'icon' => 'archive',
+            'sections' => ['staff', 'registry'],
+            'children' => [
+                ['label' => 'Add Staff Record', 'route' => 'basic-info', 'section' => 'staff'],
+                ['label' => 'Staff Bio-data', 'route' => 'bio-data'],
+                ['label' => 'Nominall Roll', 'route' => 'nominal-roll'],
+                ['label' => 'Posting & Deployment', 'route' => 'posting-deployment'],
+                ['label' => 'Confirmation of Appointment', 'route' => 'confirmation'],
+                ['label' => 'Record of Service', 'route' => 'record-of-service'],
+                ['label' => 'Query & Discipline', 'route' => 'query-discipline'],
+                ['label' => 'Retirement & Exit', 'route' => 'retirement-exit'],
+                ['label' => 'Record Amendments', 'route' => 'record-amendments'],
+            ],
+        ],
+        [
+            'label' => 'Finance/Account',
+            'icon' => 'wallet',
+            'sections' => ['finance-account'],
+            'children' => [
+                ['label' => 'Salary Structure', 'route' => 'salary-structure'],
+                ['label' => 'Allowances', 'route' => 'allowances'],
+                ['label' => 'Staff Deductions', 'route' => 'staff-deductions'],
+                ['label' => 'Loans & Advances', 'route' => 'loans-advances'],
+                ['label' => 'Pay Roll', 'route' => 'payroll'],
+                ['label' => 'Pay Slip', 'route' => 'payslip'],
+                ['label' => 'Arrears & Variations', 'route' => 'arrears-variations'],
+                ['label' => 'Remittances', 'route' => 'remittances'],
+            ],
+        ],
+        [
+            'label' => 'ICT/Voter Registry',
+            'icon' => 'fingerprint',
+            'sections' => ['ict'],
+            'children' => [
+                ['label' => 'Overview', 'route' => 'voter-registry', 'section' => 'ict', 'leaf' => null],
+                ['label' => 'Ad-hoc Staff', 'route' => 'adhoc-staff'],
+                ['label' => 'Voter Registration', 'route' => 'voter-registration'],
+                ['label' => 'Polling Units', 'route' => 'polling-units'],
+                ['label' => 'Device & Asset Register', 'route' => 'device-register'],
+            ],
+        ],
+        [
+            'label' => 'Reports & Analytics',
+            'icon' => 'chart',
+            'sections' => ['reports'],
+            'children' => [
+                ['label' => 'Nominal Roll Report', 'route' => 'nominal-roll-report'],
+                ['label' => 'Retirement Projection', 'route' => 'retirement-projection'],
+                ['label' => 'Payroll Report', 'route' => 'payroll-report'],
+                ['label' => 'Headcount & Audit', 'route' => 'headcount-report'],
+            ],
+        ],
+        [
+            'label' => 'Administration',
+            'icon' => 'settings',
+            'sections' => ['config'],
+            'children' => [
+                ['label' => 'Settings', 'route' => 'config', 'leaf' => null],
+                ['label' => 'Users, Roles & Permissions', 'route' => 'users-roles'],
+                ['label' => 'Audit Trail', 'route' => 'audit-trail'],
+                ['label' => 'Reference Data', 'route' => 'reference-data'],
+                ['label' => 'Notification Templates', 'route' => 'notification-templates'],
+                ['label' => 'Backup & Data', 'route' => 'backup-data'],
+            ],
+        ],
+    ];
+
+    // A child is current when its own url matches the one being viewed.
+    $isCurrent = function (array $child) use ($inDashboard, $subSection, $leafSection) {
+        if (! $inDashboard) {
+            return false;
+        }
+
+        if (array_key_exists('section', $child)) {
+            return $subSection === $child['section']
+                && (! array_key_exists('leaf', $child) || $leafSection === $child['leaf']);
+        }
+
+        return $leafSection === last(explode('.', $child['route']))
+            || request()->url() === route($child['route']);
+    };
 ?>
 
 <div>
@@ -8,58 +125,49 @@
     <input type="checkbox" id="menu-toggle" class="hidden peer">
 
     <!-- Sidebar -->
-    <div class="h-screen min-h-full hidden peer-checked:flex md:flex flex-col w-64 bg-brown-400 transition-all duration-300 ease-in-out">
-        <div class="flex items-center justify-between h-16 bg-brown-500 px-4">
-            <img class="mx-auto w-14 h-auto rounded-full" src="{{ Vite::asset('resources/images/app_favicon.png') }}" alt="App State Logo">
-            <label for="menu-toggle" class="text-white cursor-pointer">
+    <div class="h-screen min-h-full hidden peer-checked:flex md:flex flex-col w-64 bg-[#2E7D32] transition-all duration-300 ease-in-out">
+        <!-- Logo strip lines up with the navbar, so it carries the navbar's own background. -->
+        <div class="flex shrink-0 items-center justify-between h-16 bg-base-100 border-b border-base-300 px-4">
+            <img class="mx-auto w-28 h-auto rounded-full" src="{{ Vite::asset('resources/images/inec_nig_logo.png') }}" alt="App State Logo">
+            <label for="menu-toggle" class="text-base-content cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 lg:hidden" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </label>
-            <!-- <span class="text-white font-bold uppercase">Sidebar</span> -->
         </div>
         <div class="flex flex-col flex-1 overflow-y-auto">
-            <nav class="flex-1 pl-3 px-0 py-4 bg-brown-400 gap-4">
-                <a href="{{ url('dashboard') }}" class="flex items-center px-4 py-2 group mb-3  active:outline-none focus:outline-none {{ ($segments[1] == 'dashboard' && null == $segments[2]) ? $currentPageClasses : $defaultPageClasses }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 group-hover:transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    Dashboard
-                </a>
-                <!-- Favourites -->
-                <a href="{{ url('dashboard/staff') }}" class="flex items-center px-4 py-2 group mb-3 active:outline-none focus:outline-none {{ ($segments[1] == 'dashboard' && $segments[2] == 'staff') ? $currentPageClasses : $defaultPageClasses }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="h-6 w-6 mr-2 group-hover:hidden">
-                        <path d="M4 19v-10.5a3.5 3.5 0 1 1 7 0v10.5"></path>
-                        <path d="M4 13h7"></path>
-                        <path d="M18 9v6"></path>
-                        <path d="M21 12h-6"></path>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="hidden group-hover:block h-6 w-6 mr-2">
-                        <path d="M4 19v-10.5a3.5 3.5 0 1 1 7 0v10.5"></path>
-                        <path d="M4 13h7"></path>
-                        <path d="M21 12h-6"></path>
-                    </svg>
-                    <span>Add Staff Record</span>
-                </a>
-                <a href="{{ url('config') }}" class="flex items-center px-4 py-2 group active:outline-none focus:outline-none {{ ($segments[1] == 'dashboard' && $segments[2] == 'config') ? $currentPageClasses : $defaultPageClasses }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                         class="h-6 w-6 mr-2 group-hover:hidden">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 0 1 1.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 0 1-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 0 1-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 0 1 .12-1.45l.773-.773a1.125 1.125 0 0 1 1.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894Z" />
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                         class="hidden group-hover:block h-6 w-6 mr-2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75a4.5 4.5 0 0 1-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 1 1-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 0 1 6.336-4.486l-3.276 3.276a3.004 3.004 0 0 0 2.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852Z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.867 19.125h.008v.008h-.008v-.008Z" />
-                    </svg>
-                    <span>Config</span>
-                </a>
+            <nav class="flex-1 pl-3 px-0 py-4 bg-[#2E7D32]">
+                @foreach ($menu as $group)
+                    @php $groupOpen = $inDashboard && in_array($subSection, $group['sections'], true); @endphp
+
+                    @if (empty($group['children']))
+                        <a href="{{ route($group['route']) }}" class="flex items-center px-4 py-2 group mb-3 active:outline-none focus:outline-none {{ $groupOpen ? $currentPageClasses : $defaultPageClasses }}">
+                            <x-navigation.icon :name="$group['icon']" />
+                            <span>{{ $group['label'] }}</span>
+                        </a>
+                    @else
+                        <details class="group mb-3" @if($groupOpen) open @endif>
+                            <summary class="flex cursor-pointer list-none items-center px-4 py-2 [&::-webkit-details-marker]:hidden {{ $groupOpen ? $currentPageClasses : $defaultPageClasses }}">
+                                <x-navigation.icon :name="$group['icon']" />
+                                <span>{{ $group['label'] }}</span>
+                                <x-navigation.icon name="chevron" class="ml-auto h-4 w-4 transition-transform duration-200 group-open:rotate-180" />
+                            </summary>
+                            {{-- Author-level `display` beats the UA rule that hides a closed <details>, so drive it off group-open instead. --}}
+                            <div class="mt-3 ml-7 hidden flex-col group-open:flex">
+                                @foreach ($group['children'] as $child)
+                                    <a href="{{ route($child['route']) }}" class="flex items-center py-2 pl-4 pr-4 active:outline-none focus:outline-none {{ $isCurrent($child) ? $currentSubPageClasses : $defaultPageClasses }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4 mr-2 shrink-0">
+                                            <circle cx="12" cy="12" r="5"></circle>
+                                        </svg>
+                                        <span>{{ $child['label'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </details>
+                    @endif
+                @endforeach
             </nav>
         </div>
     </div>

@@ -1,8 +1,8 @@
 <?php
 
-$svg_classes = 'rounded-full w-6 h-6 bg-brown-300 text-white p-1 flex items-center justify-center';
-$default_page_classes = ' bg-transparent py-2 px-4 text-center text-sm hover:text-slate-700 transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none';
-$active_page_classes = 'rounded-lg bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md  focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none';
+$svg_classes = 'rounded-full w-6 h-6 bg-[#1B5E20] text-white p-1 flex items-center justify-center';
+$default_page_classes = ' bg-transparent py-2 px-4 text-center text-sm hover:text-[#2E7D32] transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none';
+$active_page_classes = 'rounded-lg bg-[#2E7D32] text-white py-2 px-4 text-center text-sm shadow-md transition-all hover:bg-[#256628]';
 ?>
 <div class="mt-5 flex flex-col gap-y-3">
     <a href="{{ route('docs', ['uuid' => $uuid]) }}" class="font-sans flex items-center justify-start space-x-3 {{ $activePage == 'index' ? $active_page_classes : $default_page_classes }}">

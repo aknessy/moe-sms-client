@@ -1,5 +1,5 @@
 <!Doctype html>
-<html data-theme="cupcake">
+<html data-theme="nord">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +12,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
-        <div class="w-screen h-screen bg-radial-[at_45%_50%] from-blue-gray-600 to-gray-900 to-75%">
+        <div class="w-screen h-screen bg-base-200 text-base-content">
             @yield('content')
         </div>
     </body>

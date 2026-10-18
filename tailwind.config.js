@@ -22,6 +22,6 @@ export default withMT({
         require('daisyui')
     ],
     daisyui: {
-        themes: ["nord", "cupcake"]
+        themes: ["nord"]
     }
 });

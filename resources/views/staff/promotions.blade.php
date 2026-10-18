@@ -1,58 +1,57 @@
 <x-dashboard :segments="$uri_segments" pageTitle="{{ $page_title }}">
     <x-slot name="slot">
         <div class="w-full flex flex-col bg-transparent">
-            <div class="flex items-center justify-between">
-                <nav aria-label="breadcrumb" class="w-1/3 space-y-2">
-                    <ol class="flex w-full flex-wrap items-center rounded-md px-4 py-3">
-                        <li class="flex cursor-pointer items-center text-lg/3 text-slate-600 transition-colors duration-300 hover:text-brown-700">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <nav aria-label="breadcrumb" class="w-full sm:w-1/3 space-y-2">
+                    <ol class="flex w-full flex-wrap items-center gap-1.5 py-2 text-xs">
+                        <li class="flex cursor-pointer items-center gap-1.5 text-base-content/60 transition-colors duration-300 hover:text-[#2E7D32]">
                             <a href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
                                 </svg>
                             </a>
-                            <span class="pointer-events-none mx-2 text-slate-600">/</span>
+                            <span class="pointer-events-none text-base-content/30">/</span>
                         </li>
-                        <li class="flex items-center text-lg/3 text-slate-500 transition-colors duration-300 cursor-not-allowed">
+                        <li class="flex items-center text-base-content/60 transition-colors duration-300 cursor-not-allowed">
                             <a href="#">Education</a>
                         </li>
                     </ol>
                 </nav>
-                <div class="w-2/3 sm:w-full">
-                    <h5 class="font-normal font-sans flex space-y-2 justify-end m-0 uppercase">Add Staff Record</h5>
+                <div class="w-full sm:w-2/3">
+                    <a href="#" class="flex items-center justify-end space-x-3 py-2 px-4 text-center text-base-content/60 text-xs hover:text-[#2E7D32] hover:underline transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
+                            <path d="M3 17l9 5l9 -5v-3l-9 5l-9 -5v-3l9 5l9 -5v-3l-9 5l-9 -5l9 -5l5.418 3.01"></path>
+                        </svg>
+                        <span class="">Upload Bulk</span>
+                    </a>
                 </div>
             </div>
             <div>
-                <form type="post" accept-charset="" action="" class="lg:gap-x-8 gap-x-2 flex w-full py-4">
+                <form type="post" accept-charset="" action="" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
                     @csrf
 
                     <input type="hidden" name="form-type" value="educational-progress" />
 
                     <div class="w-full flex flex-col lg:w-1/3">
-                        <a href="#" class="flex items-center justify-start space-x-3 py-2 px-4 text-center text-slate-500 text-xs hover:text-slate-900 hover:underline transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
-                                <path d="M3 17l9 5l9 -5v-3l-9 5l-9 -5v-3l9 5l9 -5v-3l-9 5l-9 -5l9 -5l5.418 3.01"></path>
-                            </svg>
-                            <span class="">Upload Bulk</span>
-                        </a>
-                        <div class="w-full flex flex-col bg-brown-50 px-4 py-4 border border-brown-100 rounded-md">
+                        <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
                             <x-staff-sidebar activePage="{{ $active_page }}" />
                         </div>
                     </div>
-                    <div class="w-full lg:w-2/3 px-4 py-2 bg-brown-50 border border-brown-100 rounded-lg">
+                    <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
-                            <h2 class="text-lg font-semibold mb-0 text-slate-600">Promotions</h2>
-                            <p class="font-normal text-md text-slate-500 m-0">Staff record of promotions</p>
+                            <h2 class="font-alkalami text-base font-semibold mb-0 text-base-content/80">Promotions</h2>
+                            <p class="font-sans text-sm font-normal text-base-content/60 m-0">Staff record of promotions</p>
                         </div>
                         <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
                                 <div class="w-full">
                                     <div id="cloneable" class="w-full relative mb-3">
-                                        <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                        <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full">
-                                                <label class="font-semibold font-sans text-sm text-slate-800">Designation</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Designation</label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="designation[]" placeholder="E.g Admin. Officer I" value="" />
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="designation[]" placeholder="E.g Admin. Officer I" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>
                                                         <path d="M15 6l-3 -3l-3 3"></path>
@@ -61,12 +60,12 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="mb-3 w-full lg:flex lg:space-x-4 space-x-2">
+                                        <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full max-w-sm">
-                                                <label class="font-semibold font-sans text-sm text-slate-800">Grade Level</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Grade Level</label>
                                                 <div class="relative">
-                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="grade-level[]" placeholder="Grade Level" value="" />
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level[]" placeholder="Grade Level" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>
                                                         <path d="M15 6l-3 -3l-3 3"></path>
@@ -75,10 +74,10 @@
                                                 </div>
                                             </div>
                                             <div class="w-full max-w-sm">
-                                                <label class="font-semibold font-sans text-sm text-slate-800">Step</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Step</label>
                                                 <div class="relative">
-                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="step[]" placeholder="Step" value="" />
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-2.5 right-2.5 text-slate-400">
+                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="step[]" placeholder="Step" value="" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>
                                                         <path d="M15 6l-3 -3l-3 3"></path>
@@ -88,24 +87,24 @@
                                             </div>
                                         </div>
                                         <div class="w-full">
-                                            <label class="font-semibold font-sans text-sm text-slate-800">Effective From</label>
+                                            <label class="font-normal font-sans text-sm text-base-content">Effective From</label>
                                             <div class="relative">
-                                                <input type="date" class="w-full pl-3 pr-10 py-2 bg-gray-50 placeholder:text-slate-400 text-slate-600 text-sm border border-gray-200 rounded-md transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 focus:shadow" name="grade-level[]" placeholder="E.g Admin. Officer I" value="" />
+                                                <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level[]" placeholder="E.g Admin. Officer I" value="" />
                                             </div>
                                         </div>
                                     </div>
 
                                     <div id="clonesContainer" class="flex flex-col items-start gap-x-2 w-full relative"></div>
                                 </div>
-                                <div class="py-3 px-4 flex items-center justify-between">
-                                    <button id="addInstitution" type="button" class="rounded-md border border-slate-500 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-slate-600 hover:text-white hover:bg-slate-400 hover:border-slate-600 focus:text-white focus:bg-slate-400 focus:border-slate-600 active:border-slate-600 active:text-white active:bg-slate-400">
+                                <div class="py-3 px-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <button id="addInstitution" type="button" class="btn btn-sm btn-cta-outline px-4">
                                         Add Promotion
                                     </button>
-                                    <div class="flex items-center justify-center gap-2">
-                                        <button type="submit" class="rounded-md bg-gradient-to-tr from-slate-600 to-slate-700 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-600 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 hover:border-slate-800 active:border-slate-800 focus:border-slate-800 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md">
                                             Save & Continue
                                         </button>
-                                        <button type="reset" class="rounded-md border border-brown-200 py-2 px-4 text-center text-sm transition-all shadow-sm hover:shadow-lg text-brown-600 hover:text-white hover:bg-brown-300 hover:border-gray-50 focus:text-white focus:bg-brown-300 focus:border-gray-50 active:border-gray-50 active:text-white active:bg-brown-300">
+                                        <button type="reset" class="btn btn-sm btn-cta-outline px-4">
                                             Reset
                                         </button>
                                     </div>
@@ -123,8 +122,8 @@
 <script>
     $(function(){
         let counter = 1;
-        let classes = 'py-3 px-3 border border-brown-200 rounded-lg';
-        let btn = `<button type="button" class="removeClones rounded-full w-6 h-6 absolute top-1/2 bottom-2 -right-3 text-center bg-red-300 text-white border border-red-400 hover:bg-red-400 focus:bg-red-400 active:bg-red-400 hover:border-red-500 focus:border-red-500 active:border-red-500 shadow-lg">x</button>`;
+        let classes = 'py-3 px-3 border border-base-300 rounded-lg';
+        let btn = `<button type="button" class="removeClones rounded-full w-6 h-6 absolute top-1/2 bottom-2 -right-3 text-center bg-error text-error-content border border-error hover:brightness-95 focus:brightness-95 active:brightness-95 shadow-lg">x</button>`;
 
         // Click event for the clone button
         $("#addInstitution").click(function(){

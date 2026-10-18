@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class LoginController
 {
@@ -19,21 +20,40 @@ class LoginController
 
     public function login(Request $request)
     {
-        $input_fields = $request->validate([
-            'userhandle' => 'required|string|exists:users,name',
-            'secrethash' => 'required|string'
+        $request->validate([
+            'userhandle' => 'required|string',
+            'secrethash' => 'required|string',
+        ], [], [
+            'userhandle' => 'username',
+            'secrethash' => 'password',
         ]);
 
+        // The accounts table keys on `username`, and only active accounts may sign in.
         $credentials = [
-            'name' => $request->input('userhandle'),
-            'password' => $request->input('secrethash')
+            'username' => $request->input('userhandle'),
+            'password' => $request->input('secrethash'),
+            'is_active' => 1,
         ];
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('dashboard');
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            throw ValidationException::withMessages([
+                'login' => 'Those credentials do not match our records.',
+            ])->redirectTo(route('login'));
         }
 
-        return back()->withErrors(['login' => 'Invalid credentials'])->onlyInput('userhandle');
+        // New session id on privilege change, to close off session fixation.
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('dashboard'));
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('status', 'You have been signed out.');
     }
 }

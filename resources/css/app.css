@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    /*
+     * Call-to-action buttons (Save, Submit, Save & Continue...).
+     * Brand green, deliberately outside the nord palette, so the rest of the
+     * UI stays theme-driven. Doubled `.btn` keeps it ahead of daisyUI's .btn.
+     */
+    .btn.btn-cta {
+        @apply border-[#2E7D32] bg-[#2E7D32] text-white;
+    }
+
+    .btn.btn-cta:hover {
+        @apply border-[#256628] bg-[#256628];
+    }
+
+    .btn.btn-cta:active {
+        @apply border-[#1F5622] bg-[#1F5622];
+    }
+
+    .btn.btn-cta:focus-visible {
+        @apply outline-2 outline-offset-2 outline-[#2E7D32];
+    }
+
+    .btn.btn-cta:disabled,
+    .btn.btn-cta[disabled] {
+        @apply border-base-200 bg-base-200 text-base-content/20;
+    }
+
+    /*
+     * Secondary buttons (Reset, Add row, Options...). Same brand green, but as
+     * a solid outline so they never compete with a .btn-cta on the same row.
+     */
+    .btn.btn-cta-outline {
+        @apply rounded-btn border border-solid border-[#2E7D32] bg-transparent text-base-content;
+    }
+
+    .btn.btn-cta-outline:hover {
+        @apply border-[#2E7D32] bg-[#2E7D32]/10 text-[#2E7D32];
+    }
+
+    .btn.btn-cta-outline:active {
+        @apply border-[#2E7D32] bg-[#2E7D32]/20 text-[#2E7D32];
+    }
+
+    .btn.btn-cta-outline:focus-visible {
+        @apply outline-2 outline-offset-2 outline-[#2E7D32];
+    }
+
+    .btn.btn-cta-outline:disabled,
+    .btn.btn-cta-outline[disabled] {
+        @apply border-base-200 bg-base-200 text-base-content/20;
+    }
+}
