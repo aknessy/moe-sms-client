@@ -259,26 +259,64 @@ class StaffController extends Controller
 
     public function retirement_exit(){
         // Civil service exit is age 60 or 35 years of service, whichever comes first.
+        $today = now()->startOfDay();
+
         $projection = BasicInformation::query()
-            ->orderBy('date_of_birth')
+            ->whereNotNull('date_of_birth')
             ->get()
-            ->map(function ($s) {
-                $dob = $s->date_of_birth ? Carbon::parse($s->date_of_birth) : null;
+            ->map(function ($s) use ($today) {
+                $dob = Carbon::parse($s->date_of_birth)->startOfDay();
+                $retiresOn = $dob->copy()->addYears(60);
 
                 return (object) [
                     'staff' => $s,
                     'date_of_birth' => $dob,
-                    'retires_on' => $dob?->copy()->addYears(60),
-                    'years_left' => $dob ? round(now()->diffInDays($dob->copy()->addYears(60)) / 365.25, 1) : null,
+                    'retires_on' => $retiresOn,
+                    // Signed, so officers already past the mark sort to the top.
+                    'months_left' => (int) floor($today->diffInMonths($retiresOn, false)),
+                    'time_left' => $this->describeTimeLeft($today, $retiresOn),
                 ];
             })
-            ->filter(fn ($row) => $row->years_left !== null && $row->years_left <= 5)
-            ->sortBy('years_left');
+            ->filter(fn ($row) => $row->months_left <= 60)
+            ->sortBy('months_left');
 
         return $this->registryPage('registry/retirement-exit', 'Retirement & Exit', 'retirement-exit', [
             'exits' => StaffExit::with('staff')->latest('effective_date')->get(),
             'projection' => $projection,
         ]);
+    }
+
+    /**
+     * Reads as "1 year, 4 months" rather than a bare decimal.
+     */
+    private function describeTimeLeft(Carbon $from, Carbon $to): string
+    {
+        if ($to->lessThan($from)) {
+            $overdue = $from->diff($to);
+            $parts = $this->yearMonthParts($overdue->y, $overdue->m);
+
+            return ($parts ? implode(', ', $parts) : 'Less than a month') . ' overdue';
+        }
+
+        $remaining = $from->diff($to);
+        $parts = $this->yearMonthParts($remaining->y, $remaining->m);
+
+        return $parts ? implode(', ', $parts) : 'Less than a month';
+    }
+
+    private function yearMonthParts(int $years, int $months): array
+    {
+        $parts = [];
+
+        if ($years > 0) {
+            $parts[] = $years . ' year' . ($years === 1 ? '' : 's');
+        }
+
+        if ($months > 0) {
+            $parts[] = $months . ' month' . ($months === 1 ? '' : 's');
+        }
+
+        return $parts;
     }
 
     public function store_exit(Request $request){

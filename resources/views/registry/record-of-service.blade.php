@@ -5,7 +5,7 @@
                              description="A consolidated service history, assembled from every Registry record held for the officer">
                 <form method="GET" action="{{ route('record-of-service') }}"
                       class="flex flex-col gap-4 lg:flex-row lg:items-end">
-                    <x-registry.field name="staff" label="Staff" :options="$staffOptions" :value="$selected" required />
+                    <x-registry.picker name="staff" label="Staff" :options="$staffOptions" :value="$selected" required />
                     <div class="flex flex-wrap items-center gap-2 pb-0.5">
                         <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md">View Record</button>
                         @if ($record)

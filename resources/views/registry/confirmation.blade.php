@@ -7,7 +7,7 @@
                     @csrf
 
                     <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                        <x-registry.field name="basic_information_ulid" label="Staff" :options="$staffOptions" required />
+                        <x-registry.picker name="basic_information_ulid" label="Staff" :options="$staffOptions" required />
                         <x-registry.field name="appointment_date" label="Date of First Appointment" type="date" required />
                         <x-registry.field name="confirmation_date" label="Date Confirmed" type="date" />
                     </div>

@@ -3,7 +3,7 @@
         <x-registry.page title="Retirement & Exit">
             <x-registry.card title="Due to Retire" :count="$projection->count()"
                              description="Staff reaching the age-60 mark within the next five years">
-                <x-registry.table :headings="['Staff', 'Computer No.', 'Date of Birth', 'Retires On', 'Years Left']"
+                <x-registry.table :headings="['Staff', 'Computer No.', 'Date of Birth', 'Retires On', 'Time Left']"
                                   empty="No staff fall due within the next five years.">
                     @foreach ($projection as $row)
                         <tr class="hover:bg-base-200/60">
@@ -12,8 +12,8 @@
                             <td class="px-3 py-2">{{ $row->date_of_birth?->toDateString() }}</td>
                             <td class="px-3 py-2">{{ $row->retires_on?->toDateString() }}</td>
                             <td class="px-3 py-2">
-                                <span class="rounded-full px-2 py-0.5 text-xs {{ $row->years_left <= 1 ? 'bg-error/15 text-error' : 'bg-warning/20 text-warning-content' }}">
-                                    {{ $row->years_left }} yr{{ $row->years_left == 1 ? '' : 's' }}
+                                <span class="rounded-full px-2 py-0.5 text-xs {{ $row->months_left <= 12 ? 'bg-error/15 text-error' : 'bg-warning/20 text-warning-content' }}">
+                                    {{ $row->time_left }}
                                 </span>
                             </td>
                         </tr>
@@ -27,7 +27,7 @@
                     @csrf
 
                     <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                        <x-registry.field name="basic_information_ulid" label="Staff" :options="$staffOptions" required />
+                        <x-registry.picker name="basic_information_ulid" label="Staff" :options="$staffOptions" required />
                         <x-registry.field name="exit_type" label="Exit Type" required :options="[
                             'retirement' => 'Retirement',
                             'resignation' => 'Resignation',

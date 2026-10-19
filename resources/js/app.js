@@ -3,4 +3,5 @@ import.meta.glob([
 ]);
 import './bootstrap';
 import './menuToggle';
+import './staffPicker';
 import $ from 'jquery';
