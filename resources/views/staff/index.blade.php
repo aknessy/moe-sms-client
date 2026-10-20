@@ -27,14 +27,31 @@
                 </div>
             </div>
             <div>
-                <form type="post" accept-charset="" action="" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
+                    @if (session('status'))
+                        <div class="mb-3 rounded-md border border-[#2E7D32]/40 bg-[#2E7D32]/10 px-4 py-3 text-sm text-[#1B5E20]">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="mb-3 rounded-md border border-error/40 bg-error/10 px-4 py-3 text-sm text-error">
+                            <p class="m-0 font-semibold">Please correct the following:</p>
+                            <ul class="mt-1 list-disc pl-5">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
                     @csrf
 
                     <input type="hidden" name="form-type" value="basic-information" />
 
                     <div class="w-full flex flex-col lg:w-1/3">
                         <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
-                            <x-staff-sidebar activePage="{{ $active_page }}" />
+                            <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
                         </div>
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">
@@ -157,7 +174,7 @@
                                     <div class="w-full max-w-sm">
                                         <label class="font-normal font-sans text-sm text-base-content">Email</label>
                                         <div class="relative">
-                                            <input type="email" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="phone-number" placeholder="Surname" value="" />
+                                            <input type="email" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="email" placeholder="Email address" value="{{ old('email') }}" />
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M3 9l9 6l9 -6l-9 -6l-9 6"></path>
                                                 <path d="M21 9v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"></path>
@@ -238,7 +255,7 @@
                                     <div class="w-full">
                                         <label class="font-normal font-sans text-sm text-base-content">Permanent Home Address</label>
                                         <div class="relative">
-                                            <textarea class="h-full min-h-[100px] w-full resize-none rounded-[7px] border border-base-300 bg-white px-3 py-2.5 font-sans text-xs font-normal text-base-content outline outline-0 transition-all focus:border-primary focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-base-200" placeholder="Permanent Address"></textarea>
+                                            <textarea name="address" class="h-full min-h-[100px] w-full resize-none rounded-[7px] border border-base-300 bg-white px-3 py-2.5 font-sans text-xs font-normal text-base-content outline outline-0 transition-all focus:border-primary focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-base-200" placeholder="Permanent Address">{{ old('address') }}</textarea>
                                         </div>
                                     </div>
                                 </div>

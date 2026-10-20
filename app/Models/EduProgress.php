@@ -7,21 +7,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EduProgress extends Model
 {
-    // "progress" is uncountable, so Eloquent would otherwise look for `edu_progress`.
     protected $table = 'edu_progresses';
 
     protected $fillable = [
         'basic_information_ulid',
         'educational_record',
-        'created_at',
-        'updated_at'
+    ];
+
+    protected $casts = [
+        'educational_record' => 'array',
     ];
 
     /**
-     * Get the staff that owns this educational record
+     * The staff member this educational history belongs to.
      */
     public function staff(): BelongsTo
     {
-        return $this->belongsTo(BasicInformation::class, 'ulid', 'basic_information_ulid');
+        // foreign key lives on this model; ulid is the owner key on the staff record.
+        return $this->belongsTo(BasicInformation::class, 'basic_information_ulid', 'ulid');
     }
 }

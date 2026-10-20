@@ -3,13 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
+use App\Models\Career;
 use App\Models\Confirmation;
+use App\Models\EduProgress;
+use App\Models\Leave;
+use App\Models\NextOfKin;
 use App\Models\Posting;
+use App\Models\Promotion;
 use App\Models\RecordAmendment;
+use App\Models\Referee;
 use App\Models\StaffExit;
 use App\Models\StaffQuery;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class StaffController extends Controller
 {
@@ -21,79 +28,347 @@ class StaffController extends Controller
         $this->uri = $request->getRequestUri();
     }
 
-    public function index(){
-        $uri_segment = explode('/', $this->uri);
+    /**
+     * The Add Staff Record wizard, in the order the inner sidebar lists them.
+     * Each category is captured once per staff member; `model` is what proves
+     * it has been captured.
+     */
+    private const CATEGORIES = [
+        'index' => ['label' => 'Personal Information', 'route' => 'basic-info', 'model' => null],
+        'edu-progress' => ['label' => 'Educational Progression', 'route' => 'edu-progress', 'model' => EduProgress::class],
+        'promotion' => ['label' => 'Promotion', 'route' => 'promotion', 'model' => Promotion::class],
+        'career' => ['label' => 'Working Career', 'route' => 'career', 'model' => Career::class],
+        'leave-record' => ['label' => 'Leave Record', 'route' => 'leave-record', 'model' => Leave::class],
+        'referee' => ['label' => 'Referee(s)', 'route' => 'referee', 'model' => Referee::class],
+        'next-of-kin' => ['label' => 'Next of Kin', 'route' => 'next-of-kin', 'model' => NextOfKin::class],
+    ];
 
-        return view('staff/index', [
-            'page_title' => self::$page_title . ' - Staff',
-            'active_page' => 'index',
-            'uri_segments' => $uri_segment,
-            'app_version' => config('app.app_version')
+    private const DRAFT_KEY = 'staff_draft_ulid';
+
+    /** The staff record currently being built, if any. */
+    private function draft(): ?BasicInformation
+    {
+        $ulid = session(self::DRAFT_KEY);
+
+        return $ulid ? BasicInformation::where('ulid', $ulid)->first() : null;
+    }
+
+    /** Category keys already captured for the draft. */
+    private function completed(?BasicInformation $draft): array
+    {
+        if (! $draft) {
+            return [];
+        }
+
+        $done = ['index'];
+
+        foreach (self::CATEGORIES as $key => $category) {
+            if ($category['model'] && $category['model']::where('basic_information_ulid', $draft->ulid)->exists()) {
+                $done[] = $key;
+            }
+        }
+
+        return $done;
+    }
+
+    private function firstIncomplete(array $completed): ?string
+    {
+        foreach (array_keys(self::CATEGORIES) as $key) {
+            if (! in_array($key, $completed, true)) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A captured category is closed until the whole record is finished, and the
+     * later categories can't be opened before the staff member exists.
+     */
+    private function guard(string $category)
+    {
+        $draft = $this->draft();
+        $completed = $this->completed($draft);
+
+        if ($category !== 'index' && ! $draft) {
+            return redirect()->route('basic-info')
+                ->with('status', 'Start with Personal Information to open a new staff record.');
+        }
+
+        if (in_array($category, $completed, true)) {
+            $next = $this->firstIncomplete($completed);
+
+            if ($next === null) {
+                return $this->finishDraft($draft);
+            }
+
+            return redirect()->route(self::CATEGORIES[$next]['route'])->with(
+                'status',
+                self::CATEGORIES[$category]['label'] . ' has already been recorded for this staff. Continue with '
+                    . self::CATEGORIES[$next]['label'] . '.'
+            );
+        }
+
+        return null;
+    }
+
+    /** Everything captured: close the draft so the wizard starts clean. */
+    private function finishDraft(?BasicInformation $draft)
+    {
+        $name = $draft ? trim("{$draft->surname}, {$draft->firstname}") : 'The staff record';
+        session()->forget(self::DRAFT_KEY);
+
+        return redirect()->route('basic-info')
+            ->with('status', "{$name} is complete — all categories recorded. You can start another record.");
+    }
+
+    /** View payload shared by every step of the wizard. */
+    private function wizardPage(string $view, string $title, string $category)
+    {
+        $draft = $this->draft();
+        $completed = $this->completed($draft);
+
+        return view($view, [
+            'page_title' => self::$page_title . ' - ' . $title,
+            'active_page' => $category,
+            'uri_segments' => explode('/', $this->uri),
+            'app_version' => config('app.app_version'),
+            'categories' => self::CATEGORIES,
+            'completed' => $completed,
+            'draft' => $draft,
         ]);
+    }
+
+    public function index(){
+        return $this->guard('index') ?? $this->wizardPage('staff/index', 'Staff', 'index');
     }
 
     public function edu_progress(){
-        $uri_segment = explode('/', $this->uri);
-
-        return view('staff/edu_progress', [
-            'page_title' => self::$page_title . ' - Edu Progress',
-            'active_page' => 'edu-progress',
-            'uri_segments' => $uri_segment,
-            'app_version' => config('app.app_version')
-        ]);
+        return $this->guard('edu-progress') ?? $this->wizardPage('staff/edu_progress', 'Edu Progress', 'edu-progress');
     }
 
     public function promotions(){
-        $uri_segment = explode('/', $this->uri);
-
-        return view('staff/promotions', [
-            'page_title' => self::$page_title . ' - Promotions',
-            'active_page' => 'promotion',
-            'uri_segments' => $uri_segment,
-            'app_version' => config('app.app_version')
-        ]);
+        return $this->guard('promotion') ?? $this->wizardPage('staff/promotions', 'Promotions', 'promotion');
     }
 
     public function leave(){
-        $uri_segment = explode('/', $this->uri);
-
-        return view('staff/leave', [
-            'page_title' => self::$page_title . ' - Leave',
-            'active_page' => 'leave-record',
-            'uri_segments' => $uri_segment,
-            'app_version' => config('app.app_version')
-        ]);
+        return $this->guard('leave-record') ?? $this->wizardPage('staff/leave', 'Leave', 'leave-record');
     }
 
     public function next_of_kin(){
-        $uri_segment = explode('/', $this->uri);
-
-        return view('staff/next_of_kin', [
-            'page_title' => self::$page_title . ' - Next of Kin',
-            'active_page' => 'next-of-kin',
-            'uri_segments' => $uri_segment,
-            'app_version' => config('app.app_version')
-        ]);
+        return $this->guard('next-of-kin') ?? $this->wizardPage('staff/next_of_kin', 'Next of Kin', 'next-of-kin');
     }
 
     public function referee(){
-        $uri_segment = explode('/', $this->uri);
-        return view('staff/referees', [
-            'page_title' => self::$page_title . ' - Referees',
-            'active_page' => 'referee',
-            'uri_segments' => $uri_segment,
-            'app_version' => config('app.app_version')
-        ]);
+        return $this->guard('referee') ?? $this->wizardPage('staff/referees', 'Referees', 'referee');
     }
 
     public function career(){
-        $uri_segment = explode('/', $this->uri);
-        return view('staff/work_career', [
-            'page_title' => self::$page_title . ' - Work Career',
-            'active_page' => 'career',
-            'uri_segments' => $uri_segment,
-            'app_version' => config('app.app_version')
+        return $this->guard('career') ?? $this->wizardPage('staff/work_career', 'Work Career', 'career');
+    }
+
+    /**
+     * Single entry point for every step of the wizard; `form-type` says which.
+     */
+    public function create(Request $request)
+    {
+        $formType = $request->input('form-type');
+
+        return match ($formType) {
+            'basic-information' => $this->storeBasicInformation($request),
+            'educational-progress' => $this->storeRepeating($request, 'edu-progress', EduProgress::class, 'educational_record', [
+                'institution-type' => 'institution_type',
+                'institution-name' => 'institution_name',
+                'institution-start-date' => 'start_date',
+                'institution-end-date' => 'end_date',
+                'qual-obtained' => 'qualification',
+            ], ['institution-name' => ['required', 'string', 'max:160']]),
+            'promotion' => $this->storeRepeating($request, 'promotion', Promotion::class, 'promotion_record', [
+                'designation' => 'designation',
+                'grade-level' => 'grade_level',
+                'step' => 'step',
+            ], ['designation' => ['required', 'string', 'max:160']]),
+            'work-career' => $this->storeCareer($request),
+            'leave' => $this->storeRepeating($request, 'leave-record', Leave::class, 'leave_record', [
+                'leave-type' => 'leave_type',
+                'effective-from' => 'effective_from',
+                'expires-on' => 'expires_on',
+                'leave-duration' => 'duration',
+            ], ['leave-type' => ['required', 'string', 'max:80']]),
+            'referees' => $this->storeRepeating($request, 'referee', Referee::class, 'referees_record', [
+                'referee-name' => 'name',
+                'referee-address' => 'address',
+                'referee-phone' => 'phone',
+                'referee-email' => 'email',
+            ], ['referee-name' => ['required', 'string', 'max:160']]),
+            'next-of-kin' => $this->storeNextOfKin($request),
+            default => back()->withErrors(['form-type' => 'Unrecognised form submission.'])->withInput(),
+        };
+    }
+
+    private function storeBasicInformation(Request $request)
+    {
+        if ($redirect = $this->guard('index')) {
+            return $redirect;
+        }
+
+        $data = $request->validate([
+            'computer-number' => ['required', 'string', 'max:60', 'unique:basic_informations,computer_number'],
+            'last-name' => ['required', 'string', 'max:80'],
+            'first-name' => ['required', 'string', 'max:80'],
+            'other-names' => ['nullable', 'string', 'max:80'],
+            'department' => ['nullable', 'string', 'max:120'],
+            'division' => ['nullable', 'string', 'max:120'],
+            'designation' => ['nullable', 'string', 'max:120'],
+            'grade-level' => ['nullable', 'string', 'max:20'],
+            'date-of-birth' => ['required', 'date', 'before:today'],
+            'phone-number' => ['required', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:160'],
+            'state-of-origin' => ['nullable', 'string', 'max:80'],
+            'lga-of-origin' => ['nullable', 'string', 'max:80'],
+            'pfa' => ['nullable', 'string', 'max:120'],
+            'rsa' => ['nullable', 'string', 'max:60'],
+            'nhis' => ['nullable', 'string', 'max:60'],
+            'address' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $staff = BasicInformation::create([
+            'ulid' => (string) Str::ulid(),
+            'computer_number' => $data['computer-number'],
+            'surname' => $data['last-name'],
+            'firstname' => $data['first-name'],
+            'othernames' => $data['other-names'] ?? '',
+            'department' => $data['department'] ?? null,
+            'division' => $data['division'] ?? null,
+            'designation' => $data['designation'] ?? null,
+            'grade_level' => $data['grade-level'] ?? null,
+            'date_of_birth' => $data['date-of-birth'],
+            'phone_number' => $data['phone-number'],
+            'email' => $data['email'] ?? null,
+            'state_of_origin' => $data['state-of-origin'] ?? null,
+            'lga_of_origin' => $data['lga-of-origin'] ?? null,
+            'pfa' => $data['pfa'] ?? null,
+            'rsa' => $data['rsa'] ?? null,
+            'nhis' => $data['nhis'] ?? null,
+            'address' => $data['address'] ?? null,
+        ]);
+
+        session([self::DRAFT_KEY => $staff->ulid]);
+
+        return $this->advance('index', 'Personal information saved.');
+    }
+
+    /**
+     * The cloneable forms post parallel arrays; zip them into one record per row.
+     */
+    private function storeRepeating(Request $request, string $category, string $model, string $column, array $map, array $rules)
+    {
+        if ($redirect = $this->guard($category)) {
+            return $redirect;
+        }
+
+        $request->validate(collect($rules)
+            ->mapWithKeys(fn ($rule, $field) => [$field . '.*' => $rule])
+            ->all());
+
+        $rows = collect($request->input(array_key_first($map), []))
+            ->keys()
+            ->map(function ($i) use ($request, $map) {
+                return collect($map)
+                    ->mapWithKeys(fn ($to, $from) => [$to => $request->input("{$from}.{$i}")])
+                    ->all();
+            })
+            ->filter(fn ($row) => collect($row)->filter()->isNotEmpty())
+            ->values();
+
+        if ($rows->isEmpty()) {
+            return back()->withErrors(['form-type' => 'Add at least one entry before saving.'])->withInput();
+        }
+
+        $model::create([
+            'basic_information_ulid' => $this->draft()->ulid,
+            $column => $rows->all(),
+        ]);
+
+        return $this->advance($category, self::CATEGORIES[$category]['label'] . ' saved.');
+    }
+
+    private function storeCareer(Request $request)
+    {
+        if ($redirect = $this->guard('career')) {
+            return $redirect;
+        }
+
+        $data = $request->validate([
+            'date-of-employment' => ['required', 'date'],
+            'rank' => ['nullable', 'string', 'max:120'],
+            'grade-level' => ['nullable', 'string', 'max:20'],
+            'ministerial-dept' => ['nullable', 'string', 'max:160'],
+            'ministerial-dept-address' => ['nullable', 'string', 'max:300'],
+            'mode-of-employment' => ['nullable', 'string', 'max:80'],
+        ]);
+
+        Career::create([
+            'basic_information_ulid' => $this->draft()->ulid,
+            // Column name carries the original misspelling from the migration.
+            'date_of_employement' => $data['date-of-employment'],
+            'rank' => $data['rank'] ?? null,
+            'grade_level' => $data['grade-level'] ?? null,
+            'ministerial_dept' => $data['ministerial-dept'] ?? null,
+            'mode_of_employment' => $data['mode-of-employment'] ?? null,
+            'address_of_ministerial_dept' => $data['ministerial-dept-address'] ?? null,
+        ]);
+
+        return $this->advance('career', 'Working career saved.');
+    }
+
+    private function storeNextOfKin(Request $request)
+    {
+        if ($redirect = $this->guard('next-of-kin')) {
+            return $redirect;
+        }
+
+        $request->validate(['nok-name.*' => ['required', 'string', 'max:160']]);
+
+        $ulid = $this->draft()->ulid;
+        $saved = 0;
+
+        foreach ((array) $request->input('nok-name', []) as $i => $name) {
+            if (blank($name)) {
+                continue;
+            }
+
+            NextOfKin::create([
+                'basic_information_ulid' => $ulid,
+                'nok_name' => $name,
+                'nok_relationship' => $request->input("nok-relationship.{$i}"),
+                'nok_address' => $request->input("nok-address.{$i}"),
+                'nok_phone_number' => $request->input("nok-phone.{$i}"),
+            ]);
+
+            $saved++;
+        }
+
+        if ($saved === 0) {
+            return back()->withErrors(['form-type' => 'Add at least one next of kin before saving.'])->withInput();
+        }
+
+        return $this->advance('next-of-kin', 'Next of kin saved.');
+    }
+
+    /** Move to the next outstanding category, or close the record if that was the last. */
+    private function advance(string $justSaved, string $message)
+    {
+        $draft = $this->draft();
+        $next = $this->firstIncomplete($this->completed($draft));
+
+        if ($next === null) {
+            return $this->finishDraft($draft);
+        }
+
+        return redirect()->route(self::CATEGORIES[$next]['route'])
+            ->with('status', $message . ' Continue with ' . self::CATEGORIES[$next]['label'] . '.');
     }
 
     /**

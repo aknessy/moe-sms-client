@@ -27,14 +27,31 @@
                 </div>
             </div>
             <div>
-                <form type="post" accept-charset="" action="" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
+                    @if (session('status'))
+                        <div class="mb-3 rounded-md border border-[#2E7D32]/40 bg-[#2E7D32]/10 px-4 py-3 text-sm text-[#1B5E20]">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="mb-3 rounded-md border border-error/40 bg-error/10 px-4 py-3 text-sm text-error">
+                            <p class="m-0 font-semibold">Please correct the following:</p>
+                            <ul class="mt-1 list-disc pl-5">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
                     @csrf
 
-                    <input type="hidden" name="form-type" value="educational-progress" />
+                    <input type="hidden" name="form-type" value="next-of-kin" />
 
                     <div class="w-full flex flex-col lg:w-1/3">
                         <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
-                            <x-staff-sidebar activePage="{{ $active_page }}" />
+                            <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
                         </div>
                     </div>
                     <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">

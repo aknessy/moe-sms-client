@@ -8,17 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Leave extends Model
 {
     protected $fillable = [
-        'uuid',
+        'basic_information_ulid',
         'leave_record',
-        'created_at',
-        'updated_at'
+    ];
+
+    protected $casts = [
+        'leave_record' => 'array',
     ];
 
     /**
-     * Get the staff that owns this leave record
+     * The staff member this leave history belongs to.
      */
     public function staff(): BelongsTo
     {
-        return $this->belongsTo(BasicInformation::class, 'uuid', 'uuid');
+        // foreign key lives on this model; ulid is the owner key on the staff record.
+        return $this->belongsTo(BasicInformation::class, 'basic_information_ulid', 'ulid');
     }
 }

@@ -10,15 +10,18 @@ class Promotion extends Model
     protected $fillable = [
         'basic_information_ulid',
         'promotion_record',
-        'created_at',
-        'updated_at'
+    ];
+
+    protected $casts = [
+        'promotion_record' => 'array',
     ];
 
     /**
-     * This promotion record belongs to one staff with the associated Basic Information
+     * The staff member this promotion history belongs to.
      */
     public function staff(): BelongsTo
     {
-        return $this->belongsTo(BasicInformation::class, 'ulid', 'basic_information_ulid');
+        // foreign key lives on this model; ulid is the owner key on the staff record.
+        return $this->belongsTo(BasicInformation::class, 'basic_information_ulid', 'ulid');
     }
 }

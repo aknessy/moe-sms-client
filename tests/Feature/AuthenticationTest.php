@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * Every route the sidebar can reach. Kept here so a new module that forgets
      * its middleware fails this test rather than shipping open.
@@ -46,12 +49,18 @@ class AuthenticationTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('protectedRoutes')]
-    public function test_authenticated_users_reach_the_page(string $url): void
+    public function test_authenticated_users_are_not_bounced_to_login(string $url): void
     {
-        // The storage route 404s without a real file; it only needs to not redirect.
         $response = $this->actingAs($this->activeUser())->get($url);
 
-        $this->assertNotEquals(302, $response->getStatusCode(), "$url redirected an authenticated user");
+        // Some pages legitimately redirect once signed in — the Add Staff Record
+        // wizard sends you to its first step. What must never happen is a bounce
+        // back to the login screen.
+        $this->assertNotSame(
+            route('login'),
+            $response->headers->get('Location'),
+            "$url sent an authenticated user back to login"
+        );
     }
 
     public function test_login_screen_is_public(): void

@@ -8,17 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Referee extends Model
 {
     protected $fillable = [
-        'uuid',
+        'basic_information_ulid',
         'referees_record',
-        'created_at',
-        'updated_at'
+    ];
+
+    protected $casts = [
+        'referees_record' => 'array',
     ];
 
     /**
-     * Referees belong to the associated staff in the basic Information table
+     * The staff member these referees belong to.
      */
     public function staff(): BelongsTo
     {
-        return $this->belongsTo(BasicInformation::class, 'uuid', 'uuid');
+        // foreign key lives on this model; ulid is the owner key on the staff record.
+        return $this->belongsTo(BasicInformation::class, 'basic_information_ulid', 'ulid');
     }
 }

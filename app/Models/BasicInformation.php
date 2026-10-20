@@ -12,7 +12,9 @@ class BasicInformation extends Model
     protected $table = 'basic_informations';
 
     protected $fillable = [
-      'uuid',
+      // `ulid` is the key every related Registry record points at. There is no
+      // `uuid` column on this table, despite the docs routes using that word.
+      'ulid',
       'computer_number',
       'surname',
       'firstname',
