@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -18,17 +19,15 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        // The officer this account belongs to; their name, department and the
+        // rest of the personal record live on basic_informations.
+        'basic_information_ulid',
         'username',
         'email',
         'password',
-        'surname',
-        'firstname',
-        'othernames',
         'is_active',
         'role',
-        'ministry',
-        'department',
-        'permissions'
+        'permissions',
     ];
 
     /**
@@ -53,5 +52,60 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * The officer this account belongs to.
+     */
+    public function staff(): BelongsTo
+    {
+        return $this->belongsTo(BasicInformation::class, 'basic_information_ulid', 'ulid');
+    }
+
+    /*
+     * These used to be columns on this table. They are read off the staff
+     * record now, so `$user->firstname` still reads the same at the call site.
+     */
+
+    public function getSurnameAttribute(): ?string
+    {
+        return $this->staff?->surname;
+    }
+
+    public function getFirstnameAttribute(): ?string
+    {
+        return $this->staff?->firstname;
+    }
+
+    public function getOthernamesAttribute(): ?string
+    {
+        return $this->staff?->othernames;
+    }
+
+    public function getDepartmentAttribute(): ?string
+    {
+        return $this->staff?->department;
+    }
+
+    /**
+     * "Okon, Grace Eno" — the officer as the dashboard should address them.
+     */
+    public function getFullNameAttribute(): ?string
+    {
+        if ($this->staff === null) {
+            return null;
+        }
+
+        $given = trim("{$this->staff->firstname} {$this->staff->othernames}");
+
+        return trim("{$this->staff->surname}, {$given}");
+    }
+
+    /**
+     * An account is only usable once it points at a staff record.
+     */
+    public function scopeLinked($query)
+    {
+        return $query->whereNotNull('basic_information_ulid');
     }
 }

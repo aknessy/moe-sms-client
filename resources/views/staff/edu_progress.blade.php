@@ -44,20 +44,19 @@
                         </div>
                     @endif
 
-                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
+                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4">
                     @csrf
 
                     <input type="hidden" name="form-type" value="educational-progress" />
 
-                    <div class="w-full flex flex-col lg:w-1/3">
-                        <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
-                            <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
-                        </div>
+                    <div class="w-full bg-white px-4 py-3 border border-base-300 rounded-md">
+                        <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
                     </div>
-                    <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">
+                    <div class="w-full px-4 py-2 bg-white border border-base-300 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
                             <h2 class="font-alkalami text-base font-semibold mb-0 text-base-content/80">Education Progression</h2>
                             <p class="font-sans font-normal text-sm text-base-content/60 m-0">Staff Educational progress</p>
+                        <p class="mt-1 mb-0 text-xs text-base-content/60"><span class="text-error">*</span> Required field.</p>
                         </div>
                         <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -65,9 +64,9 @@
                                     <div id="cloneable" class="w-full relative">
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full">
-                                                <label class="font-normal font-sans text-sm text-base-content">Institution Type</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Institution Type<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="institution-type[]">
+                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="institution-type[]" required>
                                                         <option value="">Select Option</option>
                                                         <option value="Tertiary">Tertiary</option>
                                                         <option value="Secondary">Secondary</option>
@@ -85,9 +84,9 @@
                                         </div>
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full min-w-max">
-                                                <label class="font-normal font-sans text-sm text-base-content">Institution Name</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Institution Name<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="institution-name[]" placeholder="Name of Institution" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="institution-name[]" placeholder="Name of Institution" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M3 7v-2h13v2"></path>
                                                         <path d="M10 5v14"></path>
@@ -99,23 +98,23 @@
                                                 </div>
                                             </div>
                                             <div class="w-full min-w-max">
-                                                <label class="font-normal font-sans text-sm text-base-content">From</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">From<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="institution-start-date[]" placeholder="Start Date" value="" />
+                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="institution-start-date[]" placeholder="Start Date" value=""  required/>
                                                 </div>
                                             </div>
                                             <div class="w-full min-w-max">
-                                                <label class="font-normal font-sans text-sm text-base-content">To</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">To<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="institution-end-date[]" placeholder="End Date" value="" />
+                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="institution-end-date[]" placeholder="End Date" value=""  required/>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full min-w-max">
-                                                <label class="font-normal font-sans text-sm text-base-content">Qualification Obtained</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Qualification Obtained<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="qual-obtained[]" placeholder="E.g B.sc Public Administration" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="qual-obtained[]" placeholder="E.g B.sc Public Administration" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M3 7v-2h13v2"></path>
                                                         <path d="M10 5v14"></path>

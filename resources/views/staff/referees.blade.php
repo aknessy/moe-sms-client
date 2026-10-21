@@ -44,20 +44,19 @@
                         </div>
                     @endif
 
-                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
+                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4">
                     @csrf
 
                     <input type="hidden" name="form-type" value="referees" />
 
-                    <div class="w-full flex flex-col lg:w-1/3">
-                        <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
-                            <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
-                        </div>
+                    <div class="w-full bg-white px-4 py-3 border border-base-300 rounded-md">
+                        <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
                     </div>
-                    <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">
+                    <div class="w-full px-4 py-2 bg-white border border-base-300 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
                             <h2 class="font-alkalami text-base font-semibold mb-0 text-base-content/80">Referees</h2>
                             <p class="font-sans text-sm font-normal text-base-content/60 m-0">Staff referees</p>
+                        <p class="mt-1 mb-0 text-xs text-base-content/60"><span class="text-error">*</span> Required field.</p>
                         </div>
                         <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -65,9 +64,9 @@
                                     <div id="cloneable" class="w-full relative mb-3">
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full">
-                                                <label class="font-normal font-sans text-sm text-base-content">Referee Name</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Referee Name<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-name[]" placeholder="Name of Referee" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-name[]" placeholder="Name of Referee" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 21v-6a2 2 0 0 1 2 -2h1.341"></path>
                                                         <path d="M19.682 10.682l-7.682 -7.682l-9 9h2v7a2 2 0 0 0 2 2h5"></path>
@@ -78,17 +77,17 @@
                                         </div>
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full">
-                                                <label class="font-normal font-sans text-sm text-base-content">Referee Address</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Referee Address<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-address[]" placeholder="Address of Referee" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-address[]" placeholder="Address of Referee" value=""  required/>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full max-w-sm">
-                                                <label class="font-normal font-sans text-sm text-base-content">Referee Phone</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Referee Phone<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-phone[]" placeholder="Referee Phone" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-phone[]" placeholder="Referee Phone" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M3 3m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"></path>
                                                         <path d="M8 4l2 0"></path>
@@ -98,9 +97,9 @@
                                                 </div>
                                             </div>
                                             <div class="w-full max-w-sm">
-                                                <label class="font-normal font-sans text-sm text-base-content">Referee Email</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Referee Email<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-email[]" placeholder="Referee Email" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="referee-email[]" placeholder="Referee Email" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
                                                         <path d="M4 13h3l3 3h4l3 -3h3"></path>

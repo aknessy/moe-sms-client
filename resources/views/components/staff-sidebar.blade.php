@@ -4,10 +4,11 @@
     // Active item picks up the main sidebar's green; the icon sits on a darker
     // shade of it so it stays readable against the pill.
     $svg_classes = 'rounded-full w-6 h-6 bg-[#1B5E20] text-white p-1 flex items-center justify-center';
-    $default_page_classes = 'bg-transparent py-2 px-4 text-sm hover:text-[#2E7D32] transition-all';
-    $active_page_classes = 'rounded-lg bg-[#2E7D32] text-white py-2 px-4 text-sm shadow-md transition-all hover:bg-[#256628]';
+    $step_base = 'shrink-0 whitespace-nowrap rounded-lg border py-2 px-3 text-sm transition-all';
+    $default_page_classes = $step_base . ' border-base-300 bg-white hover:border-[#2E7D32] hover:text-[#2E7D32]';
+    $active_page_classes = $step_base . ' border-[#2E7D32] bg-[#2E7D32] text-white shadow-md hover:bg-[#256628]';
     // Captured categories are closed until the whole record is finished.
-    $done_page_classes = 'rounded-lg bg-[#2E7D32]/10 py-2 px-4 text-sm text-[#1B5E20] cursor-not-allowed';
+    $done_page_classes = $step_base . ' border-[#2E7D32]/30 bg-[#2E7D32]/10 text-[#1B5E20] cursor-not-allowed';
 
     $steps = [
         ['key' => 'index', 'route' => 'basic-info', 'label' => 'Personal Information', 'paths' => [
@@ -45,18 +46,28 @@
 @endphp
 
 @if ($draft)
-    <div class="rounded-md border border-[#2E7D32]/30 bg-[#2E7D32]/5 px-3 py-2">
-        <p class="m-0 text-xs text-base-content/60">Recording for</p>
-        <p class="m-0 text-sm font-semibold text-[#1B5E20]">{{ $draft->surname }}, {{ $draft->firstname }}</p>
-        <p class="m-0 text-xs text-base-content/50">{{ $draft->computer_number }}</p>
-        <div class="mt-2 h-1.5 w-full rounded-full bg-base-200">
-            <div class="h-1.5 rounded-full bg-[#2E7D32]" style="width: {{ round($doneCount / count($steps) * 100) }}%"></div>
+    {{-- The draft banner reads across rather than down, to sit above the form. --}}
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-md border border-[#2E7D32]/30 bg-[#2E7D32]/5 px-3 py-2">
+        <p class="m-0 text-sm text-base-content/60">
+            Recording for
+            <span class="font-semibold text-[#1B5E20]">{{ $draft->surname }}, {{ $draft->firstname }}</span>
+            <span class="text-base-content/50">({{ $draft->staff_number }})</span>
+        </p>
+
+        <div class="flex min-w-[12rem] flex-1 items-center gap-2 sm:max-w-xs">
+            <div class="h-1.5 flex-1 rounded-full bg-base-200">
+                <div class="h-1.5 rounded-full bg-[#2E7D32]" style="width: {{ round($doneCount / count($steps) * 100) }}%"></div>
+            </div>
+            <p class="m-0 whitespace-nowrap text-xs text-base-content/50">{{ $doneCount }} of {{ count($steps) }} recorded</p>
         </div>
-        <p class="m-0 mt-1 text-xs text-base-content/50">{{ $doneCount }} of {{ count($steps) }} categories recorded</p>
     </div>
 @endif
 
-<div class="mt-5 flex flex-col gap-y-3">
+{{-- A horizontal rail: it scrolls sideways once the steps outrun the width,
+     which they always do on a phone. --}}
+<nav aria-label="Record categories" data-staff-steps
+     class="-mx-1 overflow-x-auto overscroll-x-contain scroll-smooth px-1 pb-1">
+    <div class="flex w-max items-stretch gap-2">
     @foreach ($steps as $step)
         @php
             $isDone = in_array($step['key'], $completed, true);
@@ -68,18 +79,19 @@
              until every category has been captured for this staff member. --}}
         <{{ $isDone && ! $isActive ? 'div' : 'a' }}
             @if (! $isDone || $isActive) href="{{ route($step['route']) }}" @endif
+            @if ($isActive) data-active-step aria-current="step" @endif
             @if ($isDone && ! $isActive) aria-disabled="true" title="Already recorded for this staff" @endif
-            class="font-sans flex items-center justify-start space-x-3 {{ $classes }}">
+            class="font-sans flex items-center justify-start gap-2 {{ $classes }}">
 
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2"
-                 class="shrink-0 {{ $isActive ? $svg_classes : '' }}">
+                 class="h-5 w-5 shrink-0 {{ $isActive ? $svg_classes : '' }}">
                 @foreach ($step['paths'] as $path)
                     <path d="{{ $path }}"></path>
                 @endforeach
             </svg>
 
-            <span class="flex-1">{{ $step['label'] }}</span>
+            <span>{{ $step['label'] }}</span>
 
             @if ($isDone)
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
@@ -90,4 +102,19 @@
             @endif
         </{{ $isDone && ! $isActive ? 'div' : 'a' }}>
     @endforeach
-</div>
+    </div>
+</nav>
+
+<script>
+    // When the rail overflows, bring the current category into view so the
+    // user can see where they are without scrolling to find it.
+    document.querySelectorAll('[data-staff-steps]').forEach(function (rail) {
+        const active = rail.querySelector('[data-active-step]');
+
+        if (! active || rail.scrollWidth <= rail.clientWidth) {
+            return;
+        }
+
+        rail.scrollLeft = active.offsetLeft - (rail.clientWidth - active.offsetWidth) / 2;
+    });
+</script>

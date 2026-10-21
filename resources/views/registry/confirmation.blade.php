@@ -37,14 +37,14 @@
                 </form>
             </x-registry.card>
 
-            <x-registry.card title="Confirmation Records" :count="$confirmations->count()">
+            <x-registry.card title="Confirmation Records" :count="$confirmations->total()">
                 <x-registry.table :headings="['Staff', 'Appointed', 'Confirmed', 'Grade / Step', 'Status', 'Reference']"
                                   empty="No confirmation records yet.">
                     @foreach ($confirmations as $confirmation)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">
                                 {{ $confirmation->staff?->surname }}, {{ $confirmation->staff?->firstname }}
-                                <span class="block text-base-content/50">{{ $confirmation->staff?->computer_number }}</span>
+                                <span class="block text-base-content/50">{{ $confirmation->staff?->staff_number }}</span>
                             </td>
                             <td class="px-3 py-2">{{ $confirmation->appointment_date }}</td>
                             <td class="px-3 py-2">{{ $confirmation->confirmation_date ?: '—' }}</td>
@@ -57,6 +57,8 @@
                         </tr>
                     @endforeach
                 </x-registry.table>
+
+                <x-registry.paginator :items="$confirmations" />
             </x-registry.card>
         </x-registry.page>
 

@@ -1,4 +1,4 @@
-@props(['title', 'description' => ''])
+@props(['title', 'description' => '', 'crumb' => 'Registry'])
 
 <div class="w-full flex flex-col bg-transparent">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -12,7 +12,7 @@
                     </a>
                     <span class="pointer-events-none text-base-content/30">/</span>
                 </li>
-                <li class="flex items-center text-base-content/60 cursor-not-allowed">Registry</li>
+                <li class="flex items-center text-base-content/60 cursor-not-allowed">{{ $crumb }}</li>
             </ol>
         </nav>
         <div class="w-full sm:w-2/3">

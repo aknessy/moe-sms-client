@@ -48,14 +48,14 @@
                 </form>
             </x-registry.card>
 
-            <x-registry.card title="Disciplinary Record" :count="$queries->count()">
+            <x-registry.card title="Disciplinary Record" :count="$queries->total()">
                 <x-registry.table :headings="['Staff', 'Date', 'Offence', 'Responded', 'Sanction', 'Status', 'Reference']"
                                   empty="No queries on record.">
                     @foreach ($queries as $query)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">
                                 {{ $query->staff?->surname }}, {{ $query->staff?->firstname }}
-                                <span class="block text-base-content/50">{{ $query->staff?->computer_number }}</span>
+                                <span class="block text-base-content/50">{{ $query->staff?->staff_number }}</span>
                             </td>
                             <td class="px-3 py-2">{{ $query->query_date }}</td>
                             <td class="px-3 py-2">{{ $query->offence }}</td>
@@ -75,6 +75,8 @@
                         </tr>
                     @endforeach
                 </x-registry.table>
+
+                <x-registry.paginator :items="$queries" />
             </x-registry.card>
         </x-registry.page>
 

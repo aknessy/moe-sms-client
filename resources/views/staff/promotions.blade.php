@@ -44,20 +44,19 @@
                         </div>
                     @endif
 
-                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
+                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4">
                     @csrf
 
                     <input type="hidden" name="form-type" value="promotion" />
 
-                    <div class="w-full flex flex-col lg:w-1/3">
-                        <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
-                            <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
-                        </div>
+                    <div class="w-full bg-white px-4 py-3 border border-base-300 rounded-md">
+                        <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
                     </div>
-                    <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">
+                    <div class="w-full px-4 py-2 bg-white border border-base-300 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
                             <h2 class="font-alkalami text-base font-semibold mb-0 text-base-content/80">Promotions</h2>
                             <p class="font-sans text-sm font-normal text-base-content/60 m-0">Staff record of promotions</p>
+                        <p class="mt-1 mb-0 text-xs text-base-content/60"><span class="text-error">*</span> Required field.</p>
                         </div>
                         <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -65,9 +64,9 @@
                                     <div id="cloneable" class="w-full relative mb-3">
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full">
-                                                <label class="font-normal font-sans text-sm text-base-content">Designation</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Designation<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="designation[]" placeholder="E.g Admin. Officer I" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="designation[]" placeholder="E.g Admin. Officer I" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>
@@ -79,9 +78,9 @@
                                         </div>
                                         <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                             <div class="w-full max-w-sm">
-                                                <label class="font-normal font-sans text-sm text-base-content">Grade Level</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Grade Level<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level[]" placeholder="Grade Level" value="" />
+                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level[]" placeholder="Grade Level" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>
@@ -91,9 +90,9 @@
                                                 </div>
                                             </div>
                                             <div class="w-full max-w-sm">
-                                                <label class="font-normal font-sans text-sm text-base-content">Step</label>
+                                                <label class="font-normal font-sans text-sm text-base-content">Step<span class="text-error">*</span></label>
                                                 <div class="relative">
-                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="step[]" placeholder="Step" value="" />
+                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="step[]" placeholder="Step" value=""  required/>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 18l3 3l3 -3"></path>
                                                         <path d="M12 15v6"></path>
@@ -104,9 +103,9 @@
                                             </div>
                                         </div>
                                         <div class="w-full">
-                                            <label class="font-normal font-sans text-sm text-base-content">Effective From</label>
+                                            <label class="font-normal font-sans text-sm text-base-content">Effective From<span class="text-error">*</span></label>
                                             <div class="relative">
-                                                <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level[]" placeholder="E.g Admin. Officer I" value="" />
+                                                <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="effective-from[]" value=""  required/>
                                             </div>
                                         </div>
                                     </div>

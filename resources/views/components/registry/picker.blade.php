@@ -4,7 +4,7 @@
     'options' => [],
     'value' => null,
     'required' => false,
-    'placeholder' => 'Search by name or computer number',
+    'placeholder' => 'Search by name, file or computer number',
 ])
 
 @php

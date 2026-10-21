@@ -44,68 +44,64 @@
                         </div>
                     @endif
 
-                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
+                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4">
                     @csrf
 
                     <input type="hidden" name="form-type" value="basic-information" />
 
-                    <div class="w-full flex flex-col lg:w-1/3">
-                        <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
-                            <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
-                        </div>
+                    <div class="w-full bg-white px-4 py-3 border border-base-300 rounded-md">
+                        <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
                     </div>
-                    <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">
+                    <div class="w-full px-4 py-2 bg-white border border-base-300 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
                             <h2 class="font-alkalami text-base font-semibold mb-0 text-base-content/80">Basic Information</h2>
                             <p class="font-normal font-sans text-sm text-base-content/60 m-0">Create a new staff by filling their basic information</p>
+                        <p class="mt-1 mb-0 text-xs text-base-content/60"><span class="text-error">*</span> Required field.</p>
                         </div>
                         <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{ Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
+                                {{-- An officer is identified by either number; whichever is
+                                     supplied, the other may be left blank. --}}
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full">
+                                    <div class="w-full max-w-1/2">
+                                        <label class="font-normal font-sans text-sm text-base-content">File Number<span class="text-error">*</span></label>
+                                        <div class="relative">
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="file-number" placeholder="File Number" value="{{ old('file-number') }}"  required/>
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-1/2">
                                         <label class="font-normal font-sans text-sm text-base-content">Establishment/Computer Number</label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="computer-number" placeholder="Computer Number" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"></path>
-                                            </svg>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="computer-number" placeholder="Computer Number" value="{{ old('computer-number') }}" />
                                         </div>
                                     </div>
                                 </div>
+                                <p class="-mt-2 mb-3 text-xs text-base-content/50">The establishment/computer number is optional; older records are filed under it instead.</p>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                     <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Surname</label>
+                                        <label class="font-normal font-sans text-sm text-base-content">Surname<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="last-name" placeholder="Surname" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"></path>
-                                            </svg>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="last-name" placeholder="Surname" value=""  required/>
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">First name</label>
+                                        <label class="font-normal font-sans text-sm text-base-content">First name<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="first-name" placeholder="First Name" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"></path>
-                                            </svg>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="first-name" placeholder="First Name" value=""  required/>
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
                                         <label class="font-normal font-sans text-sm text-base-content">Other names</label>
                                         <div class="relative">
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="other-names" placeholder="Other Names" value />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M3 17c3.333 -3.333 5 -6 5 -8c0 -3 -1 -3 -2 -3s-2.032 1.085 -2 3c.034 2.048 1.658 4.877 2.5 6c1.5 2 2.5 2.5 3.5 1l2 -3c.333 2.667 1.333 4 3 4c.53 0 2.639 -2 3 -2c.517 0 1.517 .667 3 2"></path>
-                                            </svg>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                     <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Department</label>
+                                        <label class="font-normal font-sans text-sm text-base-content">Department<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="department" placeholder="e.g. Voter Education" value="" />
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="department" placeholder="e.g. Voter Education" value=""  required/>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M3 21l18 0"></path>
                                                 <path d="M9 8l1 0"></path>
@@ -119,19 +115,15 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Division / Unit</label>
+                                        <label class="font-normal font-sans text-sm text-base-content">Division / Unit<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="division" placeholder="e.g. Calabar HQ" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
-                                                <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"></path>
-                                            </svg>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="division" placeholder="e.g. Calabar HQ" value=""  required/>
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Designation</label>
+                                        <label class="font-normal font-sans text-sm text-base-content">Designation<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="designation" placeholder="e.g. Administrative Officer I" value="" />
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="designation" placeholder="e.g. Administrative Officer I" value=""  required/>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M3 7m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
                                                 <path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"></path>
@@ -140,29 +132,32 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Grade Level</label>
+                                </div>
+                                <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
+                                    <div class="w-full max-w-1/3">
+                                        <label class="font-normal font-sans text-sm text-base-content">Grade Level<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level" placeholder="e.g. GL 08" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M3 12h4l3 8l4 -16l3 8h4"></path>
-                                            </svg>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level" placeholder="e.g. GL 08" value="{{ old('grade-level') }}"  required/>
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-1/3">
+                                        <label class="font-normal font-sans text-sm text-base-content">Step<span class="text-error">*</span></label>
+                                        <div class="relative">
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="step" placeholder="e.g. Step 3" value="{{ old('step') }}"  required/>
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-1/3">
+                                        <label class="font-normal font-sans text-sm text-base-content">Date of Birth<span class="text-error">*</span></label>
+                                        <div class="relative">
+                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value=""  required/>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full">
-                                        <label class="font-normal font-sans text-sm text-base-content">Date of Birth</label>
+                                    <div class="w-full max-w-1/2">
+                                        <label class="font-normal font-sans text-sm text-base-content">Phone Number<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value="" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Phone Number</label>
-                                        <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="phone-number" placeholder="Surname" value="" />
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="phone-number" placeholder="Phone Number" value="{{ old('phone-number') }}"  required/>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M3 3m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"></path>
                                                 <path d="M8 4l2 0"></path>
@@ -171,10 +166,10 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Email</label>
+                                    <div class="w-full max-w-1/2">
+                                        <label class="font-normal font-sans text-sm text-base-content">Email<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="email" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="email" placeholder="Email address" value="{{ old('email') }}" />
+                                            <input type="email" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="email" placeholder="Email address" value="{{ old('email') }}"  required/>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M3 9l9 6l9 -6l-9 -6l-9 6"></path>
                                                 <path d="M21 9v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"></path>
@@ -185,11 +180,14 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-normal font-sans text-sm text-base-content">State of Origin</label>
+                                    <div class="w-full max-w-1/2 min-w-[200px]">
+                                        <label class="font-normal font-sans text-sm text-base-content">State of Origin<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="state-of-origin">
-                                                <option value="brazil">Select Option</option>
+                                            <select id="state-of-origin" class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="state-of-origin" required>
+                                                <option value="">Select Option</option>
+                                                @foreach ($states as $state)
+                                                    <option value="{{ $state->id }}" @selected(old('state-of-origin') == $state->id)>{{ $state->name }}</option>
+                                                @endforeach
                                             </select>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M9 18l3 3l3 -3"></path>
@@ -199,11 +197,12 @@
                                             </svg>
                                         </div>
                                     </div>
-                                    <div class="w-full max-w-sm min-w-[200px]">
-                                        <label class="font-normal font-sans text-sm text-base-content">Local Government of Origin</label>
+                                    <div class="w-full max-w-1/2 min-w-[200px]">
+                                        <label class="font-normal font-sans text-sm text-base-content">Local Government of Origin<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="lga-of-origin">
-                                                <option value="brazil">Select Option</option>
+                                            {{-- Populated from the chosen state; see the script at the foot of this view. --}}
+                                            <select id="lga-of-origin" class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer disabled:bg-base-200 disabled:cursor-not-allowed" name="lga-of-origin" data-selected="{{ old('lga-of-origin') }}" disabled required>
+                                                <option value="">Select a state first</option>
                                             </select>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M9 18l3 3l3 -3"></path>
@@ -215,47 +214,30 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Pension Fund Administrator</label>
+                                    <div class="w-full max-w-1/3">
+                                        <label class="font-normal font-sans text-sm text-base-content">Pension Fund Administrator<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="pfa" placeholder="PFA" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M9 21v-6a2 2 0 0 1 2 -2h1.341"></path>
-                                                <path d="M19.682 10.682l-7.682 -7.682l-9 9h2v7a2 2 0 0 0 2 2h5"></path>
-                                                <path d="M22 16c0 4 -2.5 6 -3.5 6s-3.5 -2 -3.5 -6c1 0 2.5 -.5 3.5 -1.5c1 1 2.5 1.5 3.5 1.5z"></path>
-                                            </svg>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="pfa" placeholder="PFA" value=""  required/>
                                         </div>
                                     </div>
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Retirement Savings Account No.</label>
+                                    <div class="w-full max-w-1/3">
+                                        <label class="font-normal font-sans text-sm text-base-content">Retirement Savings Account No.<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="rsa" placeholder="Rsa" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M7 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"></path>
-                                                <path d="M17 17v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2"></path>
-                                                <path d="M15 14v-8l-4 6h5"></path>
-                                            </svg>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="rsa" placeholder="Rsa" value=""  required/>
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-1/3">
+                                        <label class="font-normal font-sans text-sm text-base-content">NHIS No.<span class="text-error">*</span></label>
+                                        <div class="relative">
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="nhis" placeholder="NHIS" value=""  required/>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                     <div class="w-full">
-                                        <label class="font-normal font-sans text-sm text-base-content">NHIS No.</label>
+                                        <label class="font-normal font-sans text-sm text-base-content">Permanent Home Address<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="nhis" placeholder="NHIS" value="" />
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                                <path d="M9 11a5 5 0 1 0 3.95 7.95"></path>
-                                                <path d="M19 20l-4 -5h-4l3 -5l-4 -3l-4 1"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full">
-                                        <label class="font-normal font-sans text-sm text-base-content">Permanent Home Address</label>
-                                        <div class="relative">
-                                            <textarea name="address" class="h-full min-h-[100px] w-full resize-none rounded-[7px] border border-base-300 bg-white px-3 py-2.5 font-sans text-xs font-normal text-base-content outline outline-0 transition-all focus:border-primary focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-base-200" placeholder="Permanent Address">{{ old('address') }}</textarea>
+                                            <textarea name="address" class="h-full min-h-[100px] w-full resize-none rounded-[7px] border border-base-300 bg-white px-3 py-2.5 font-sans text-xs font-normal text-base-content outline outline-0 transition-all focus:border-primary focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-base-200" placeholder="Permanent Address" required>{{ old('address') }}</textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -278,7 +260,42 @@
     </x-slot>
 </x-dashboard>
 <script>
-    $(function(){
+    $(function () {
+        // Every LGA grouped by state, so choosing a state filters the second
+        // select without a request.
+        const lgasByState = @json($lgasByState);
 
+        const $state = $('#state-of-origin');
+        const $lga = $('#lga-of-origin');
+
+        function fillLgas(stateId, preselect) {
+            const lgas = lgasByState[stateId] || [];
+
+            $lga.empty().prop('disabled', lgas.length === 0);
+
+            if (lgas.length === 0) {
+                $lga.append($('<option>', { value: '', text: 'Select a state first' }));
+                return;
+            }
+
+            $lga.append($('<option>', { value: '', text: 'Select Option' }));
+
+            lgas.forEach(function (lga) {
+                $lga.append($('<option>', {
+                    value: lga.id,
+                    text: lga.name,
+                    selected: String(lga.id) === String(preselect),
+                }));
+            });
+        }
+
+        $state.on('change', function () {
+            fillLgas($(this).val(), null);
+        });
+
+        // Restore both after a failed submission.
+        if ($state.val()) {
+            fillLgas($state.val(), $lga.data('selected'));
+        }
     })
 </script>

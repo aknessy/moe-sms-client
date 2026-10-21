@@ -19,12 +19,15 @@ class RegistryDemoSeeder extends Seeder
         $previousYear = now()->year - 1;
         $currentYear = now()->year;
 
-        $byNumber = fn (string $number) => BasicInformation::where('computer_number', $number)->value('ulid');
+        // Officers are listed below by whichever number they carry.
+        $byNumber = fn (string $number) => BasicInformation::whereStaffNumber($number)->value('ulid');
 
         $exits = [
             ['INEC/CRS/0007', 'retirement', $previousYear . '-12-05', 'paid', 'paid'],
             ['INEC/CRS/0003', 'retirement', $currentYear . '-07-21', 'processing', 'pending'],
             ['INEC/CRS/0006', 'resignation', $currentYear . '-02-28', 'pending', 'pending'],
+            // Gives the Deceased module something to list.
+            ['INEC/CRS/0005', 'death', $previousYear . '-09-03', 'processing', 'pending'],
         ];
 
         foreach ($exits as [$number, $type, $date, $gratuity, $pension]) {

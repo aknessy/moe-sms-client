@@ -7,6 +7,7 @@ use App\Models\Career;
 use App\Models\Confirmation;
 use App\Models\EduProgress;
 use App\Models\Leave;
+use App\Models\Lga;
 use App\Models\NextOfKin;
 use App\Models\Posting;
 use App\Models\Promotion;
@@ -14,9 +15,10 @@ use App\Models\RecordAmendment;
 use App\Models\Referee;
 use App\Models\StaffExit;
 use App\Models\StaffQuery;
-use Carbon\Carbon;
+use App\Models\State;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class StaffController extends Controller
 {
@@ -137,6 +139,16 @@ class StaffController extends Controller
             'categories' => self::CATEGORIES,
             'completed' => $completed,
             'draft' => $draft,
+            'states' => State::orderBy('name')->get(['id', 'name', 'code']),
+            // Every LGA keyed by its state, so the dependent select can be
+            // filtered in the browser without a round trip per state.
+            'lgasByState' => Lga::orderBy('lga_name')
+                ->get(['id', 'state_id', 'lga_name'])
+                ->groupBy('state_id')
+                ->map(fn ($group) => $group->map(fn ($lga) => [
+                    'id' => $lga->id,
+                    'name' => $lga->lga_name,
+                ])->values()),
         ]);
     }
 
@@ -183,25 +195,47 @@ class StaffController extends Controller
                 'institution-start-date' => 'start_date',
                 'institution-end-date' => 'end_date',
                 'qual-obtained' => 'qualification',
-            ], ['institution-name' => ['required', 'string', 'max:160']]),
+            ], [
+                'institution-type' => ['required', 'string', 'max:80'],
+                'institution-name' => ['required', 'string', 'max:160'],
+                'institution-start-date' => ['required', 'date'],
+                'institution-end-date' => ['required', 'date'],
+                'qual-obtained' => ['required', 'string', 'max:160'],
+            ]),
             'promotion' => $this->storeRepeating($request, 'promotion', Promotion::class, 'promotion_record', [
                 'designation' => 'designation',
                 'grade-level' => 'grade_level',
                 'step' => 'step',
-            ], ['designation' => ['required', 'string', 'max:160']]),
+                'effective-from' => 'effective_from',
+            ], [
+                'designation' => ['required', 'string', 'max:160'],
+                'grade-level' => ['required', 'string', 'max:20'],
+                'step' => ['required', 'string', 'max:20'],
+                'effective-from' => ['required', 'date'],
+            ]),
             'work-career' => $this->storeCareer($request),
             'leave' => $this->storeRepeating($request, 'leave-record', Leave::class, 'leave_record', [
                 'leave-type' => 'leave_type',
                 'effective-from' => 'effective_from',
                 'expires-on' => 'expires_on',
                 'leave-duration' => 'duration',
-            ], ['leave-type' => ['required', 'string', 'max:80']]),
+            ], [
+                'leave-type' => ['required', 'string', 'max:80'],
+                'effective-from' => ['required', 'date'],
+                'expires-on' => ['required', 'date'],
+                'leave-duration' => ['required', 'string', 'max:60'],
+            ]),
             'referees' => $this->storeRepeating($request, 'referee', Referee::class, 'referees_record', [
                 'referee-name' => 'name',
                 'referee-address' => 'address',
                 'referee-phone' => 'phone',
                 'referee-email' => 'email',
-            ], ['referee-name' => ['required', 'string', 'max:160']]),
+            ], [
+                'referee-name' => ['required', 'string', 'max:160'],
+                'referee-address' => ['required', 'string', 'max:300'],
+                'referee-phone' => ['required', 'string', 'max:30'],
+                'referee-email' => ['required', 'email', 'max:160'],
+            ]),
             'next-of-kin' => $this->storeNextOfKin($request),
             default => back()->withErrors(['form-type' => 'Unrecognised form submission.'])->withInput(),
         };
@@ -214,28 +248,40 @@ class StaffController extends Controller
         }
 
         $data = $request->validate([
-            'computer-number' => ['required', 'string', 'max:60', 'unique:basic_informations,computer_number'],
+            // Every officer is filed under a file number. The establishment/
+            // computer number is the one optional identifier: older records
+            // carry it instead, and `staff_number` falls back to it on display.
+            'file-number' => ['required', 'string', 'max:60',
+                              'unique:basic_informations,file_number'],
+            'computer-number' => ['nullable', 'string', 'max:60',
+                                  'unique:basic_informations,computer_number'],
             'last-name' => ['required', 'string', 'max:80'],
             'first-name' => ['required', 'string', 'max:80'],
             'other-names' => ['nullable', 'string', 'max:80'],
-            'department' => ['nullable', 'string', 'max:120'],
-            'division' => ['nullable', 'string', 'max:120'],
-            'designation' => ['nullable', 'string', 'max:120'],
-            'grade-level' => ['nullable', 'string', 'max:20'],
+            'department' => ['required', 'string', 'max:120'],
+            'division' => ['required', 'string', 'max:120'],
+            'designation' => ['required', 'string', 'max:120'],
+            'grade-level' => ['required', 'string', 'max:20'],
+            'step' => ['required', 'string', 'max:20'],
             'date-of-birth' => ['required', 'date', 'before:today'],
             'phone-number' => ['required', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:160'],
-            'state-of-origin' => ['nullable', 'string', 'max:80'],
-            'lga-of-origin' => ['nullable', 'string', 'max:80'],
-            'pfa' => ['nullable', 'string', 'max:120'],
-            'rsa' => ['nullable', 'string', 'max:60'],
-            'nhis' => ['nullable', 'string', 'max:60'],
-            'address' => ['nullable', 'string', 'max:500'],
+            'email' => ['required', 'email', 'max:160'],
+            // Both are foreign keys into the national reference tables.
+            'state-of-origin' => ['required', 'integer', 'exists:states,id'],
+            'lga-of-origin' => ['required', 'integer', 'exists:lgas,id',
+                                Rule::exists('lgas', 'id')->where(
+                                    fn ($q) => $q->where('state_id', $request->input('state-of-origin'))
+                                )],
+            'pfa' => ['required', 'string', 'max:120'],
+            'rsa' => ['required', 'string', 'max:60'],
+            'nhis' => ['required', 'string', 'max:60'],
+            'address' => ['required', 'string', 'max:500'],
         ]);
 
         $staff = BasicInformation::create([
             'ulid' => (string) Str::ulid(),
-            'computer_number' => $data['computer-number'],
+            'file_number' => $data['file-number'] ?? null,
+            'computer_number' => $data['computer-number'] ?? null,
             'surname' => $data['last-name'],
             'firstname' => $data['first-name'],
             'othernames' => $data['other-names'] ?? '',
@@ -243,6 +289,7 @@ class StaffController extends Controller
             'division' => $data['division'] ?? null,
             'designation' => $data['designation'] ?? null,
             'grade_level' => $data['grade-level'] ?? null,
+            'step' => $data['step'] ?? null,
             'date_of_birth' => $data['date-of-birth'],
             'phone_number' => $data['phone-number'],
             'email' => $data['email'] ?? null,
@@ -300,8 +347,10 @@ class StaffController extends Controller
             return $redirect;
         }
 
+        // Nothing here is required: this may be the officer's first job, in
+        // which case there is no prior appointment to record.
         $data = $request->validate([
-            'date-of-employment' => ['required', 'date'],
+            'date-of-employment' => ['nullable', 'date'],
             'rank' => ['nullable', 'string', 'max:120'],
             'grade-level' => ['nullable', 'string', 'max:20'],
             'ministerial-dept' => ['nullable', 'string', 'max:160'],
@@ -312,7 +361,7 @@ class StaffController extends Controller
         Career::create([
             'basic_information_ulid' => $this->draft()->ulid,
             // Column name carries the original misspelling from the migration.
-            'date_of_employement' => $data['date-of-employment'],
+            'date_of_employement' => $data['date-of-employment'] ?? null,
             'rank' => $data['rank'] ?? null,
             'grade_level' => $data['grade-level'] ?? null,
             'ministerial_dept' => $data['ministerial-dept'] ?? null,
@@ -329,7 +378,12 @@ class StaffController extends Controller
             return $redirect;
         }
 
-        $request->validate(['nok-name.*' => ['required', 'string', 'max:160']]);
+        $request->validate([
+            'nok-name.*' => ['required', 'string', 'max:160'],
+            'nok-relationship.*' => ['required', 'string', 'max:80'],
+            'nok-address.*' => ['required', 'string', 'max:300'],
+            'nok-phone.*' => ['required', 'string', 'max:30'],
+        ]);
 
         $ulid = $this->draft()->ulid;
         $saved = 0;
@@ -384,26 +438,63 @@ class StaffController extends Controller
             'staffOptions' => BasicInformation::query()
                 ->orderBy('surname')
                 ->get()
-                ->mapWithKeys(fn ($s) => [$s->ulid => trim("{$s->surname} {$s->firstname}") . " ({$s->computer_number})"])
+                ->mapWithKeys(fn ($s) => [$s->ulid => trim("{$s->surname} {$s->firstname}") . " ({$s->staff_number})"])
                 ->all(),
         ], $data));
     }
 
-    public function nominal_roll(){
+    /** How many rows a Registry listing shows per page. */
+    private const PER_PAGE = 15;
+
+    /**
+     * Free-text search across the fields someone would actually look an officer
+     * up by. Runs in SQL so it spans the whole roll, not just the current page.
+     */
+    private function searchStaff(?string $term)
+    {
+        return BasicInformation::query()
+            // Origin now lives in the lookups, so the listings join to it.
+            ->with(['state', 'lga'])
+            ->when(filled($term), function ($query) use ($term) {
+                $like = '%' . trim($term) . '%';
+
+                $query->where(function ($q) use ($like) {
+                    foreach (['surname', 'firstname', 'othernames', 'file_number', 'computer_number',
+                              'department', 'division', 'designation', 'grade_level'] as $column) {
+                        $q->orWhere($column, 'like', $like);
+                    }
+
+                    // Searching "Cross River" must still find its officers even
+                    // though the column itself only holds an id.
+                    $q->orWhereHas('state', fn ($s) => $s->where('name', 'like', $like)
+                                                         ->orWhere('code', 'like', $like));
+                    $q->orWhereHas('lga', fn ($l) => $l->where('lga_name', 'like', $like));
+                });
+            })
+            ->orderBy('surname');
+    }
+
+    public function nominal_roll(Request $request){
         return $this->registryPage('registry/nominal-roll', 'Nominall Roll', 'nominal-roll', [
-            'staff' => BasicInformation::query()->orderBy('surname')->get(),
+            'search' => $request->query('q'),
+            'staff' => $this->searchStaff($request->query('q'))
+                ->paginate(self::PER_PAGE)
+                ->withQueryString(),
         ]);
     }
 
-    public function bio_data(){
+    public function bio_data(Request $request){
         return $this->registryPage('registry/bio-data', 'Staff Bio-data', 'bio-data', [
-            'staff' => BasicInformation::query()->orderBy('surname')->get(),
+            'search' => $request->query('q'),
+            'staff' => $this->searchStaff($request->query('q'))
+                ->paginate(self::PER_PAGE)
+                ->withQueryString(),
         ]);
     }
 
     public function posting_deployment(){
         return $this->registryPage('registry/posting-deployment', 'Posting & Deployment', 'posting-deployment', [
-            'postings' => Posting::with('staff')->latest('effective_date')->get(),
+            'postings' => Posting::with('staff')->latest('effective_date')->paginate(self::PER_PAGE)->withQueryString(),
         ]);
     }
 
@@ -426,7 +517,7 @@ class StaffController extends Controller
 
     public function confirmation(){
         return $this->registryPage('registry/confirmation', 'Confirmation of Appointment', 'confirmation', [
-            'confirmations' => Confirmation::with('staff')->latest('appointment_date')->get(),
+            'confirmations' => Confirmation::with('staff')->latest('appointment_date')->paginate(self::PER_PAGE)->withQueryString(),
         ]);
     }
 
@@ -466,7 +557,7 @@ class StaffController extends Controller
 
     public function query_discipline(){
         return $this->registryPage('registry/query-discipline', 'Query & Discipline', 'query-discipline', [
-            'queries' => StaffQuery::with('staff')->latest('query_date')->get(),
+            'queries' => StaffQuery::with('staff')->latest('query_date')->paginate(self::PER_PAGE)->withQueryString(),
         ]);
     }
 
@@ -532,87 +623,9 @@ class StaffController extends Controller
             ->with('status', 'Outcome recorded against this query.');
     }
 
-    public function retirement_exit(){
-        // Civil service exit is age 60 or 35 years of service, whichever comes first.
-        $today = now()->startOfDay();
-
-        $projection = BasicInformation::query()
-            ->whereNotNull('date_of_birth')
-            ->get()
-            ->map(function ($s) use ($today) {
-                $dob = Carbon::parse($s->date_of_birth)->startOfDay();
-                $retiresOn = $dob->copy()->addYears(60);
-
-                return (object) [
-                    'staff' => $s,
-                    'date_of_birth' => $dob,
-                    'retires_on' => $retiresOn,
-                    // Signed, so officers already past the mark sort to the top.
-                    'months_left' => (int) floor($today->diffInMonths($retiresOn, false)),
-                    'time_left' => $this->describeTimeLeft($today, $retiresOn),
-                ];
-            })
-            ->filter(fn ($row) => $row->months_left <= 60)
-            ->sortBy('months_left');
-
-        return $this->registryPage('registry/retirement-exit', 'Retirement & Exit', 'retirement-exit', [
-            'exits' => StaffExit::with('staff')->latest('effective_date')->get(),
-            'projection' => $projection,
-        ]);
-    }
-
-    /**
-     * Reads as "1 year, 4 months" rather than a bare decimal.
-     */
-    private function describeTimeLeft(Carbon $from, Carbon $to): string
-    {
-        if ($to->lessThan($from)) {
-            $overdue = $from->diff($to);
-            $parts = $this->yearMonthParts($overdue->y, $overdue->m);
-
-            return ($parts ? implode(', ', $parts) : 'Less than a month') . ' overdue';
-        }
-
-        $remaining = $from->diff($to);
-        $parts = $this->yearMonthParts($remaining->y, $remaining->m);
-
-        return $parts ? implode(', ', $parts) : 'Less than a month';
-    }
-
-    private function yearMonthParts(int $years, int $months): array
-    {
-        $parts = [];
-
-        if ($years > 0) {
-            $parts[] = $years . ' year' . ($years === 1 ? '' : 's');
-        }
-
-        if ($months > 0) {
-            $parts[] = $months . ' month' . ($months === 1 ? '' : 's');
-        }
-
-        return $parts;
-    }
-
-    public function store_exit(Request $request){
-        $data = $request->validate([
-            'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
-            'exit_type' => ['required', 'in:retirement,resignation,dismissal,death,transfer-of-service'],
-            'effective_date' => ['required', 'date'],
-            'reference_number' => ['nullable', 'string', 'max:60'],
-            'gratuity_status' => ['required', 'in:pending,processing,paid'],
-            'pension_status' => ['required', 'in:pending,processing,paid'],
-            'remarks' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        StaffExit::create($data);
-
-        return redirect()->route('retirement-exit')->with('status', 'Exit record saved.');
-    }
-
     public function record_amendments(){
         return $this->registryPage('registry/record-amendments', 'Record Amendments', 'record-amendments', [
-            'amendments' => RecordAmendment::with('staff')->latest()->get(),
+            'amendments' => RecordAmendment::with('staff')->latest()->paginate(self::PER_PAGE)->withQueryString(),
         ]);
     }
 
@@ -626,9 +639,43 @@ class StaffController extends Controller
             'supporting_document' => ['nullable', 'string', 'max:160'],
         ]);
 
+        // Origin fields are foreign keys, so the requested name has to name a
+        // real state or LGA. Catch it here rather than at approval time.
+        if (in_array($data['field'], ['state_of_origin', 'lga_of_origin'], true)
+            && $this->resolveOriginValue($data['field'], $data['requested_value'], $data['basic_information_ulid']) === null) {
+
+            $label = $data['field'] === 'state_of_origin' ? 'state' : 'LGA';
+
+            return back()->withInput()->withErrors([
+                'requested_value' => "No {$label} on record is named \"{$data['requested_value']}\"."
+                    . ($label === 'LGA' ? ' An LGA must belong to the officer\'s state of origin.' : ''),
+            ]);
+        }
+
         RecordAmendment::create($data + ['status' => 'pending']);
 
         return redirect()->route('record-amendments')->with('status', 'Amendment request submitted for review.');
+    }
+
+    /**
+     * Translate an amendment's requested state or LGA name into the id the
+     * column actually holds. Returns null when nothing matches, so the caller
+     * can reject rather than write a bad key. LGAs resolve within the officer's
+     * own state because several states share LGA names.
+     */
+    private function resolveOriginValue(string $field, string $value, string $staffUlid): ?int
+    {
+        if ($field === 'state_of_origin') {
+            return State::where('name', $value)->value('id');
+        }
+
+        $stateId = BasicInformation::where('ulid', $staffUlid)->value('state_of_origin');
+
+        if ($stateId === null) {
+            return null;
+        }
+
+        return Lga::where('state_id', $stateId)->where('lga_name', $value)->value('id');
     }
 
     /**
@@ -644,8 +691,22 @@ class StaffController extends Controller
         $amendment = RecordAmendment::where('ulid', $ulid)->firstOrFail();
 
         if ($data['decision'] === 'approved') {
+            $value = $amendment->requested_value;
+
+            if (in_array($amendment->field, ['state_of_origin', 'lga_of_origin'], true)) {
+                $value = $this->resolveOriginValue(
+                    $amendment->field, $amendment->requested_value, $amendment->basic_information_ulid
+                );
+
+                if ($value === null) {
+                    return back()->withErrors([
+                        'decision' => "\"{$amendment->requested_value}\" no longer matches a known state or LGA, so the record was left untouched.",
+                    ]);
+                }
+            }
+
             BasicInformation::where('ulid', $amendment->basic_information_ulid)
-                ->update([$amendment->field => $amendment->requested_value]);
+                ->update([$amendment->field => $value]);
         }
 
         // `validate()` omits nullable keys that were never submitted, so default it here.

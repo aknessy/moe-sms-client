@@ -119,7 +119,7 @@
                         <div class="flex items-center justify-between border-b border-base-300/70 py-2 text-xs last:border-0">
                             <span class="text-base-content/70">
                                 {{ $person->surname }}, {{ $person->firstname }}
-                                <span class="block text-base-content/40">{{ $person->computer_number }}</span>
+                                <span class="block text-base-content/40">{{ $person->staff_number }}</span>
                             </span>
                             <span class="font-medium text-base-content">{{ $retiresOn($person)?->toDateString() }}</span>
                         </div>

@@ -9,6 +9,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FinanceAndAccountController;
 use App\Http\Controllers\HumanResourceController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PensionGratuityController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffController;
@@ -76,12 +77,21 @@ Route::middleware('auth.session')->prefix('dashboard')->group(function(){
         Route::get('/query-discipline/{ulid}/response', [StaffController::class, 'query_response'])->name('query-response');
         Route::post('/query-discipline/{ulid}/decision', [StaffController::class, 'decide_query'])->name('query-response.decide');
 
-        Route::get('/retirement-exit', [StaffController::class, 'retirement_exit'])->name('retirement-exit');
-        Route::post('/retirement-exit', [StaffController::class, 'store_exit'])->name('retirement-exit.store');
-
         Route::get('/record-amendments', [StaffController::class, 'record_amendments'])->name('record-amendments');
         Route::post('/record-amendments', [StaffController::class, 'store_amendment'])->name('record-amendments.store');
         Route::post('/record-amendments/{ulid}/review', [StaffController::class, 'review_amendment'])->name('record-amendments.review');
+    });
+
+    Route::prefix('pension-gratuity')->group(function(){
+        Route::get('/retirement-exit', [PensionGratuityController::class, 'retirement_exit'])->name('retirement-exit');
+        Route::post('/retirement-exit', [PensionGratuityController::class, 'store_exit'])->name('retirement-exit.store');
+
+        Route::get('/cps', [PensionGratuityController::class, 'cps'])->name('cps');
+        Route::get('/deceased', [PensionGratuityController::class, 'deceased'])->name('deceased');
+        Route::post('/deceased', [PensionGratuityController::class, 'store_deceased'])->name('deceased.store');
+
+        Route::post('/benefit-payments', [PensionGratuityController::class, 'store_payment'])->name('benefit-payments.store');
+        Route::get('/benefit-payments/{ulid}/receipt', [PensionGratuityController::class, 'receipt'])->name('benefit-payments.receipt');
     });
 
     Route::prefix('finance-account')->group(function(){
@@ -118,6 +128,8 @@ Route::middleware('auth.session')->prefix('dashboard')->group(function(){
     Route::prefix('config')->group(function(){
         Route::get('/', [ConfigurationController::class, 'index'])->name('config');
         Route::get('/users-roles', [ConfigurationController::class, 'usersRoles'])->name('users-roles');
+        Route::post('/users-roles', [ConfigurationController::class, 'storeUser'])->name('users-roles.store');
+        Route::post('/users-roles/{user}/toggle', [ConfigurationController::class, 'toggleUser'])->name('users-roles.toggle');
         Route::get('/audit-trail', [ConfigurationController::class, 'auditTrail'])->name('audit-trail');
         Route::get('/reference-data', [ConfigurationController::class, 'referenceData'])->name('reference-data');
         Route::get('/notification-templates', [ConfigurationController::class, 'notificationTemplates'])->name('notification-templates');

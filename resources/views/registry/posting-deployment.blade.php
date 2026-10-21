@@ -37,14 +37,14 @@
                 </form>
             </x-registry.card>
 
-            <x-registry.card title="Posting History" :count="$postings->count()">
+            <x-registry.card title="Posting History" :count="$postings->total()">
                 <x-registry.table :headings="['Staff', 'Type', 'From', 'To', 'Duty Station', 'Effective', 'Reference']"
                                   empty="No postings recorded yet.">
                     @foreach ($postings as $posting)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">
                                 {{ $posting->staff?->surname }}, {{ $posting->staff?->firstname }}
-                                <span class="block text-base-content/50">{{ $posting->staff?->computer_number }}</span>
+                                <span class="block text-base-content/50">{{ $posting->staff?->staff_number }}</span>
                             </td>
                             <td class="px-3 py-2 capitalize">{{ $posting->posting_type }}</td>
                             <td class="px-3 py-2">{{ $posting->from_department ?: '—' }}</td>
@@ -55,6 +55,8 @@
                         </tr>
                     @endforeach
                 </x-registry.table>
+
+                <x-registry.paginator :items="$postings" />
             </x-registry.card>
         </x-registry.page>
 

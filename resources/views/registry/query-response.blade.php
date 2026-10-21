@@ -44,7 +44,7 @@
                         </div>
                         <div class="flex gap-2">
                             <dt class="text-base-content/60">File / Computer No:</dt>
-                            <dd class="m-0 font-medium text-base-content">{{ $staff?->computer_number ?: '—' }}</dd>
+                            <dd class="m-0 font-medium text-base-content">{{ $staff?->staff_number ?: '-' }}</dd>
                         </div>
                     </dl>
                     <dl class="m-0 space-y-1 sm:text-right">
@@ -87,7 +87,7 @@
                     <p class="m-0 text-base-content">Yours faithfully,</p>
                     <div class="mt-10 w-64 border-t border-base-content/50 pt-1">
                         <p class="m-0 font-medium text-base-content">{{ $fullName ?: '—' }}</p>
-                        <p class="m-0 text-base-content/60">{{ $staff?->computer_number }}</p>
+                        <p class="m-0 text-base-content/60">{{ $staff?->staff_number }}</p>
                         <p class="m-0 text-base-content/60">{{ $department ?: '—' }}</p>
                     </div>
                 </div>

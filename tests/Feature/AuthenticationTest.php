@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BasicInformation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,7 +27,7 @@ class AuthenticationTest extends TestCase
             '/dashboard/registry/confirmation',
             '/dashboard/registry/record-of-service',
             '/dashboard/registry/query-discipline',
-            '/dashboard/registry/retirement-exit',
+            '/dashboard/pension-gratuity/retirement-exit',
             '/dashboard/registry/record-amendments',
             '/dashboard/staff/basic-info',
             '/dashboard/staff/leave-record',
@@ -119,12 +120,12 @@ class AuthenticationTest extends TestCase
     {
         $user = $this->activeUser();
 
-        $this->get('/dashboard/registry/retirement-exit')->assertRedirect('/login');
+        $this->get('/dashboard/pension-gratuity/retirement-exit')->assertRedirect('/login');
 
         $this->post('/login', [
             'userhandle' => $user->username,
             'secrethash' => 'password',
-        ])->assertRedirect('/dashboard/registry/retirement-exit');
+        ])->assertRedirect('/dashboard/pension-gratuity/retirement-exit');
     }
 
     public function test_signed_in_users_are_kept_off_the_login_screen(): void
@@ -144,15 +145,14 @@ class AuthenticationTest extends TestCase
         $user = User::firstOrNew(['username' => $overrides['username'] ?? 'tester']);
 
         $user->fill(array_merge([
+            // Personal details live on the staff record the account belongs to.
+            'basic_information_ulid' => $user->basic_information_ulid ?: BasicInformation::factory()
+                ->create(['surname' => 'Test', 'firstname' => 'Account', 'othernames' => ''])
+                ->ulid,
             'email' => ($overrides['username'] ?? 'tester') . '@inec.gov.ng',
-            'surname' => 'Test',
-            'firstname' => 'Account',
-            'othernames' => '',
             'permissions' => json_encode([]),
             'role' => 'administrator',
             'is_active' => 1,
-            'ministry' => 'INEC',
-            'department' => 'Human Resources',
         ], $overrides));
 
         $user->password = 'password';

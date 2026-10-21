@@ -1,14 +1,14 @@
 <x-dashboard pageTitle="{{ $page_title }}" :segments="$uri_segments">
     <x-slot name="slot">
-        <x-registry.page title="Retirement & Exit">
+        <x-registry.page title="Retirement & Exit" crumb="Pension & Gratuity">
             <x-registry.card title="Due to Retire" :count="$projection->count()"
                              description="Staff reaching the age-60 mark within the next five years">
-                <x-registry.table :headings="['Staff', 'Computer No.', 'Date of Birth', 'Retires On', 'Time Left']"
+                <x-registry.table :headings="['Staff', 'File / Computer No.', 'Date of Birth', 'Retires On', 'Time Left']"
                                   empty="No staff fall due within the next five years.">
                     @foreach ($projection as $row)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">{{ $row->staff->surname }}, {{ $row->staff->firstname }}</td>
-                            <td class="px-3 py-2">{{ $row->staff->computer_number }}</td>
+                            <td class="px-3 py-2">{{ $row->staff->staff_number }}</td>
                             <td class="px-3 py-2">{{ $row->date_of_birth?->toDateString() }}</td>
                             <td class="px-3 py-2">{{ $row->retires_on?->toDateString() }}</td>
                             <td class="px-3 py-2">
@@ -63,14 +63,14 @@
                 </form>
             </x-registry.card>
 
-            <x-registry.card title="Exit Records" :count="$exits->count()">
+            <x-registry.card title="Exit Records" :count="$exits->total()">
                 <x-registry.table :headings="['Staff', 'Type', 'Effective', 'Gratuity', 'Pension', 'Reference']"
                                   empty="No exits recorded yet.">
                     @foreach ($exits as $exit)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">
                                 {{ $exit->staff?->surname }}, {{ $exit->staff?->firstname }}
-                                <span class="block text-base-content/50">{{ $exit->staff?->computer_number }}</span>
+                                <span class="block text-base-content/50">{{ $exit->staff?->staff_number }}</span>
                             </td>
                             <td class="px-3 py-2 capitalize">{{ str_replace('-', ' ', $exit->exit_type) }}</td>
                             <td class="px-3 py-2">{{ $exit->effective_date }}</td>
@@ -80,7 +80,15 @@
                         </tr>
                     @endforeach
                 </x-registry.table>
+
+                <x-registry.paginator :items="$exits" />
             </x-registry.card>
+
+            <x-pension.benefit-payments context="retirement"
+                                        :benefits="$benefits"
+                                        :staffOptions="$staffOptions"
+                                        :payments="$payments"
+                                        description="Gratuity and pension paid against an exit, with the receipt that evidences each payment." />
         </x-registry.page>
 
         <x-footer appVersion="{{ $app_version }}"/>

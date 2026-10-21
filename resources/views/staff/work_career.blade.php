@@ -44,20 +44,19 @@
                         </div>
                     @endif
 
-                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4 lg:flex-row lg:gap-x-8 lg:gap-y-0">
+                <form method="POST" action="{{ route('create') }}" class="flex w-full flex-col gap-y-4 py-4">
                     @csrf
 
                     <input type="hidden" name="form-type" value="work-career" />
 
-                    <div class="w-full flex flex-col lg:w-1/3">
-                        <div class="w-full flex flex-col bg-white px-4 py-4 border border-base-300 rounded-md">
-                            <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
-                        </div>
+                    <div class="w-full bg-white px-4 py-3 border border-base-300 rounded-md">
+                        <x-staff-sidebar activePage="{{ $active_page }}" :completed="$completed" :draft="$draft" />
                     </div>
-                    <div class="w-full lg:w-2/3 px-4 py-2 bg-white border border-base-300 rounded-lg">
+                    <div class="w-full px-4 py-2 bg-white border border-base-300 rounded-lg">
                         <div class="flex flex-col items-start border-b border-b-brown-100">
                             <h2 class="font-alkalami text-base font-semibold mb-0 text-base-content/80">Working Career</h2>
                             <p class="font-sans text-sm font-normal text-base-content/60 m-0">Service record</p>
+                        <p class="mt-1 mb-0 text-xs text-base-content/60">Every field here is optional — leave the section blank if this post is the officer's first job.</p>
                         </div>
                         <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -115,8 +114,8 @@
                                             <div class="w-full">
                                                 <label class="font-normal font-sans text-sm text-base-content">Mode of Appointment</label>
                                                 <div class="relative">
-                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="ministerial-dept">
-                                                        <option value="brazil">Select Option</option>
+                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="mode-of-employment">
+                                                        <option value="">Select Option</option>
                                                         <option value="Permanent">Permanent</option>
                                                         <option value="Temporary">Temporary</option>
                                                         <option value="Contract">Contract</option>

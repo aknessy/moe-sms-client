@@ -17,18 +17,19 @@
 
             @if ($record)
                 <x-registry.card title="{{ $record->surname }}, {{ $record->firstname }} {{ $record->othernames }}"
-                                 description="{{ $record->computer_number }}">
+                                 description="{{ $record->staff_number }}">
                     <dl class="grid grid-cols-1 gap-x-8 gap-y-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ([
                             'Department' => $record->department,
                             'Division / Unit' => $record->division,
                             'Designation' => $record->designation,
                             'Grade Level' => $record->grade_level,
+                            'Step' => $record->step,
                             'Date of Birth' => $record->date_of_birth,
                             'Phone Number' => $record->phone_number,
                             'Email' => $record->email,
-                            'State of Origin' => $record->state_of_origin,
-                            'LGA of Origin' => $record->lga_of_origin,
+                            'State of Origin' => $record->state?->name,
+                            'LGA of Origin' => $record->lga?->lga_name,
                             'Pension Fund Administrator' => $record->pfa,
                             'RSA Number' => $record->rsa,
                             'NHIS Number' => $record->nhis,

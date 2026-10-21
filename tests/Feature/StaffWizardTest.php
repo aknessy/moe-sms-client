@@ -9,6 +9,7 @@ use App\Models\Leave;
 use App\Models\NextOfKin;
 use App\Models\Promotion;
 use App\Models\Referee;
+use App\Models\State;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,9 +22,14 @@ class StaffWizardTest extends TestCase
     {
         $user = User::firstOrNew(['username' => 'wizard-tester']);
         $user->fill([
-            'email' => 'wizard@inec.gov.ng', 'surname' => 'Wizard', 'firstname' => 'Tester',
-            'othernames' => '', 'permissions' => json_encode([]), 'role' => 'administrator',
-            'is_active' => 1, 'ministry' => 'INEC', 'department' => 'HR',
+            // Personal details live on the staff record the account belongs to.
+            'basic_information_ulid' => \App\Models\BasicInformation::factory()
+                ->create(['surname' => 'Wizard', 'firstname' => 'Tester', 'othernames' => ''])
+                ->ulid,
+            'email' => 'wizard@inec.gov.ng',
+            'permissions' => json_encode([]),
+            'role' => 'administrator',
+            'is_active' => 1,
         ]);
         $user->password = 'password';
         $user->save();
@@ -33,15 +39,22 @@ class StaffWizardTest extends TestCase
 
     private function basicInformation(string $computerNumber): array
     {
+        $crossRiver = State::where('name', 'Cross River')->firstOrFail();
+
         return [
             'form-type' => 'basic-information',
+            // Every field bar the computer number and other names is required.
+            'file-number' => 'FILE/' . $computerNumber,
             'computer-number' => $computerNumber,
             'last-name' => 'Eyo', 'first-name' => 'Bassey', 'other-names' => 'Okon',
             'department' => 'Operations', 'division' => 'Calabar HQ',
-            'designation' => 'Electoral Officer', 'grade-level' => 'GL 09',
+            'designation' => 'Electoral Officer', 'grade-level' => 'GL 09', 'step' => 'Step 4',
             'date-of-birth' => '1985-04-12', 'phone-number' => '08030000001',
-            'email' => 'bassey.eyo@inec.gov.ng', 'state-of-origin' => 'Cross River',
-            'lga-of-origin' => 'Calabar Municipal', 'address' => 'No. 4 Marian Road',
+            'email' => 'bassey.eyo@inec.gov.ng',
+            'state-of-origin' => $crossRiver->id,
+            'lga-of-origin' => $crossRiver->lgas()->where('lga_name', 'Calabar Municipal')->value('id'),
+            'pfa' => 'Stanbic IBTC Pension', 'rsa' => 'PEN123456789', 'nhis' => '12345678',
+            'address' => 'No. 4 Marian Road',
         ];
     }
 
@@ -56,6 +69,8 @@ class StaffWizardTest extends TestCase
             'surname' => 'Eyo',
             'email' => 'bassey.eyo@inec.gov.ng',
             'address' => 'No. 4 Marian Road',
+            'grade_level' => 'GL 09',
+            'step' => 'Step 4',
         ]);
         $this->assertNotNull(session('staff_draft_ulid'));
     }
@@ -99,6 +114,7 @@ class StaffWizardTest extends TestCase
             'form-type' => 'promotion',
             'designation' => ['Electoral Officer II', 'Electoral Officer I'],
             'grade-level' => ['GL 08', 'GL 09'], 'step' => ['3', '2'],
+            'effective-from' => ['2018-01-01', '2022-01-01'],
         ])->assertRedirect(route('career'));
 
         $this->actingAs($user)->post('/dashboard/staff/create', [

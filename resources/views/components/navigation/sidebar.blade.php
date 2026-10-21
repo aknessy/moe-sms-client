@@ -47,8 +47,17 @@
                 ['label' => 'Confirmation of Appointment', 'route' => 'confirmation'],
                 ['label' => 'Record of Service', 'route' => 'record-of-service'],
                 ['label' => 'Query & Discipline', 'route' => 'query-discipline'],
-                ['label' => 'Retirement & Exit', 'route' => 'retirement-exit'],
                 ['label' => 'Record Amendments', 'route' => 'record-amendments'],
+            ],
+        ],
+        [
+            'label' => 'Pension & Gratuity',
+            'icon' => 'coins',
+            'sections' => ['pension-gratuity'],
+            'children' => [
+                ['label' => 'Retirement & Exit', 'route' => 'retirement-exit'],
+                ['label' => 'CPS', 'route' => 'cps'],
+                ['label' => 'Deceased', 'route' => 'deceased'],
             ],
         ],
         [

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BasicInformation;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -9,25 +10,30 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Every account belongs to an officer already on the staff register,
+        // identified here by the number they are filed under.
         $users = [
-            ['admin', 'admin@inec.gov.ng', 'Abua', 'Isaac', 'administrator', 1],
-            ['registry', 'registry@inec.gov.ng', 'Okon', 'Grace', 'registry-officer', 1],
-            ['disabled', 'disabled@inec.gov.ng', 'Former', 'Staff', 'registry-officer', 0],
+            ['admin', 'admin@inec.gov.ng', 'MOE/F/0010', 'administrator', 1],
+            ['registry', 'registry@inec.gov.ng', 'INEC/CRS/0002', 'registry-officer', 1],
+            ['disabled', 'disabled@inec.gov.ng', 'INEC/CRS/0008', 'registry-officer', 0],
         ];
 
-        foreach ($users as [$username, $email, $surname, $firstname, $role, $active]) {
+        foreach ($users as [$username, $email, $staffNumber, $role, $active]) {
+            $staff = BasicInformation::whereStaffNumber($staffNumber)->first();
+
+            if ($staff === null) {
+                $this->command?->warn("No staff filed under {$staffNumber}; skipped the {$username} account.");
+                continue;
+            }
+
             $user = User::firstOrNew(['username' => $username]);
 
             $user->fill([
+                'basic_information_ulid' => $staff->ulid,
                 'email' => $email,
-                'surname' => $surname,
-                'firstname' => $firstname,
-                'othernames' => '',
                 'permissions' => json_encode([]),
                 'role' => $role,
                 'is_active' => $active,
-                'ministry' => 'Independent National Electoral Commission',
-                'department' => 'Human Resources',
             ]);
 
             // Cast on the model hashes this; only set it for a new account so a

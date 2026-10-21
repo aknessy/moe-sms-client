@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\BasicInformation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -25,17 +26,15 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            // An account always belongs to an officer on the staff register.
+            // Resolved by hand: the link is on `ulid`, not the primary key.
+            'basic_information_ulid' => fn () => BasicInformation::factory()->create()->ulid,
             'username' => fake()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$passwordHash ??= Hash::make(static::$plainTextPassword),
-            'surname' => fake()->lastName(),
-            'firstname' => fake()->firstName(),
-            'othernames' => fake()->name(),
             'is_active' => 1,
             'role' => 'user',
-            'ministry' => fake()->numberBetween(1, 100),
-            'department' => fake()->numberBetween(1, 100),
             'permissions' => json_encode(['create', 'read', 'update']),
             'remember_token' => Str::random(10),
             'plain_text_password' => static::$plainTextPassword,

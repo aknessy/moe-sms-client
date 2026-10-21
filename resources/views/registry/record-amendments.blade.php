@@ -9,6 +9,8 @@
                     <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                         <x-registry.picker name="basic_information_ulid" label="Staff" :options="$staffOptions" required />
                         <x-registry.field name="field" label="Field to Amend" required :options="[
+                            'file_number' => 'File Number',
+                            'computer_number' => 'Establishment/Computer Number',
                             'surname' => 'Surname',
                             'firstname' => 'First Name',
                             'othernames' => 'Other Names',
@@ -16,6 +18,7 @@
                             'division' => 'Division / Unit',
                             'designation' => 'Designation',
                             'grade_level' => 'Grade Level',
+                            'step' => 'Step',
                             'date_of_birth' => 'Date of Birth',
                             'phone_number' => 'Phone Number',
                             'email' => 'Email',
@@ -42,14 +45,14 @@
                 </form>
             </x-registry.card>
 
-            <x-registry.card title="Amendment Requests" :count="$amendments->count()">
+            <x-registry.card title="Amendment Requests" :count="$amendments->total()">
                 <x-registry.table :headings="['Staff', 'Field', 'From', 'To', 'Status', 'Reviewed By', 'Action']"
                                   empty="No amendment requests yet.">
                     @foreach ($amendments as $amendment)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">
                                 {{ $amendment->staff?->surname }}, {{ $amendment->staff?->firstname }}
-                                <span class="block text-base-content/50">{{ $amendment->staff?->computer_number }}</span>
+                                <span class="block text-base-content/50">{{ $amendment->staff?->staff_number }}</span>
                             </td>
                             <td class="px-3 py-2">{{ str_replace('_', ' ', $amendment->field) }}</td>
                             <td class="px-3 py-2 text-base-content/60">{{ $amendment->current_value ?: '—' }}</td>
@@ -80,6 +83,8 @@
                         </tr>
                     @endforeach
                 </x-registry.table>
+
+                <x-registry.paginator :items="$amendments" />
             </x-registry.card>
         </x-registry.page>
 

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Lga;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -19,8 +20,15 @@ class BasicInformationFactory extends Factory
     {
         $gender = ['male', 'female'];
 
+        // Pick the LGA first and take its state, so the pair is always
+        // coherent — a random state and a random LGA rarely belong together.
+        $lga = Lga::inRandomOrder()->first();
+
         return [
-            'ulid' => Str::ulid(),
+            // Cast: Str::ulid() hands back a Ulid object, and everything that
+            // joins on this column compares it as a string.
+            'ulid' => (string) Str::ulid(),
+            'file_number' => $this->faker->unique()->numerify('FILE-#####'),
             'computer_number' => $this->faker->unique()->numerify('COMP-#####'),
             'surname' => $this->faker->lastName($gender[rand(0, 1)]),
             'firstname' => $this->faker->firstName($gender[rand(0, 1)]),
@@ -28,8 +36,8 @@ class BasicInformationFactory extends Factory
             'date_of_birth' => $this->faker->date(),
             'phone_number' => $this->faker->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),
-            'state_of_origin' => $this->faker->numberBetween(1, 37),
-            'lga_of_origin' => $this->faker->numberBetween(1, 774),
+            'state_of_origin' => $lga?->state_id,
+            'lga_of_origin' => $lga?->id,
             'pfa' => $this->faker->optional()->company(),
             'rsa' => $this->faker->unique()->numerify('PEN###############'),
             'nhis' => $this->faker->optional()->randomNumber(),
