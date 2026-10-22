@@ -54,7 +54,7 @@ class StaffNumberTest extends TestCase
             'last-name' => 'Eyo', 'first-name' => 'Bassey', 'other-names' => '',
             'department' => 'Operations', 'division' => 'Calabar HQ',
             'designation' => 'Electoral Officer', 'grade-level' => 'GL 09', 'step' => 'Step 4',
-            'date-of-birth' => '1985-04-12', 'phone-number' => '08030000001',
+            'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000001',
             'email' => 'bassey.eyo@inec.gov.ng',
             'state-of-origin' => $crossRiver->id,
             'lga-of-origin' => $crossRiver->lgas()->value('id'),

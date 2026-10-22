@@ -136,6 +136,7 @@ class DeceasedModuleTest extends TestCase
             'effective_date' => '2025-12-05',
             'gratuity_status' => 'paid',
             'pension_status' => 'paid',
+            'mode_of_retirement' => 'age',
         ])->assertRedirect(route('retirement-exit'));
 
         $this->assertSame(1, $officer->fresh()->is_retired);

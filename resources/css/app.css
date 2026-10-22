@@ -2,6 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Printing. The dashboard chrome — sidebar, navbar, breadcrumb — is navigation,
+ * so none of it belongs on paper; what is left is the sheet itself, laid out
+ * edge to edge in black on white.
+ */
+@media print {
+    @page {
+        margin: 12mm;
+    }
+
+    html,
+    body {
+        height: auto;
+        background: #fff;
+    }
+
+    /* The app lays itself out in a full-height scrolling column, which traps
+       everything past the first page unless it is unwound for print. */
+    body * {
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    .h-screen,
+    .min-h-full {
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    aside,
+    nav[aria-label="breadcrumb"],
+    .print-hide {
+        display: none !important;
+    }
+
+    /* Sidebar and navbar, neither of which carries a semantic element. */
+    #menu-toggle,
+    #menu-toggle ~ div,
+    header {
+        display: none !important;
+    }
+
+    /* Cards shed their shadow and fill the sheet. */
+    .shadow,
+    .shadow-md,
+    .shadow-lg {
+        box-shadow: none !important;
+    }
+
+    table {
+        width: 100% !important;
+        border-collapse: collapse;
+    }
+
+    /* A long register should repeat its headings on every sheet and never
+       break a row across two of them. */
+    thead {
+        display: table-header-group;
+    }
+
+    tr {
+        break-inside: avoid;
+    }
+
+    th,
+    td {
+        border-bottom: 1px solid #ddd;
+    }
+}
+
 @layer components {
     /*
      * Call-to-action buttons (Save, Submit, Save & Continue...).

@@ -96,7 +96,7 @@ class StateLgaReferenceTest extends TestCase
             'last-name' => 'Okon', 'first-name' => 'Grace', 'other-names' => '',
             'department' => 'Operations', 'division' => 'Calabar HQ',
             'designation' => 'Electoral Officer', 'grade-level' => 'GL 09', 'step' => 'Step 4',
-            'date-of-birth' => '1985-04-12', 'phone-number' => '08030000002',
+            'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000002',
             'email' => 'grace.okon@inec.gov.ng',
             'state-of-origin' => $state->id,
             'lga-of-origin' => $lga->id,
@@ -120,7 +120,7 @@ class StateLgaReferenceTest extends TestCase
             'form-type' => 'basic-information',
             'computer-number' => 'REF/0003',
             'last-name' => 'Mismatch', 'first-name' => 'Test', 'other-names' => '',
-            'date-of-birth' => '1985-04-12', 'phone-number' => '08030000003',
+            'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000003',
             'state-of-origin' => $crossRiver->id,
             'lga-of-origin' => $lagosLga->id,
         ])->assertSessionHasErrors('lga-of-origin');
@@ -134,7 +134,7 @@ class StateLgaReferenceTest extends TestCase
             'form-type' => 'basic-information',
             'computer-number' => 'REF/0004',
             'last-name' => 'Unknown', 'first-name' => 'Test', 'other-names' => '',
-            'date-of-birth' => '1985-04-12', 'phone-number' => '08030000004',
+            'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000004',
             'state-of-origin' => 9999,
         ])->assertSessionHasErrors('state-of-origin');
     }

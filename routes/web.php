@@ -89,6 +89,7 @@ Route::middleware('auth.session')->prefix('dashboard')->group(function(){
         Route::get('/cps', [PensionGratuityController::class, 'cps'])->name('cps');
         Route::get('/deceased', [PensionGratuityController::class, 'deceased'])->name('deceased');
         Route::post('/deceased', [PensionGratuityController::class, 'store_deceased'])->name('deceased.store');
+        Route::get('/deceased/export', [PensionGratuityController::class, 'deceased_export'])->name('deceased.export');
 
         Route::post('/benefit-payments', [PensionGratuityController::class, 'store_payment'])->name('benefit-payments.store');
         Route::get('/benefit-payments/{ulid}/receipt', [PensionGratuityController::class, 'receipt'])->name('benefit-payments.receipt');
@@ -115,9 +116,15 @@ Route::middleware('auth.session')->prefix('dashboard')->group(function(){
 
     Route::prefix('reports')->group(function(){
         Route::get('/nominal-roll', [ReportController::class, 'nominalRoll'])->name('nominal-roll-report');
+        Route::get('/nominal-roll/export', [ReportController::class, 'nominalRollExport'])->name('nominal-roll-report.export');
+
         Route::get('/retirement-projection', [ReportController::class, 'retirementProjection'])->name('retirement-projection');
+        Route::get('/retirement-projection/export', [ReportController::class, 'retirementProjectionExport'])->name('retirement-projection.export');
+
         Route::get('/payroll', [ReportController::class, 'payroll'])->name('payroll-report');
+
         Route::get('/headcount', [ReportController::class, 'headcount'])->name('headcount-report');
+        Route::get('/headcount/export', [ReportController::class, 'headcountExport'])->name('headcount-report.export');
     });
 
     Route::prefix('docs')->group(function(){

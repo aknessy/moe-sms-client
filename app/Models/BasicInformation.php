@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,6 +32,8 @@ class BasicInformation extends Model
       'grade_level',
       'step',
       'date_of_birth',
+      // Joined their current employer; the 35 years of service run from here.
+      'date_of_employment',
       'phone_number',
       'email',
       'state_of_origin',
@@ -41,9 +44,85 @@ class BasicInformation extends Model
       'address',
       'is_deceased',
       'is_retired',
+      'mode_of_retirement',
       'created_at',
       'updated_at'
     ];
+
+    /** The two routes out of the service. */
+    public const RETIREMENT_MODES = [
+        'years-of-service' => 'Years of Service',
+        'age' => 'Retirement by Age',
+    ];
+
+    /** Years of service that carry an officer to retirement. */
+    public const SERVICE_YEARS = 35;
+
+    /** The age at which an officer falls due regardless of service. */
+    public const RETIREMENT_AGE = 60;
+
+    public function getModeOfRetirementLabelAttribute(): ?string
+    {
+        return self::RETIREMENT_MODES[$this->mode_of_retirement] ?? null;
+    }
+
+    /**
+     * The date each route out of the service would fall due on. Either may be
+     * null when the date it counts from is not on file.
+     *
+     * @return array{'years-of-service': ?Carbon, age: ?Carbon}
+     */
+    public function retirementDueDates(): array
+    {
+        return [
+            'years-of-service' => filled($this->date_of_employment)
+                ? Carbon::parse($this->date_of_employment)->startOfDay()->addYears(self::SERVICE_YEARS)
+                : null,
+            'age' => filled($this->date_of_birth)
+                ? Carbon::parse($this->date_of_birth)->startOfDay()->addYears(self::RETIREMENT_AGE)
+                : null,
+        ];
+    }
+
+    /**
+     * An officer leaves at 60 years of age or 35 years of service, whichever
+     * comes first — so the mode is not a choice, it follows from the two
+     * dates. Null when neither is on file.
+     */
+    public function determineRetirementMode(): ?string
+    {
+        $due = array_filter($this->retirementDueDates());
+
+        if ($due === []) {
+            return null;
+        }
+
+        // Whichever falls first is the one that carries them out.
+        return array_search(min($due), $due, true) ?: null;
+    }
+
+    /**
+     * When this officer falls due to leave, by whichever route reaches them
+     * first.
+     */
+    public function retiresOn(): ?Carbon
+    {
+        $due = array_filter($this->retirementDueDates());
+
+        return $due === [] ? null : min($due);
+    }
+
+    /**
+     * The mode follows from the dates, so it is kept in step with them rather
+     * than entered by hand: set as the record is created, and recalculated if
+     * either date is later corrected.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $staff) {
+            $staff->mode_of_retirement = $staff->determineRetirementMode();
+        });
+    }
 
     public function scopeDeceased($query)
     {

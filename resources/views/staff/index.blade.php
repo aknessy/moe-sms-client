@@ -146,11 +146,23 @@
                                             <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="step" placeholder="e.g. Step 3" value="{{ old('step') }}"  required/>
                                         </div>
                                     </div>
-                                    <div class="w-full max-w-1/3">
+                                </div>
+                                <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
+                                    <div class="w-full max-w-1/2">
                                         <label class="font-normal font-sans text-sm text-base-content">Date of Birth<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value=""  required/>
+                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-birth" placeholder="YYYY/MM/DD" value="{{ old('date-of-birth') }}"  required/>
                                         </div>
+                                    </div>
+                                    <div class="w-full max-w-1/2">
+                                        <label class="font-normal font-sans text-sm text-base-content">Date of Employment<span class="text-error">*</span></label>
+                                        <div class="relative">
+                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-employment" placeholder="YYYY/MM/DD" value="{{ old('date-of-employment') }}"  required/>
+                                        </div>
+                                        <p class="mt-1 mb-0 text-xs text-base-content/50">
+                                            Joined this Commission. With the date of birth it decides whether the officer
+                                            leaves on 35 years of service or at 60 — whichever comes first.
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">

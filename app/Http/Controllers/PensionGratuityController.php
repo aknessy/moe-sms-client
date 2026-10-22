@@ -7,6 +7,7 @@ use App\Models\BenefitPayment;
 use App\Models\StaffExit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Support\SpreadsheetExport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -49,19 +50,22 @@ class PensionGratuityController extends Controller
 
     public function retirement_exit()
     {
-        // Civil service exit is age 60 or 35 years of service, whichever comes first.
         $today = now()->startOfDay();
 
+        // An officer leaves at 60 or on 35 years of service, whichever reaches
+        // them first; the staff record holds both dates and the mode that
+        // follows from them.
         $projection = BasicInformation::query()
             ->whereNotNull('date_of_birth')
             ->get()
             ->map(function ($s) use ($today) {
-                $dob = Carbon::parse($s->date_of_birth)->startOfDay();
-                $retiresOn = $dob->copy()->addYears(60);
+                $retiresOn = $s->retiresOn();
 
                 return (object) [
                     'staff' => $s,
-                    'date_of_birth' => $dob,
+                    'date_of_birth' => Carbon::parse($s->date_of_birth)->startOfDay(),
+                    'date_of_employment' => $s->date_of_employment,
+                    'mode' => $s->mode_of_retirement_label,
                     'retires_on' => $retiresOn,
                     // Signed, so officers already past the mark sort to the top.
                     'months_left' => (int) floor($today->diffInMonths($retiresOn, false)),
@@ -165,21 +169,87 @@ class PensionGratuityController extends Controller
         return $this->page('pension/cps', 'CPS');
     }
 
-    public function deceased()
+    /**
+     * The deceased register as a spreadsheet, honouring whatever year filter
+     * is in force. The whole filtered list goes in: a register broken at row
+     * fifteen would be no use to whoever asked for it.
+     */
+    public function deceased_export(Request $request)
     {
+        ['exits' => $deathExits, 'year' => $year, 'query' => $query] = $this->deceasedRegister($request);
+
+        $deathExits = $deathExits->keyBy('basic_information_ulid');
+
+        $rows = $query->get()->map(function ($person) use ($deathExits) {
+            $exit = $deathExits[$person->ulid] ?? null;
+
+            return [
+                $person->staff_number, $person->surname, $person->firstname, $person->othernames,
+                $person->department, $person->designation, $person->grade_level, $person->step,
+                $person->date_of_birth, $exit?->effective_date,
+                $person->state?->name, $person->lga?->lga_name,
+                $exit ? ucfirst($exit->gratuity_status) : null,
+                $exit ? ucfirst($exit->pension_status) : null,
+            ];
+        });
+
+        return SpreadsheetExport::download(
+            SpreadsheetExport::filename('deceased-officers', $year ? (string) $year : 'all-years'),
+            $year ? "Deceased {$year}" : 'Deceased',
+            ['File / Computer No.', 'Surname', 'First Name', 'Other Names', 'Department',
+             'Designation', 'Grade Level', 'Step', 'Date of Birth', 'Date of Death',
+             'State of Origin', 'LGA of Origin', 'Gratuity', 'Pension'],
+            $rows,
+        );
+    }
+
+    /**
+     * The deceased register, optionally narrowed to one year of death. Death
+     * exits are where the date of death is held, so they are what the year
+     * filter works from.
+     *
+     * @return array{exits: \Illuminate\Support\Collection, years: \Illuminate\Support\Collection, year: ?int, query: \Illuminate\Database\Eloquent\Builder}
+     */
+    private function deceasedRegister(Request $request): array
+    {
+        $exits = StaffExit::where('exit_type', 'death')
+            ->orderByDesc('effective_date')
+            ->get();
+
+        $years = $exits
+            ->map(fn ($exit) => Carbon::parse($exit->effective_date)->year)
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        $requested = $request->query('year');
+        $year = $years->contains((int) $requested) ? (int) $requested : null;
+
+        $query = BasicInformation::deceased()
+            ->with(['state', 'lga'])
+            ->when($year !== null, fn ($q) => $q->whereIn(
+                'ulid',
+                $exits->filter(fn ($e) => Carbon::parse($e->effective_date)->year === $year)
+                    ->pluck('basic_information_ulid')
+            ))
+            ->orderBy('surname');
+
+        return compact('exits', 'years', 'year', 'query');
+    }
+
+    public function deceased(Request $request)
+    {
+        ['exits' => $deathExits, 'years' => $years, 'year' => $year, 'query' => $query]
+            = $this->deceasedRegister($request);
+
         return $this->page('pension/deceased', 'Deceased', [
-            'deceased' => BasicInformation::deceased()
-                ->with(['state', 'lga'])
-                ->orderBy('surname')
-                ->paginate(self::PER_PAGE)
-                ->withQueryString(),
+            'deceased' => $query->paginate(self::PER_PAGE)->withQueryString(),
+            'years' => $years,
+            'year' => $year,
             // The death exit already on file, where one was recorded, so the
             // listing can show the date without duplicating it onto the staff
             // record.
-            'deathExits' => StaffExit::where('exit_type', 'death')
-                ->orderByDesc('effective_date')
-                ->get()
-                ->keyBy('basic_information_ulid'),
+            'deathExits' => $deathExits->keyBy('basic_information_ulid'),
             'benefits' => BenefitPayment::DEATH_BENEFITS,
             // Only officers on record as deceased can be paid a death benefit.
             'deceasedOptions' => BasicInformation::deceased()

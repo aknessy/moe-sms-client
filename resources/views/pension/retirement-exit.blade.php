@@ -2,14 +2,23 @@
     <x-slot name="slot">
         <x-registry.page title="Retirement & Exit" crumb="Pension & Gratuity">
             <x-registry.card title="Due to Retire" :count="$projection->count()"
-                             description="Staff reaching the age-60 mark within the next five years">
-                <x-registry.table :headings="['Staff', 'File / Computer No.', 'Date of Birth', 'Retires On', 'Time Left']"
+                             description="Staff falling due within the next five years, by the mode of retirement recorded against each">
+                <x-registry.table :headings="['Staff', 'File / Computer No.', 'Date of Birth', 'Date of Employment', 'Mode of Retirement', 'Retires On', 'Time Left']"
                                   empty="No staff fall due within the next five years.">
                     @foreach ($projection as $row)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">{{ $row->staff->surname }}, {{ $row->staff->firstname }}</td>
                             <td class="px-3 py-2">{{ $row->staff->staff_number }}</td>
                             <td class="px-3 py-2">{{ $row->date_of_birth?->toDateString() }}</td>
+                            <td class="px-3 py-2">{{ $row->date_of_employment ?: '—' }}</td>
+                            <td class="px-3 py-2">
+                                @if ($row->mode)
+                                    {{ $row->mode }}
+                                @else
+                                    {{-- No mode recorded, so age 60 is what applies. --}}
+                                    <span class="text-base-content/40" title="No mode recorded; falls due at 60">Not set</span>
+                                @endif
+                            </td>
                             <td class="px-3 py-2">{{ $row->retires_on?->toDateString() }}</td>
                             <td class="px-3 py-2">
                                 <span class="rounded-full px-2 py-0.5 text-xs {{ $row->months_left <= 12 ? 'bg-error/15 text-error' : 'bg-warning/20 text-warning-content' }}">

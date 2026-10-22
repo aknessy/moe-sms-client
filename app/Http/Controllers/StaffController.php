@@ -264,6 +264,9 @@ class StaffController extends Controller
             'grade-level' => ['required', 'string', 'max:20'],
             'step' => ['required', 'string', 'max:20'],
             'date-of-birth' => ['required', 'date', 'before:today'],
+            // Joined their current employer. With the date of birth it decides
+            // the mode of retirement, which the model works out on save.
+            'date-of-employment' => ['required', 'date', 'before_or_equal:today', 'after:date-of-birth'],
             'phone-number' => ['required', 'string', 'max:30'],
             'email' => ['required', 'email', 'max:160'],
             // Both are foreign keys into the national reference tables.
@@ -291,6 +294,7 @@ class StaffController extends Controller
             'grade_level' => $data['grade-level'] ?? null,
             'step' => $data['step'] ?? null,
             'date_of_birth' => $data['date-of-birth'],
+            'date_of_employment' => $data['date-of-employment'],
             'phone_number' => $data['phone-number'],
             'email' => $data['email'] ?? null,
             'state_of_origin' => $data['state-of-origin'] ?? null,

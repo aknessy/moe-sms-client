@@ -107,6 +107,7 @@ class PensionGratuityTest extends TestCase
             'effective_date' => '2024-12-05',
             'gratuity_status' => 'paid',
             'pension_status' => 'processing',
+            'mode_of_retirement' => 'age',
         ])->assertRedirect(route('retirement-exit'));
 
         $this->assertDatabaseHas('staff_exits', [
