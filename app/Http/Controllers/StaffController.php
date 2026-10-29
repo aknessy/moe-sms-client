@@ -212,7 +212,9 @@ class StaffController extends Controller
                 'grade-level' => ['required', 'string', 'max:20'],
                 'step' => ['required', 'string', 'max:20'],
                 'effective-from' => ['required', 'date'],
-            ]),
+                // A newly employed officer has not been promoted yet, so the
+                // section may be closed with nothing in it.
+            ], 'No promotion recorded.'),
             'work-career' => $this->storeCareer($request),
             'leave' => $this->storeRepeating($request, 'leave-record', Leave::class, 'leave_record', [
                 'leave-type' => 'leave_type',

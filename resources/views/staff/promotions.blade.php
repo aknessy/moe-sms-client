@@ -56,7 +56,7 @@
                         <div class="flex flex-col items-start border-b border-b-brown-100">
                             <h2 class="font-alkalami text-base font-semibold mb-0 text-base-content/80">Promotions</h2>
                             <p class="font-sans text-sm font-normal text-base-content/60 m-0">Staff record of promotions</p>
-                        <p class="mt-1 mb-0 text-xs text-base-content/60"><span class="text-error">*</span> Required field.</p>
+                        <p class="mt-1 mb-0 text-xs text-base-content/60">A newly employed officer has not been promoted yet — skip the section if there is none to record. A promotion that is recorded needs all of its fields: <span class="text-error">*</span> Required field.</p>
                         </div>
                         <div class="py-4 block bg-contain bg-right-top bg-no-repeat" style="background-image: url('{{Vite::asset('resources/images/bg-state-empty.png')}}');background-size: 300px">
                             <div class="form-input-area py-3 px-3 mt-3 gap-y-4">
@@ -117,6 +117,12 @@
                                         Add Promotion
                                     </button>
                                     <div class="flex flex-wrap items-center gap-2">
+                                        {{-- Nothing to record: the officer has
+                                             not been promoted. --}}
+                                        <button type="submit" name="action" value="skip" formnovalidate
+                                                class="btn btn-sm btn-ghost px-4 text-base-content/60 hover:text-[#2E7D32]">
+                                            Skip — no promotion to record
+                                        </button>
                                         <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md">
                                             Save & Continue
                                         </button>
