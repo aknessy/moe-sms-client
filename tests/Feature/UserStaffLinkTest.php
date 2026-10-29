@@ -19,7 +19,7 @@ class UserStaffLinkTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'administrator']);
+        return User::factory()->create(['role' => 'Administrator']);
     }
 
     public function test_personal_columns_no_longer_live_on_the_users_table(): void
@@ -36,7 +36,8 @@ class UserStaffLinkTest extends TestCase
 
     public function test_the_account_keeps_what_is_about_the_account(): void
     {
-        foreach (['username', 'email', 'password', 'role', 'permissions', 'is_active'] as $column) {
+        // The role is held as a reference to the roles table, not a name.
+        foreach (['username', 'email', 'password', 'role_id', 'permissions', 'is_active'] as $column) {
             $this->assertTrue(Schema::hasColumn('users', $column), "users.{$column} is missing");
         }
     }
@@ -80,13 +81,16 @@ class UserStaffLinkTest extends TestCase
     {
         $staff = BasicInformation::factory()->create(['surname' => 'Edet', 'firstname' => 'Mfon']);
 
+        // An account may only be given what its role allows.
+        \App\Models\Role::where('role', 'Registry Officer')->first()->grant(['read', 'update']);
+
         $this->actingAs($this->admin())->post(route('users-roles.store'), [
             'basic_information_ulid' => $staff->ulid,
             'username' => 'm.edet',
             'email' => 'm.edet@inec.gov.ng',
             'password' => 'secret-password',
             'password_confirmation' => 'secret-password',
-            'role' => 'registry-officer',
+            'role' => 'Registry Officer',
             'permissions' => ['read', 'update'],
             'is_active' => 1,
         ])->assertRedirect(route('users-roles'));
@@ -107,7 +111,7 @@ class UserStaffLinkTest extends TestCase
             'email' => 'ghost@inec.gov.ng',
             'password' => 'secret-password',
             'password_confirmation' => 'secret-password',
-            'role' => 'user',
+            'role' => 'User',
         ])->assertSessionHasErrors('basic_information_ulid');
 
         $this->assertNull(User::where('username', 'ghost')->first());
@@ -124,7 +128,7 @@ class UserStaffLinkTest extends TestCase
             'email' => 'second@inec.gov.ng',
             'password' => 'secret-password',
             'password_confirmation' => 'secret-password',
-            'role' => 'user',
+            'role' => 'User',
         ])->assertSessionHasErrors('basic_information_ulid');
 
         $this->assertSame(1, User::where('basic_information_ulid', $staff->ulid)->count());
@@ -137,7 +141,7 @@ class UserStaffLinkTest extends TestCase
             'email' => 'no-officer@inec.gov.ng',
             'password' => 'secret-password',
             'password_confirmation' => 'secret-password',
-            'role' => 'user',
+            'role' => 'User',
         ])->assertSessionHasErrors('basic_information_ulid');
     }
 
@@ -151,7 +155,7 @@ class UserStaffLinkTest extends TestCase
             'email' => 'mistyped@inec.gov.ng',
             'password' => 'secret-password',
             'password_confirmation' => 'something-else',
-            'role' => 'user',
+            'role' => 'User',
         ])->assertSessionHasErrors('password');
     }
 

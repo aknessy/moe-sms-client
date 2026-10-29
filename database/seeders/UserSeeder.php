@@ -13,9 +13,9 @@ class UserSeeder extends Seeder
         // Every account belongs to an officer already on the staff register,
         // identified here by the number they are filed under.
         $users = [
-            ['admin', 'admin@inec.gov.ng', 'MOE/F/0010', 'administrator', 1],
-            ['registry', 'registry@inec.gov.ng', 'INEC/CRS/0002', 'registry-officer', 1],
-            ['disabled', 'disabled@inec.gov.ng', 'INEC/CRS/0008', 'registry-officer', 0],
+            ['admin', 'admin@inec.gov.ng', 'MOE/F/0010', 'Administrator', 1],
+            ['registry', 'registry@inec.gov.ng', 'INEC/CRS/0002', 'Registry Officer', 1],
+            ['disabled', 'disabled@inec.gov.ng', 'INEC/CRS/0008', 'Registry Officer', 0],
         ];
 
         foreach ($users as [$username, $email, $staffNumber, $role, $active]) {

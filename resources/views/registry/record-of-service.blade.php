@@ -50,8 +50,8 @@
                             <tr class="hover:bg-base-200/60">
                                 <td class="px-3 py-2">{{ $posting->effective_date }}</td>
                                 <td class="px-3 py-2 capitalize">{{ $posting->posting_type }}</td>
-                                <td class="px-3 py-2">{{ $posting->from_department ?: '—' }}</td>
-                                <td class="px-3 py-2">{{ $posting->to_department }}</td>
+                                <td class="px-3 py-2">{{ $posting->origin }}</td>
+                                <td class="px-3 py-2">{{ $posting->destination }}</td>
                                 <td class="px-3 py-2">{{ $posting->duty_station ?: '—' }}</td>
                             </tr>
                         @endforeach

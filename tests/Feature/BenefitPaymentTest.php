@@ -16,7 +16,7 @@ class BenefitPaymentTest extends TestCase
 
     private function actor(): User
     {
-        return User::factory()->create(['role' => 'administrator']);
+        return User::factory()->create(['role' => 'Administrator']);
     }
 
     private function deceasedOfficer(): BasicInformation

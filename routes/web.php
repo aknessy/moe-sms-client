@@ -137,6 +137,7 @@ Route::middleware('auth.session')->prefix('dashboard')->group(function(){
         Route::get('/users-roles', [ConfigurationController::class, 'usersRoles'])->name('users-roles');
         Route::post('/users-roles', [ConfigurationController::class, 'storeUser'])->name('users-roles.store');
         Route::post('/users-roles/{user}/toggle', [ConfigurationController::class, 'toggleUser'])->name('users-roles.toggle');
+        Route::post('/users-roles/roles/{role}/permissions', [ConfigurationController::class, 'storeRolePermissions'])->name('users-roles.permissions');
         Route::get('/audit-trail', [ConfigurationController::class, 'auditTrail'])->name('audit-trail');
         Route::get('/reference-data', [ConfigurationController::class, 'referenceData'])->name('reference-data');
         Route::get('/notification-templates', [ConfigurationController::class, 'notificationTemplates'])->name('notification-templates');

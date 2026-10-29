@@ -15,7 +15,7 @@ class DeceasedModuleTest extends TestCase
 
     private function actor(): User
     {
-        return User::factory()->create(['role' => 'administrator']);
+        return User::factory()->create(['role' => 'Administrator']);
     }
 
     private function officer(array $attributes = []): BasicInformation

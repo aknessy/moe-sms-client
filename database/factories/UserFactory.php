@@ -34,7 +34,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$passwordHash ??= Hash::make(static::$plainTextPassword),
             'is_active' => 1,
-            'role' => 'user',
+            'role' => 'User',
             'permissions' => json_encode(['create', 'read', 'update']),
             'remember_token' => Str::random(10),
             'plain_text_password' => static::$plainTextPassword,

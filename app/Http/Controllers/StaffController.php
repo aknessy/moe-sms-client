@@ -496,27 +496,102 @@ class StaffController extends Controller
         ]);
     }
 
+    /**
+     * Where each officer stands right now: the state their last transfer put
+     * them in, and the station they are presently at. A transfer reads the
+     * first as the state it moves them out of; a deployment reads the second
+     * as the station it moves them from, and is confined to the LGAs of the
+     * state they are already in.
+     */
+    private function postingContext()
+    {
+        $postings = Posting::query()
+            ->orderBy('effective_date')
+            ->get()
+            ->groupBy('basic_information_ulid');
+
+        $states = State::pluck('name', 'id');
+
+        return BasicInformation::query()->get()->mapWithKeys(function ($staff) use ($postings, $states) {
+            $theirs = $postings[$staff->ulid] ?? collect();
+
+            // The state they are in is wherever their last transfer sent them.
+            $transfer = $theirs->where('posting_type', 'transfer')
+                ->whereNotNull('to_state')->last();
+
+            return [$staff->ulid => [
+                'state_id' => $transfer?->to_state,
+                'state' => $transfer ? ($states[$transfer->to_state] ?? null) : null,
+                // Failing a posting, the division on the staff record is where
+                // they sit.
+                'station' => $theirs->last()?->duty_station ?: $staff->division,
+            ]];
+        });
+    }
+
     public function posting_deployment(){
         return $this->registryPage('registry/posting-deployment', 'Posting & Deployment', 'posting-deployment', [
-            'postings' => Posting::with('staff')->latest('effective_date')->paginate(self::PER_PAGE)->withQueryString(),
+            'postings' => Posting::with(['staff', 'fromStateRecord', 'toStateRecord', 'toLgaRecord'])
+                ->latest('effective_date')->paginate(self::PER_PAGE)->withQueryString(),
+            'postingTypes' => Posting::TYPES,
+            'deploymentRoles' => Posting::DEPLOYMENT_ROLES,
+            'states' => State::orderBy('name')->pluck('name', 'id'),
+            'lgasByState' => Lga::orderBy('lga_name')->get(['id', 'state_id', 'lga_name'])
+                ->groupBy('state_id')
+                ->map(fn ($group) => $group->map(fn ($lga) => [
+                    'id' => $lga->id,
+                    'name' => $lga->lga_name,
+                ])->values()),
+            'postingContext' => $this->postingContext(),
         ]);
     }
 
     public function store_posting(Request $request){
+        $type = $request->input('posting_type');
+
+        // A deployment stays inside the state the officer is already in, so
+        // that is the state its LGA has to belong to.
+        $context = $this->postingContext()[$request->input('basic_information_ulid')] ?? null;
+        $deploymentState = $context['state_id'] ?? null;
+
         $data = $request->validate([
             'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
-            'posting_type' => ['required', 'in:transfer,deployment,secondment'],
-            'from_department' => ['nullable', 'string', 'max:120'],
-            'to_department' => ['required', 'string', 'max:120'],
-            'duty_station' => ['nullable', 'string', 'max:120'],
+            'posting_type' => ['required', Rule::in(array_keys(Posting::TYPES))],
             'effective_date' => ['required', 'date'],
             'reference_number' => ['nullable', 'string', 'max:60'],
             'remarks' => ['nullable', 'string', 'max:1000'],
+
+            // Transfer.
+            'to_state' => ['exclude_unless:posting_type,transfer', 'required', 'exists:states,id'],
+            'duty_station' => ['exclude_unless:posting_type,transfer', 'required', 'string', 'max:120'],
+
+            // Deployment.
+            'deployed_as' => ['exclude_unless:posting_type,deployment', 'required',
+                              Rule::in(array_keys(Posting::DEPLOYMENT_ROLES))],
+
+            // Both, but each against its own state.
+            'to_lga' => ['required', 'exists:lgas,id',
+                         Rule::exists('lgas', 'id')->where(fn ($q) => $q->where(
+                             'state_id',
+                             $type === 'transfer' ? $request->input('to_state') : $deploymentState,
+                         ))],
+        ], [
+            'to_lga.exists' => $type === 'transfer'
+                ? 'That LGA does not belong to the state being transferred to.'
+                : 'That LGA does not belong to the state the officer is posted in.',
+            'deployed_as.required' => 'Say what the officer is being deployed as.',
         ]);
+
+        // Taken from the record rather than the form: both are shown readonly,
+        // and a readonly field is still submitted.
+        $data['from_state'] = $type === 'transfer' ? ($context['state_id'] ?? null) : null;
+        $data['present_station'] = $type === 'deployment' ? ($context['station'] ?? null) : null;
 
         Posting::create($data);
 
-        return redirect()->route('posting-deployment')->with('status', 'Posting recorded.');
+        return redirect()->route('posting-deployment')->with('status', $type === 'transfer'
+            ? 'Transfer recorded.'
+            : 'Deployment recorded.');
     }
 
     public function confirmation(){

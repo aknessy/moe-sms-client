@@ -39,7 +39,7 @@ class ReportsTest extends TestCase
 
         $this->user = User::factory()->create([
             'basic_information_ulid' => $staff->ulid,
-            'role' => 'administrator',
+            'role' => 'Administrator',
         ]);
     }
 

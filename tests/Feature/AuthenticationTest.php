@@ -151,7 +151,7 @@ class AuthenticationTest extends TestCase
                 ->ulid,
             'email' => ($overrides['username'] ?? 'tester') . '@inec.gov.ng',
             'permissions' => json_encode([]),
-            'role' => 'administrator',
+            'role' => 'Administrator',
             'is_active' => 1,
         ], $overrides));
 

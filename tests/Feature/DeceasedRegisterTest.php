@@ -18,7 +18,7 @@ class DeceasedRegisterTest extends TestCase
 
     private function actor(): User
     {
-        return User::factory()->create(['role' => 'administrator']);
+        return User::factory()->create(['role' => 'Administrator']);
     }
 
     /** An officer who died on the given date, with the exit that records it. */

@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\BasicInformation;
+use App\Models\Lga;
 use App\Models\Posting;
+use App\Models\State;
 use App\Models\StaffExit;
 use App\Models\StaffQuery;
 use Illuminate\Database\Seeder;
@@ -70,13 +72,19 @@ class RegistryDemoSeeder extends Seeder
             );
         }
 
+        // These officers sit in Cross River, so their deployments move them
+        // between its LGAs.
+        $crossRiver = State::where('name', 'like', 'Cross River%')->value('id');
+        $lga = fn (string $name) => Lga::where('state_id', $crossRiver)
+            ->where('lga_name', 'like', $name . '%')->value('id');
+
         $postings = [
-            ['INEC/CRS/0002', 'Administration & Finance', 'Operations', 'Akamkpa LGA Office', $currentYear . '-03-01'],
-            ['INEC/CRS/0004', 'ICT & Voter Registry', 'ICT & Voter Registry', 'Ogoja LGA Office', $currentYear . '-06-15'],
-            ['INEC/CRS/0008', 'Operations', 'Voter Education & Publicity', 'Calabar HQ', $previousYear . '-11-20'],
+            ['INEC/CRS/0002', 'Calabar HQ', 'Akamkpa', 'Electoral Officer (EO)', $currentYear . '-03-01'],
+            ['INEC/CRS/0004', 'Calabar HQ', 'Ogoja', 'Assistant Electoral Officer (AEO) RAC', $currentYear . '-06-15'],
+            ['INEC/CRS/0008', 'Ikom LGA Office', 'Calabar Municipal', 'Staff', $previousYear . '-11-20'],
         ];
 
-        foreach ($postings as [$number, $from, $to, $station, $date]) {
+        foreach ($postings as [$number, $station, $lgaName, $role, $date]) {
             if (! $ulid = $byNumber($number)) {
                 continue;
             }
@@ -85,9 +93,9 @@ class RegistryDemoSeeder extends Seeder
                 ['basic_information_ulid' => $ulid, 'effective_date' => $date],
                 [
                     'posting_type' => 'deployment',
-                    'from_department' => $from,
-                    'to_department' => $to,
-                    'duty_station' => $station,
+                    'present_station' => $station,
+                    'to_lga' => $lga($lgaName),
+                    'deployed_as' => $role,
                     'reference_number' => 'INEC/CRS/HR/P/' . substr($date, 0, 4) . '/' . random_int(100, 999),
                 ]
             );

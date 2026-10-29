@@ -25,7 +25,7 @@ class RegistryPaginationTest extends TestCase
                 ->ulid,
             'email' => 'pagination@inec.gov.ng',
             'permissions' => json_encode([]),
-            'role' => 'administrator',
+            'role' => 'Administrator',
             'is_active' => 1,
         ]);
         $user->password = 'password';

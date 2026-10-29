@@ -26,17 +26,29 @@
 
                         <div class="mb-3 w-full">
                             <span class="font-sans text-sm font-medium text-base-content">Permissions</span>
-                            <div class="mt-1 flex flex-wrap items-center gap-x-6 gap-y-2">
+                            <p class="mt-0.5 mb-0 text-xs text-base-content/50">
+                                Only what the chosen role allows. An account need not be given all of them.
+                            </p>
+
+                            {{-- Rebuilt from the chosen role; see the script below. --}}
+                            <div class="mt-1 flex flex-wrap items-center gap-x-6 gap-y-2" data-account-permissions>
+                                <span class="text-xs text-base-content/40" data-permissions-empty>Choose a role first.</span>
+
                                 @foreach ($availablePermissions as $value => $label)
-                                    <label class="flex cursor-pointer items-center gap-2 text-xs text-base-content/80">
-                                        <input type="checkbox" name="permissions[]" value="{{ $value }}"
+                                    <label class="hidden cursor-pointer items-center gap-2 text-xs text-base-content/80"
+                                           data-permission="{{ $value }}">
+                                        <input type="checkbox" name="permissions[]" value="{{ $value }}" disabled
                                                @checked(in_array($value, (array) old('permissions', []), true))
                                                class="h-4 w-4 rounded border-base-300 text-[#2E7D32] focus:ring-[#2E7D32]" />
                                         {{ $label }}
                                     </label>
                                 @endforeach
                             </div>
+
                             @error('permissions')
+                                <p class="mt-1 text-xs text-error">{{ $message }}</p>
+                            @enderror
+                            @error('permissions.*')
                                 <p class="mt-1 text-xs text-error">{{ $message }}</p>
                             @enderror
                         </div>
@@ -57,6 +69,42 @@
                 @endif
             </x-registry.card>
 
+            <x-registry.card title="Roles" :count="$roleRecords->count()"
+                             description="What an account may be given. Permissions will be attached to these.">
+                <x-registry.table :headings="['Role', 'Reference', 'Accounts', 'Permissions', 'Added by', 'Added']"
+                                  empty="No roles defined.">
+                    @foreach ($roleRecords as $role)
+                        <tr class="hover:bg-base-200/60">
+                            <td class="px-3 py-2 font-medium text-base-content">{{ $role->role }}</td>
+                            <td class="px-3 py-2 font-mono text-[11px] text-base-content/50">{{ $role->role_ulid }}</td>
+                            <td class="px-3 py-2">{{ $users->getCollection()->where('role_id', $role->id)->count() ?: '—' }}</td>
+                            <td class="px-3 py-2">
+                                {{-- The whole set is submitted, so clearing a
+                                     box withdraws that permission. --}}
+                                <form method="POST" action="{{ route('users-roles.permissions', $role) }}"
+                                      class="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                    @csrf
+                                    @foreach ($availablePermissions as $value => $label)
+                                        <label class="flex cursor-pointer items-center gap-1 text-[11px] text-base-content/80">
+                                            <input type="checkbox" name="permissions[]" value="{{ $value }}"
+                                                   @checked($role->grants($value))
+                                                   class="h-3.5 w-3.5 rounded border-base-300 text-[#2E7D32] focus:ring-[#2E7D32]" />
+                                            {{ $label }}
+                                        </label>
+                                    @endforeach
+                                    <button type="submit" class="text-[11px] text-[#2E7D32] hover:underline">Save</button>
+                                </form>
+                            </td>
+                            <td class="px-3 py-2">
+                                {{-- Null for the roles the system ships with. --}}
+                                {{ $role->creator?->username ?: 'System' }}
+                            </td>
+                            <td class="px-3 py-2">{{ $role->created_at?->toDateString() ?: '—' }}</td>
+                        </tr>
+                    @endforeach
+                </x-registry.table>
+            </x-registry.card>
+
             <x-registry.card title="Dashboard Accounts" :count="$users->total()">
                 <x-registry.table :headings="['Username', 'Officer', 'File / Computer No.', 'Department', 'Email', 'Role', 'Permissions', 'Status', 'Action']"
                                   empty="No dashboard accounts yet.">
@@ -67,7 +115,12 @@
                             <td class="px-3 py-2">{{ $account->staff?->staff_number ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $account->department ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $account->email }}</td>
-                            <td class="px-3 py-2">{{ $roles[$account->role] ?? $account->role }}</td>
+                            <td class="px-3 py-2">
+                                {{ $account->role ?: '—' }}
+                                @if ($account->is_admin)
+                                    <span class="ml-1 rounded-full bg-[#2E7D32]/10 px-2 py-0.5 text-[11px] text-[#1B5E20]">admin</span>
+                                @endif
+                            </td>
                             <td class="px-3 py-2">
                                 {{ collect(json_decode($account->permissions, true) ?: [])->map(fn ($p) => $availablePermissions[$p] ?? $p)->implode(', ') ?: '—' }}
                             </td>
@@ -95,5 +148,50 @@
         </x-registry.page>
 
         <x-footer appVersion="{{ $app_version }}"/>
+
+        <script>
+            // The permissions offered against an account are the ones its role
+            // allows, so choosing a role rebuilds the set.
+            (function () {
+                const role = document.getElementById('role');
+                const area = document.querySelector('[data-account-permissions]');
+
+                if (! role || ! area) {
+                    return;
+                }
+
+                const allowedByRole = @json($permissionsByRole);
+                const empty = area.querySelector('[data-permissions-empty]');
+                const boxes = area.querySelectorAll('[data-permission]');
+
+                function sync() {
+                    const allowed = allowedByRole[role.value] || [];
+
+                    boxes.forEach(function (label) {
+                        const offered = allowed.includes(label.dataset.permission);
+                        const input = label.querySelector('input');
+
+                        label.classList.toggle('hidden', ! offered);
+                        label.classList.toggle('flex', offered);
+
+                        // A disabled box is not submitted, so a permission that
+                        // is not offered cannot be sent.
+                        input.disabled = ! offered;
+
+                        if (! offered) {
+                            input.checked = false;
+                        }
+                    });
+
+                    empty.hidden = allowed.length > 0;
+                    empty.textContent = role.value
+                        ? 'This role allows nothing yet — grant it some below.'
+                        : 'Choose a role first.';
+                }
+
+                role.addEventListener('change', sync);
+                sync();
+            })();
+        </script>
     </x-slot>
 </x-dashboard>
