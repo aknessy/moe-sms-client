@@ -538,9 +538,20 @@ class StaffController extends Controller
     public function nominal_roll(Request $request){
         return $this->registryPage('registry/nominal-roll', 'Nominall Roll', 'nominal-roll', [
             'search' => $request->query('q'),
+            // The roll is of officers still serving; those who have retired or
+            // died are listed by Pension & Gratuity instead.
+            // Grouped by standing rather than listed alphabetically: senior
+            // officers first, and alphabetical within each grade and step.
             'staff' => $this->searchStaff($request->query('q'))
+                ->inActiveService()
+                ->reorder()
+                ->bySeniority()
+                ->orderBy('surname')
                 ->paginate(self::PER_PAGE)
                 ->withQueryString(),
+            // Where each officer's postings have left them, for the LGA of
+            // posting column.
+            'postingContext' => $this->postingContext(),
         ]);
     }
 

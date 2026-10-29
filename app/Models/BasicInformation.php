@@ -156,6 +156,30 @@ class BasicInformation extends Model
         });
     }
 
+    /** Still serving: neither retired nor deceased. */
+    public function scopeInActiveService($query)
+    {
+        return $query->where('is_retired', 0)->where('is_deceased', 0);
+    }
+
+    /**
+     * Highest grade level first, then highest step, so officers of the same
+     * standing sit together.
+     *
+     * Both columns are free text — "GL 09" and a bare "12" are both on record
+     * — so the number is pulled out of them. Sorted as written, GL 9 would
+     * come above GL 14.
+     */
+    public function scopeBySeniority($query)
+    {
+        // Stripping both words is harmless either way, so one expression does
+        // for both columns. A column with no digits reads as 0 and sorts last.
+        $number = fn (string $column) => "(REPLACE(REPLACE(REPLACE(UPPER({$column}), 'GL', ''), 'STEP', ''), ' ', '') + 0)";
+
+        return $query->orderByRaw($number('grade_level') . ' DESC')
+                     ->orderByRaw($number('step') . ' DESC');
+    }
+
     public function scopeDeceased($query)
     {
         return $query->where('is_deceased', 1);
