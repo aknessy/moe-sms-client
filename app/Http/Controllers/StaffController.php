@@ -224,7 +224,9 @@ class StaffController extends Controller
                 'effective-from' => ['required', 'date'],
                 'expires-on' => ['required', 'date'],
                 'leave-duration' => ['required', 'string', 'max:60'],
-            ]),
+                // A newly employed officer has taken no leave yet, so the
+                // section may be closed with nothing in it.
+            ], 'No leave recorded.'),
             'referees' => $this->storeRepeating($request, 'referee', Referee::class, 'referees_record', [
                 'referee-name' => 'name',
                 'referee-address' => 'address',
@@ -313,17 +315,13 @@ class StaffController extends Controller
     /**
      * The cloneable forms post parallel arrays; zip them into one record per row.
      */
-    private function storeRepeating(Request $request, string $category, string $model, string $column, array $map, array $rules)
+    private function storeRepeating(Request $request, string $category, string $model, string $column, array $map, array $rules, ?string $skipMessage = null)
     {
         if ($redirect = $this->guard($category)) {
             return $redirect;
         }
 
-        $request->validate(collect($rules)
-            ->mapWithKeys(fn ($rule, $field) => [$field . '.*' => $rule])
-            ->all());
-
-        $rows = collect($request->input(array_key_first($map), []))
+        $gather = fn () => collect($request->input(array_key_first($map), []))
             ->keys()
             ->map(function ($i) use ($request, $map) {
                 return collect($map)
@@ -332,6 +330,23 @@ class StaffController extends Controller
             })
             ->filter(fn ($row) => collect($row)->filter()->isNotEmpty())
             ->values();
+
+        // A section that may be empty is settled before anything is validated:
+        // there is nothing to check, and an empty row would fail every rule.
+        if ($skipMessage !== null && ($request->input('action') === 'skip' || $gather()->isEmpty())) {
+            $model::create([
+                'basic_information_ulid' => $this->draft()->ulid,
+                $column => [],
+            ]);
+
+            return $this->advance($category, $skipMessage);
+        }
+
+        $request->validate(collect($rules)
+            ->mapWithKeys(fn ($rule, $field) => [$field . '.*' => $rule])
+            ->all());
+
+        $rows = $gather();
 
         if ($rows->isEmpty()) {
             return back()->withErrors(['form-type' => 'Add at least one entry before saving.'])->withInput();
@@ -345,35 +360,68 @@ class StaffController extends Controller
         return $this->advance($category, self::CATEGORIES[$category]['label'] . ' saved.');
     }
 
+    /**
+     * An officer may have held several posts before this one, so the form
+     * repeats. Nothing in it is required: this may be their first job, and
+     * even a remembered employer may come without the dates.
+     */
     private function storeCareer(Request $request)
     {
         if ($redirect = $this->guard('career')) {
             return $redirect;
         }
 
-        // Nothing here is required: this may be the officer's first job, in
-        // which case there is no prior appointment to record.
-        $data = $request->validate([
-            'date-of-employment' => ['nullable', 'date'],
-            'rank' => ['nullable', 'string', 'max:120'],
-            'grade-level' => ['nullable', 'string', 'max:20'],
-            'ministerial-dept' => ['nullable', 'string', 'max:160'],
-            'ministerial-dept-address' => ['nullable', 'string', 'max:300'],
-            'mode-of-employment' => ['nullable', 'string', 'max:80'],
+        // Column names carry the original misspelling from the migration.
+        $map = [
+            'date-of-employment' => 'date_of_employement',
+            'rank' => 'rank',
+            'grade-level' => 'grade_level',
+            'ministerial-dept' => 'ministerial_dept',
+            'mode-of-employment' => 'mode_of_employment',
+            'ministerial-dept-address' => 'address_of_ministerial_dept',
+        ];
+
+        $request->validate([
+            'date-of-employment.*' => ['nullable', 'date'],
+            'rank.*' => ['nullable', 'string', 'max:120'],
+            'grade-level.*' => ['nullable', 'string', 'max:20'],
+            'ministerial-dept.*' => ['nullable', 'string', 'max:160'],
+            'ministerial-dept-address.*' => ['nullable', 'string', 'max:300'],
+            'mode-of-employment.*' => ['nullable', 'string', 'max:80'],
         ]);
 
-        Career::create([
-            'basic_information_ulid' => $this->draft()->ulid,
-            // Column name carries the original misspelling from the migration.
-            'date_of_employement' => $data['date-of-employment'] ?? null,
-            'rank' => $data['rank'] ?? null,
-            'grade_level' => $data['grade-level'] ?? null,
-            'ministerial_dept' => $data['ministerial-dept'] ?? null,
-            'mode_of_employment' => $data['mode-of-employment'] ?? null,
-            'address_of_ministerial_dept' => $data['ministerial-dept-address'] ?? null,
-        ]);
+        $staff = $this->draft();
 
-        return $this->advance('career', 'Working career saved.');
+        // Any one field may be left out entirely, so how many appointments
+        // were submitted is however far the longest of them runs.
+        $rows = collect(array_keys($map))
+            ->flatMap(fn ($field) => array_keys((array) $request->input($field, [])))
+            ->unique()->sort()->values()
+            ->map(fn ($i) => collect($map)
+                ->mapWithKeys(fn ($to, $from) => [$to => $request->input("{$from}.{$i}") ?: null])
+                ->all())
+            // A row nobody typed anything into is not an appointment.
+            ->filter(fn ($row) => collect($row)->filter()->isNotEmpty())
+            ->values();
+
+        // Skipped outright, or left entirely blank — either way the officer
+        // held no post before this one, and saying so is what closes the step.
+        if ($request->input('action') === 'skip' || $rows->isEmpty()) {
+            Career::create([
+                'basic_information_ulid' => $staff->ulid,
+                'no_previous_employment' => true,
+            ]);
+
+            return $this->advance('career', 'No previous employment recorded.');
+        }
+
+        foreach ($rows as $row) {
+            Career::create($row + ['basic_information_ulid' => $staff->ulid]);
+        }
+
+        return $this->advance('career', $rows->count() === 1
+            ? 'Working career saved.'
+            : "Working career saved — {$rows->count()} previous appointments.");
     }
 
     private function storeNextOfKin(Request $request)

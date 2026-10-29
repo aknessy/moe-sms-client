@@ -180,6 +180,8 @@ class RequiredFieldsTest extends TestCase
 
         $this->assertNotNull($career, 'the section should still be recorded');
         $this->assertNull($career->date_of_employement);
+        // And it says why it is blank, rather than looking like an oversight.
+        $this->assertTrue($career->no_previous_employment);
     }
 
     public function test_the_mode_of_appointment_reaches_the_record(): void
@@ -198,11 +200,12 @@ class RequiredFieldsTest extends TestCase
             'step' => ['3'], 'effective-from' => ['2018-01-01'],
         ]);
 
+        // The section repeats, so every field posts as an array.
         $this->actingAs($user)->post('/dashboard/staff/create', [
             'form-type' => 'work-career',
-            'date-of-employment' => '2010-01-04',
-            'ministerial-dept' => 'Ministry of Education',
-            'mode-of-employment' => 'Permanent',
+            'date-of-employment' => ['2010-01-04'],
+            'ministerial-dept' => ['Ministry of Education'],
+            'mode-of-employment' => ['Permanent'],
         ]);
 
         $career = Career::where('basic_information_ulid', session('staff_draft_ulid'))->first();

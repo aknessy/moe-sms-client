@@ -66,7 +66,7 @@
                                             <div class="w-full">
                                                 <label class="font-normal font-sans text-sm text-base-content">Date of Employment</label>
                                                 <div class="relative">
-                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-employment" placeholder="YYYY/MM/DD" value="" />
+                                                    <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-employment[]" placeholder="YYYY/MM/DD" value="" />
                                                 </div>
                                             </div>
                                         </div>
@@ -74,7 +74,7 @@
                                             <div class="w-full min-w-max">
                                                 <label class="font-normal font-sans text-sm text-base-content">Rank</label>
                                                 <div class="relative">
-                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="rank" placeholder="Rank at Employment" value="" />
+                                                    <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="rank[]" placeholder="Rank at Employment" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M4 5m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
                                                         <path d="M4 15l16 0"></path>
@@ -85,7 +85,7 @@
                                             <div class="w-full min-w-max">
                                                 <label class="font-normal font-sans text-sm text-base-content">Grade Level</label>
                                                 <div class="relative">
-                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level" placeholder="Grade Level at Employment" value="" />
+                                                    <input type="number" step="1" min="1" max="17" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level[]" placeholder="Grade Level at Employment" value="" />
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M4 5m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
                                                         <path d="M4 15l16 0"></path>
@@ -98,8 +98,8 @@
                                             <div class="w-full">
                                                 <label class="font-normal font-sans text-sm text-base-content">Ministry/Extra-Ministerial Department</label>
                                                 <div class="relative">
-                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="ministerial-dept">
-                                                        <option value="brazil">Select Option</option>
+                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="ministerial-dept[]">
+                                                        <option value="">Select Option</option>
                                                     </select>
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                         <path d="M9 18l3 3l3 -3"></path>
@@ -114,7 +114,7 @@
                                             <div class="w-full">
                                                 <label class="font-normal font-sans text-sm text-base-content">Mode of Appointment</label>
                                                 <div class="relative">
-                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="mode-of-employment">
+                                                    <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="mode-of-employment[]">
                                                         <option value="">Select Option</option>
                                                         <option value="Permanent">Permanent</option>
                                                         <option value="Temporary">Temporary</option>
@@ -135,7 +135,7 @@
                                             <div class="w-full">
                                                 <label class="font-normal font-sans text-sm text-base-content">Address of Ministry/Extra-Ministerial Department</label>
                                                 <div class="relative">
-                                                    <textarea class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="ministerial-dept-address" placeholder="Address of Ministry/Extra-Ministerial Department" rows="3"></textarea>
+                                                    <textarea class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="ministerial-dept-address[]" placeholder="Address of Ministry/Extra-Ministerial Department" rows="3"></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -143,8 +143,17 @@
 
                                     <div id="clonesContainer" class="flex flex-col items-start gap-x-2 w-full relative"></div>
                                 </div>
-                                <div class="py-3 px-4 flex flex-wrap items-center justify-end gap-2">
-                                    <div class="flex items-center gap-2">
+                                <div class="py-3 px-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <button id="addCareer" type="button" class="btn btn-sm btn-cta-outline px-4">
+                                        Add Career
+                                    </button>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        {{-- Nothing to record: the officer came
+                                             to this post straight from school. --}}
+                                        <button type="submit" name="action" value="skip" formnovalidate
+                                                class="btn btn-sm btn-ghost px-4 text-base-content/60 hover:text-[#2E7D32]">
+                                            Skip — no previous employment
+                                        </button>
                                         <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md">
                                             Save & Continue
                                         </button>
@@ -163,3 +172,32 @@
         <x-footer appVersion="{{ $app_version }}"/>
     </x-slot>
 </x-dashboard>
+<script>
+    $(function(){
+        let counter = 1;
+        let classes = 'py-3 px-3 border border-base-300 rounded-lg';
+        let btn = `<button type="button" class="removeClones rounded-full w-6 h-6 absolute top-1/2 bottom-2 -right-3 text-center bg-error text-error-content border border-error hover:brightness-95 focus:brightness-95 active:brightness-95 shadow-lg">x</button>`;
+
+        // Click event for the clone button
+        $("#addCareer").click(function(){
+            // Increment the counter
+            counter++;
+
+            // Clone the container and update its ID
+            let newContainer = $("#cloneable").clone().attr("id", "cloneable" + counter);
+            $(newContainer).append(btn);
+            $(newContainer).find('label').append(' ' + counter);
+            $(newContainer).addClass(classes)
+            // A clone carries whatever was typed into the first appointment;
+            // each one is a different employer, so it starts empty.
+            $(newContainer).find('input, textarea').val('');
+            $(newContainer).find('select').prop('selectedIndex', 0);
+            // Append the cloned container to the desired area
+            $("#clonesContainer").append(newContainer);
+        });
+
+        $("#clonesContainer").on("click", ".removeClones", function(){
+            $(this).parent().remove();
+        });
+    })
+</script>
