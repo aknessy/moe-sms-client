@@ -1,4 +1,4 @@
-<x-dashboard pageTitle="{{ $page_title }}" :segments="$uri_segments">
+﻿<x-dashboard :pageTitle="$page_title" :segments="$uri_segments">
     <x-slot name="slot">
         <x-section-placeholder title="Allowances" crumb="Finance/Account" description="Housing, transport, hazard and responsibility allowances" />
 

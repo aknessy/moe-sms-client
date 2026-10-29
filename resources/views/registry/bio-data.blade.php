@@ -1,4 +1,4 @@
-<x-dashboard pageTitle="{{ $page_title }}" :segments="$uri_segments">
+﻿<x-dashboard :pageTitle="$page_title" :segments="$uri_segments">
     <x-slot name="slot">
         <x-registry.page title="Staff Bio-data">
             <x-registry.card title="Staff Bio-data"

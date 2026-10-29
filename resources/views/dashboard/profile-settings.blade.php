@@ -1,4 +1,4 @@
-<x-dashboard pageTitle="{{ $page_title }}">
+﻿<x-dashboard :pageTitle="$page_title">
     <x-slot name="slot">
         <div class="w-full flex flex-col bg-transparent">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

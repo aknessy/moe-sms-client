@@ -1,4 +1,4 @@
-<x-dashboard pageTitle="{{ $page_title }}" :segments="$uri_segments">
+﻿<x-dashboard :pageTitle="$page_title" :segments="$uri_segments">
     <x-slot name="slot">
         <x-registry.page title="Retirement & Exit" crumb="Pension & Gratuity">
             <x-registry.card title="Due to Retire" :count="$projection->count()"
