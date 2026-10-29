@@ -40,6 +40,7 @@ Route::middleware('auth.session')->prefix('dashboard')->group(function(){
 
     Route::prefix('human-resources')->group(function(){
         Route::get('/leave-management', [HumanResourceController::class, 'leave'])->name('hr-leave');
+        Route::post('/leave-management', [HumanResourceController::class, 'store_leave_application'])->name('hr-leave.store');
         Route::get('/promotion-exercises', [HumanResourceController::class, 'promotions'])->name('hr-promotions');
         Route::get('/performance-appraisal', [HumanResourceController::class, 'appraisal'])->name('hr-appraisal');
         Route::get('/recruitment', [HumanResourceController::class, 'recruitment'])->name('hr-recruitment');
