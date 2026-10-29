@@ -146,7 +146,7 @@
                 const deploymentLga = document.getElementById('deployment_to_lga');
 
                 function whereTheyStand() {
-                    return context[staff.value] || { state_id: null, state: null, station: null };
+                    return context[staff.value] || {};
                 }
 
                 function fill(select, stateId, emptyText) {
@@ -167,27 +167,21 @@
                     const standing = whereTheyStand();
 
                     // Readonly, and never submitted: the posting takes these
-                    // from the record, not from the form.
+                    // from the record, not from the form. An officer who has
+                    // never been posted stands at this command, so these are
+                    // filled either way.
                     document.querySelectorAll('[data-current-state]').forEach(input => {
                         input.value = standing.state || '';
-                        input.placeholder = staff.value
-                            ? 'No transfer on record — state unknown'
-                            : 'Choose a staff member first';
                     });
 
                     document.querySelectorAll('[data-current-station]').forEach(input => {
                         input.value = standing.station || '';
-                        input.placeholder = staff.value
-                            ? 'No station on record'
-                            : 'Choose a staff member first';
                     });
 
                     // A transfer offers the LGAs of the state it sends them to;
                     // a deployment, those of the state they are already in.
                     fill(transferLga, toState ? toState.value : '', 'Select a state first');
-                    fill(deploymentLga, standing.state_id, staff.value
-                        ? 'This officer has no state on record'
-                        : 'Select a staff member first');
+                    fill(deploymentLga, standing.state_id, 'Select a staff member first');
 
                     sets.forEach(set => {
                         const shown = set.dataset.postingFields === type.value;

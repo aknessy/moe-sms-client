@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\StaffController;
 use App\Models\BasicInformation;
 use App\Models\Lga;
 use App\Models\Posting;
@@ -273,18 +274,58 @@ class PostingTypeFieldsTest extends TestCase
         $this->assertNull(Posting::latest('id')->first()->duty_station);
     }
 
-    public function test_an_officer_with_no_transfer_on_record_cannot_be_deployed_anywhere(): void
+    public function test_an_officer_never_posted_may_be_deployed_within_this_command(): void
     {
-        // No state on record, so no LGA can belong to it.
+        // Nothing on record, so they are taken to stand at this command and
+        // can be deployed about it.
         $staff = BasicInformation::factory()->create();
 
         $this->record([
             'basic_information_ulid' => $staff->ulid,
             'posting_type' => 'deployment',
-            'to_lga' => $this->lgaIn($this->state('Cross River'))->id,
+            'to_lga' => $this->lgaIn($this->state(config('posting.default_state')))->id,
+            'deployed_as' => 'Staff',
+            'effective_date' => '2026-03-01',
+        ])->assertRedirect(route('posting-deployment'));
+
+        $this->assertSame(
+            config('posting.default_station'),
+            Posting::latest('id')->first()->present_station
+        );
+    }
+
+    public function test_an_officer_never_posted_still_cannot_be_deployed_out_of_this_command(): void
+    {
+        $staff = BasicInformation::factory()->create();
+
+        $this->record([
+            'basic_information_ulid' => $staff->ulid,
+            'posting_type' => 'deployment',
+            // Kano is not this command, and a deployment cannot leave it.
+            'to_lga' => $this->lgaIn($this->state('Kano'))->id,
             'deployed_as' => 'Staff',
             'effective_date' => '2026-03-01',
         ])->assertSessionHasErrors('to_lga');
+    }
+
+    public function test_a_transfer_for_an_officer_never_posted_moves_them_out_of_this_command(): void
+    {
+        $staff = BasicInformation::factory()->create();
+        $lagos = $this->state('Lagos');
+
+        $this->record([
+            'basic_information_ulid' => $staff->ulid,
+            'posting_type' => 'transfer',
+            'to_state' => $lagos->id,
+            'to_lga' => $this->lgaIn($lagos)->id,
+            'duty_station' => 'Ikeja Office',
+            'effective_date' => '2026-02-01',
+        ])->assertRedirect(route('posting-deployment'));
+
+        $this->assertSame(
+            $this->state(config('posting.default_state'))->id,
+            Posting::latest('id')->first()->from_state
+        );
     }
 
     /* ------------------------------------------- where an officer stands */
@@ -323,15 +364,133 @@ class PostingTypeFieldsTest extends TestCase
         $this->assertSame($lagos->id, $context[$staff->ulid]['state_id']);
     }
 
-    public function test_an_officer_never_posted_falls_back_to_their_division(): void
+    public function test_an_officer_never_posted_stands_at_this_command(): void
     {
         $staff = BasicInformation::factory()->create(['division' => 'Voter Registry']);
 
         $context = $this->actingAs($this->user())->get(route('posting-deployment'))
             ->viewData('postingContext');
 
-        $this->assertNull($context[$staff->ulid]['state_id']);
-        $this->assertSame('Voter Registry', $context[$staff->ulid]['station']);
+        $this->assertSame(StaffController::defaultPosting(), $context[$staff->ulid]);
+    }
+
+    public function test_this_command_is_a_real_state_lga_and_station(): void
+    {
+        $default = StaffController::defaultPosting();
+
+        $this->assertSame(config('posting.default_state'), $default['state']);
+        $this->assertSame(config('posting.default_lga'), $default['lga']);
+        $this->assertSame(config('posting.default_station'), $default['station']);
+
+        // Matched against the reference tables, not just echoed back.
+        $this->assertSame($this->state(config('posting.default_state'))->id, $default['state_id']);
+        $this->assertSame($default['state_id'], Lga::find($default['lga_id'])->state_id);
+    }
+
+    public function test_a_posting_on_record_wins_over_this_command(): void
+    {
+        $lagos = $this->state('Lagos');
+        $staff = $this->officerIn($lagos, 'Ikeja Office');
+
+        $context = $this->actingAs($this->user())->get(route('posting-deployment'))
+            ->viewData('postingContext');
+
+        $this->assertSame($lagos->id, $context[$staff->ulid]['state_id']);
+        $this->assertSame('Ikeja Office', $context[$staff->ulid]['station']);
+        $this->assertNotSame(config('posting.default_station'), $context[$staff->ulid]['station']);
+    }
+
+    public function test_only_what_is_missing_falls_back(): void
+    {
+        $crossRiver = $this->state(config('posting.default_state'));
+        $staff = BasicInformation::factory()->create();
+
+        // A deployment: it sets an LGA and a station, but never a state.
+        $lga = Lga::where('state_id', $crossRiver->id)->skip(3)->first();
+
+        Posting::create([
+            'basic_information_ulid' => $staff->ulid,
+            'posting_type' => 'deployment',
+            'to_lga' => $lga->id,
+            'deployed_as' => 'Staff',
+            'duty_station' => 'Obudu LGA Office',
+            'effective_date' => '2025-01-01',
+        ]);
+
+        $context = $this->actingAs($this->user())->get(route('posting-deployment'))
+            ->viewData('postingContext');
+
+        // The LGA and station are their own; the state still comes from here.
+        $this->assertSame($lga->id, $context[$staff->ulid]['lga_id']);
+        $this->assertSame('Obudu LGA Office', $context[$staff->ulid]['station']);
+        $this->assertSame($crossRiver->id, $context[$staff->ulid]['state_id']);
+    }
+
+    public function test_a_deployment_leaves_them_standing_at_the_lga_it_sent_them_to(): void
+    {
+        $crossRiver = $this->state(config('posting.default_state'));
+        $staff = $this->officerIn($crossRiver, 'Calabar HQ');
+        $destination = Lga::where('state_id', $crossRiver->id)->skip(7)->first();
+
+        // A deployment names no duty station, so the LGA is the station.
+        $this->record([
+            'basic_information_ulid' => $staff->ulid,
+            'posting_type' => 'deployment',
+            'to_lga' => $destination->id,
+            'deployed_as' => 'Electoral Officer (EO)',
+            'effective_date' => '2026-04-01',
+        ])->assertRedirect(route('posting-deployment'));
+
+        $context = $this->actingAs($this->user())->get(route('posting-deployment'))
+            ->viewData('postingContext');
+
+        $this->assertSame($destination->lga_name, $context[$staff->ulid]['station']);
+    }
+
+    public function test_deploying_twice_reads_the_first_posting_as_where_they_came_from(): void
+    {
+        $crossRiver = $this->state(config('posting.default_state'));
+        $staff = BasicInformation::factory()->create();
+        $lgas = Lga::where('state_id', $crossRiver->id)->take(2)->get();
+
+        foreach ($lgas as $index => $lga) {
+            $this->record([
+                'basic_information_ulid' => $staff->ulid,
+                'posting_type' => 'deployment',
+                'to_lga' => $lga->id,
+                'deployed_as' => 'Staff',
+                'effective_date' => '2026-0' . ($index + 5) . '-01',
+            ])->assertRedirect(route('posting-deployment'));
+        }
+
+        $postings = Posting::where('basic_information_ulid', $staff->ulid)
+            ->orderBy('effective_date')->get();
+
+        // The first moved them off this command's HQ; the second, out of the
+        // LGA the first left them in.
+        $this->assertSame(config('posting.default_station'), $postings[0]->present_station);
+        $this->assertSame($lgas[0]->lga_name, $postings[1]->present_station);
+    }
+
+    public function test_the_lga_follows_the_last_posting_of_either_kind(): void
+    {
+        $crossRiver = $this->state(config('posting.default_state'));
+        $staff = $this->officerIn($crossRiver);
+        $later = Lga::where('state_id', $crossRiver->id)->skip(5)->first();
+
+        Posting::create([
+            'basic_information_ulid' => $staff->ulid,
+            'posting_type' => 'deployment',
+            'to_lga' => $later->id,
+            'deployed_as' => 'Staff',
+            'effective_date' => '2026-01-01',
+        ]);
+
+        $context = $this->actingAs($this->user())->get(route('posting-deployment'))
+            ->viewData('postingContext');
+
+        $this->assertSame($later->id, $context[$staff->ulid]['lga_id']);
+        $this->assertSame($later->lga_name, $context[$staff->ulid]['lga']);
     }
 
     public function test_the_page_carries_the_lgas_of_each_state(): void

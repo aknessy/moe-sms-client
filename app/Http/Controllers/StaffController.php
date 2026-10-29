@@ -497,11 +497,35 @@ class StaffController extends Controller
     }
 
     /**
+     * Where an officer with nothing on record is taken to stand: this command.
+     * A posting only says where someone was moved to, so until one is recorded
+     * they have no state of their own — and without a state they could never
+     * be deployed, a deployment being confined to the state they are in.
+     */
+    public static function defaultPosting(): array
+    {
+        $state = State::where('name', config('posting.default_state'))->first();
+
+        $lga = $state === null ? null : Lga::where('state_id', $state->id)
+            ->where('lga_name', config('posting.default_lga'))->first();
+
+        return [
+            'state_id' => $state?->id,
+            'state' => $state?->name,
+            'lga_id' => $lga?->id,
+            'lga' => $lga?->lga_name,
+            'station' => config('posting.default_station'),
+        ];
+    }
+
+    /**
      * Where each officer stands right now: the state their last transfer put
-     * them in, and the station they are presently at. A transfer reads the
-     * first as the state it moves them out of; a deployment reads the second
-     * as the station it moves them from, and is confined to the LGAs of the
-     * state they are already in.
+     * them in, the LGA their last posting sent them to, and the station they
+     * are presently at. A transfer reads the state as the one it moves them
+     * out of; a deployment reads the station as the one it moves them from,
+     * and is confined to the LGAs of that state.
+     *
+     * Anything an officer has no posting for falls back to this command.
      */
     private function postingContext()
     {
@@ -511,22 +535,34 @@ class StaffController extends Controller
             ->groupBy('basic_information_ulid');
 
         $states = State::pluck('name', 'id');
+        $lgas = Lga::pluck('lga_name', 'id');
+        $default = self::defaultPosting();
 
-        return BasicInformation::query()->get()->mapWithKeys(function ($staff) use ($postings, $states) {
-            $theirs = $postings[$staff->ulid] ?? collect();
+        return BasicInformation::query()->get()
+            ->mapWithKeys(function ($staff) use ($postings, $states, $lgas, $default) {
+                $theirs = $postings[$staff->ulid] ?? collect();
 
-            // The state they are in is wherever their last transfer sent them.
-            $transfer = $theirs->where('posting_type', 'transfer')
-                ->whereNotNull('to_state')->last();
+                // The state they are in is wherever their last transfer sent
+                // them; the LGA, wherever their last posting of either kind did.
+                $state = $theirs->where('posting_type', 'transfer')
+                    ->whereNotNull('to_state')->last()?->to_state;
 
-            return [$staff->ulid => [
-                'state_id' => $transfer?->to_state,
-                'state' => $transfer ? ($states[$transfer->to_state] ?? null) : null,
-                // Failing a posting, the division on the staff record is where
-                // they sit.
-                'station' => $theirs->last()?->duty_station ?: $staff->division,
-            ]];
-        });
+                $lga = $theirs->whereNotNull('to_lga')->last()?->to_lga;
+
+                // A transfer names the station it sends them to; a deployment
+                // does not, so the LGA it sent them to is where they now are.
+                $latest = $theirs->last();
+                $station = $latest?->duty_station
+                    ?: ($latest?->to_lga ? ($lgas[$latest->to_lga] ?? null) : null);
+
+                return [$staff->ulid => [
+                    'state_id' => $state ?: $default['state_id'],
+                    'state' => $state ? ($states[$state] ?? null) : $default['state'],
+                    'lga_id' => $lga ?: $default['lga_id'],
+                    'lga' => $lga ? ($lgas[$lga] ?? null) : $default['lga'],
+                    'station' => $station ?: $default['station'],
+                ]];
+            });
     }
 
     public function posting_deployment(){
