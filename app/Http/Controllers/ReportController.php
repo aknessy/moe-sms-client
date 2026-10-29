@@ -6,6 +6,7 @@ use App\Models\BasicInformation;
 use App\Models\StaffExit;
 use App\Models\State;
 use App\Models\User;
+use App\Support\PostingContext;
 use App\Support\SpreadsheetExport;
 use Illuminate\Http\Request;
 
@@ -61,6 +62,9 @@ class ReportController extends Controller
                 fn ($q) => $q->where('is_retired', 0)->where('is_deceased', 0))
             ->when($request->query('status') === 'retired', fn ($q) => $q->where('is_retired', 1))
             ->when($request->query('status') === 'deceased', fn ($q) => $q->where('is_deceased', 1))
+            // Grouped by standing, as the Registry roll is: senior officers
+            // first, alphabetical within each grade and step.
+            ->bySeniority()
             ->orderBy('surname');
     }
 
@@ -86,17 +90,26 @@ class ReportController extends Controller
                 ->map->count()->sortDesc()->take(10),
 
             'staff' => $query->paginate(self::PER_PAGE)->withQueryString(),
+            // Where each officer's postings have left them, for the LGA of
+            // posting column.
+            'postingContext' => PostingContext::all(),
         ]);
     }
 
     public function nominalRollExport(Request $request)
     {
+        $postings = PostingContext::all();
+
         $rows = $this->nominalRollQuery($request)->get()->map(fn ($s) => [
             $s->staff_number, $s->surname, $s->firstname, $s->othernames, $s->gender,
             // Rank and designation are the same thing; the roll calls it rank.
             $s->department, $s->division, $s->rank, $s->grade_level, $s->step,
             $s->date_of_birth, $s->date_of_employment, $s->date_of_confirmation,
-            $s->state?->name, $s->lga?->lga_name,
+            $s->state?->name, $s->lga?->lga_name, $postings[$s->ulid]['lga'] ?? null,
+            $s->pfa, $s->rsa,
+            // Blank until the Finance/Account section exists to hold it.
+            null, null,
+            $s->retiresOn()?->year, $s->mode_of_retirement_label,
             $s->phone_number, $s->email,
             $this->statusOf($s),
         ]);
@@ -107,7 +120,8 @@ class ReportController extends Controller
             ['File / Computer No.', 'Surname', 'First Name', 'Other Names', 'Gender', 'Department',
              'Division / Unit', 'Rank', 'Grade Level', 'Step', 'Date of Birth',
              'Date of Employment', 'Date of Confirmation', 'State of Origin', 'LGA of Origin',
-             'Phone', 'Email', 'Status'],
+             'LGA of Posting', 'PFA', 'RSA PIN', 'Bank', 'Account Number',
+             'Year of Retirement', 'Mode of Retirement', 'Phone', 'Email', 'Status'],
             $rows,
         );
     }

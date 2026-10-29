@@ -60,8 +60,15 @@
             </div>
 
             <x-registry.card title="The Roll" :count="$staff->total()">
-                {{-- Rank and designation are the same thing; the roll calls it rank. --}}
-                <x-registry.table :headings="['File / Computer No.', 'Name', 'Gender', 'Department', 'Division', 'Rank', 'GL / Step', 'State / LGA', 'Status']"
+                {{-- The same columns the Registry roll carries, plus the status
+                     this report filters on. More than fit, so it scrolls
+                     sideways. Rank and designation are the same thing; the
+                     roll calls it rank. --}}
+                <x-registry.table wide
+                                  :headings="['File / Computer No.', 'Name', 'Gender', 'Department', 'Division', 'Rank',
+                                              'GL / Step', 'Date of Birth', 'Date of Confirmation', 'Phone Number',
+                                              'State of Origin', 'LGA of Origin', 'LGA of Posting', 'PFA', 'RSA PIN',
+                                              'Bank & Account Number', 'Year of Retirement', 'Mode of Retirement', 'Status']"
                                   empty="No staff match these filters.">
                     @foreach ($staff as $person)
                         <tr class="hover:bg-base-200/60">
@@ -72,7 +79,21 @@
                             <td class="px-3 py-2">{{ $person->division ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->rank ?: '—' }}</td>
                             <td class="px-3 py-2">{{ trim(($person->grade_level ?: '—') . ($person->step ? ' / ' . $person->step : '')) }}</td>
-                            <td class="px-3 py-2">{{ $person->state?->name ?: '—' }} / {{ $person->lga?->lga_name ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->date_of_birth }}</td>
+                            <td class="px-3 py-2">{{ $person->date_of_confirmation ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->phone_number ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->state?->name ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->lga?->lga_name ?: '—' }}</td>
+                            {{-- Where their postings have left them, not where
+                                 they come from. --}}
+                            <td class="px-3 py-2">{{ $postingContext[$person->ulid]['lga'] ?? '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->pfa ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->rsa ?: '—' }}</td>
+                            {{-- Blank until the Finance/Account section exists
+                                 to hold it. --}}
+                            <td class="px-3 py-2 text-base-content/30">—</td>
+                            <td class="px-3 py-2">{{ $person->retiresOn()?->year ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->mode_of_retirement_label ?: '—' }}</td>
                             <td class="px-3 py-2">
                                 @if ($person->is_deceased)
                                     <span class="rounded-full bg-error/10 px-2 py-1 text-xs text-error">Deceased</span>

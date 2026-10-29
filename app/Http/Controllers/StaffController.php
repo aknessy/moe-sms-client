@@ -16,6 +16,7 @@ use App\Models\Referee;
 use App\Models\StaffExit;
 use App\Models\StaffQuery;
 use App\Models\State;
+use App\Support\PostingContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -565,72 +566,19 @@ class StaffController extends Controller
     }
 
     /**
-     * Where an officer with nothing on record is taken to stand: this command.
-     * A posting only says where someone was moved to, so until one is recorded
-     * they have no state of their own — and without a state they could never
-     * be deployed, a deployment being confined to the state they are in.
+     * Both nominal rolls read this too, so it lives outside the controller.
+     *
+     * @see \App\Support\PostingContext
      */
     public static function defaultPosting(): array
     {
-        $state = State::where('name', config('posting.default_state'))->first();
-
-        $lga = $state === null ? null : Lga::where('state_id', $state->id)
-            ->where('lga_name', config('posting.default_lga'))->first();
-
-        return [
-            'state_id' => $state?->id,
-            'state' => $state?->name,
-            'lga_id' => $lga?->id,
-            'lga' => $lga?->lga_name,
-            'station' => config('posting.default_station'),
-        ];
+        return PostingContext::default();
     }
 
-    /**
-     * Where each officer stands right now: the state their last transfer put
-     * them in, the LGA their last posting sent them to, and the station they
-     * are presently at. A transfer reads the state as the one it moves them
-     * out of; a deployment reads the station as the one it moves them from,
-     * and is confined to the LGAs of that state.
-     *
-     * Anything an officer has no posting for falls back to this command.
-     */
+    /** @see \App\Support\PostingContext */
     private function postingContext()
     {
-        $postings = Posting::query()
-            ->orderBy('effective_date')
-            ->get()
-            ->groupBy('basic_information_ulid');
-
-        $states = State::pluck('name', 'id');
-        $lgas = Lga::pluck('lga_name', 'id');
-        $default = self::defaultPosting();
-
-        return BasicInformation::query()->get()
-            ->mapWithKeys(function ($staff) use ($postings, $states, $lgas, $default) {
-                $theirs = $postings[$staff->ulid] ?? collect();
-
-                // The state they are in is wherever their last transfer sent
-                // them; the LGA, wherever their last posting of either kind did.
-                $state = $theirs->where('posting_type', 'transfer')
-                    ->whereNotNull('to_state')->last()?->to_state;
-
-                $lga = $theirs->whereNotNull('to_lga')->last()?->to_lga;
-
-                // A transfer names the station it sends them to; a deployment
-                // does not, so the LGA it sent them to is where they now are.
-                $latest = $theirs->last();
-                $station = $latest?->duty_station
-                    ?: ($latest?->to_lga ? ($lgas[$latest->to_lga] ?? null) : null);
-
-                return [$staff->ulid => [
-                    'state_id' => $state ?: $default['state_id'],
-                    'state' => $state ? ($states[$state] ?? null) : $default['state'],
-                    'lga_id' => $lga ?: $default['lga_id'],
-                    'lga' => $lga ? ($lgas[$lga] ?? null) : $default['lga'],
-                    'station' => $station ?: $default['station'],
-                ]];
-            });
+        return PostingContext::all();
     }
 
     public function posting_deployment(){
