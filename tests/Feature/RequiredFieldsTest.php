@@ -47,7 +47,8 @@ class RequiredFieldsTest extends TestCase
             'file-number' => 'REQ/F/0001', 'computer-number' => 'REQ/0001',
             'last-name' => 'Eyo', 'first-name' => 'Bassey', 'other-names' => 'Okon',
             'department' => 'Operations', 'division' => 'Calabar HQ',
-            'designation' => 'Electoral Officer', 'grade-level' => 'GL 09', 'step' => 'Step 4',
+            'gender' => 'Male',
+            'designation' => 'Executive Officer (EO)', 'grade-level' => 'GL 09', 'step' => 'Step 4',
             'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000001',
             'email' => 'bassey.eyo@inec.gov.ng',
             'state-of-origin' => $crossRiver->id,
@@ -61,7 +62,7 @@ class RequiredFieldsTest extends TestCase
     public static function mandatoryBasicFields(): array
     {
         return array_map(fn ($field) => [$field], [
-            'file-number', 'last-name', 'first-name', 'department', 'division',
+            'file-number', 'last-name', 'first-name', 'gender', 'department', 'division',
             'designation', 'grade-level', 'step', 'date-of-birth', 'date-of-employment', 'phone-number',
             'email', 'state-of-origin', 'lga-of-origin', 'pfa', 'rsa', 'nhis', 'address',
         ]);
@@ -84,7 +85,8 @@ class RequiredFieldsTest extends TestCase
 
     public static function optionalBasicFields(): array
     {
-        return [['computer-number'], ['other-names']];
+        // An officer still on probation has no confirmation date yet.
+        return [['computer-number'], ['other-names'], ['date-of-confirmation']];
     }
 
     #[DataProvider('optionalBasicFields')]

@@ -262,15 +262,20 @@ class StaffController extends Controller
             'last-name' => ['required', 'string', 'max:80'],
             'first-name' => ['required', 'string', 'max:80'],
             'other-names' => ['nullable', 'string', 'max:80'],
+            'gender' => ['required', Rule::in(BasicInformation::GENDERS)],
             'department' => ['required', 'string', 'max:120'],
             'division' => ['required', 'string', 'max:120'],
-            'designation' => ['required', 'string', 'max:120'],
+            // Rank and designation are the same thing, chosen from a fixed list.
+            'designation' => ['required', Rule::in(BasicInformation::RANKS)],
             'grade-level' => ['required', 'string', 'max:20'],
             'step' => ['required', 'string', 'max:20'],
             'date-of-birth' => ['required', 'date', 'before:today'],
             // Joined their current employer. With the date of birth it decides
             // the mode of retirement, which the model works out on save.
             'date-of-employment' => ['required', 'date', 'before_or_equal:today', 'after:date-of-birth'],
+            // An officer still on probation has not been confirmed yet.
+            'date-of-confirmation' => ['nullable', 'date', 'before_or_equal:today',
+                                       'after_or_equal:date-of-employment'],
             'phone-number' => ['required', 'string', 'max:30'],
             'email' => ['required', 'email', 'max:160'],
             // Both are foreign keys into the national reference tables.
@@ -292,6 +297,7 @@ class StaffController extends Controller
             'surname' => $data['last-name'],
             'firstname' => $data['first-name'],
             'othernames' => $data['other-names'] ?? '',
+            'gender' => $data['gender'],
             'department' => $data['department'] ?? null,
             'division' => $data['division'] ?? null,
             'designation' => $data['designation'] ?? null,
@@ -299,6 +305,7 @@ class StaffController extends Controller
             'step' => $data['step'] ?? null,
             'date_of_birth' => $data['date-of-birth'],
             'date_of_employment' => $data['date-of-employment'],
+            'date_of_confirmation' => $data['date-of-confirmation'] ?? null,
             'phone_number' => $data['phone-number'],
             'email' => $data['email'] ?? null,
             'state_of_origin' => $data['state-of-origin'] ?? null,
@@ -699,6 +706,13 @@ class StaffController extends Controller
         ]);
 
         Confirmation::create($data);
+
+        // The staff record carries the plain fact of when the appointment was
+        // confirmed, so a confirmed exercise writes its date there too.
+        if ($data['status'] === 'confirmed' && filled($data['confirmation_date'] ?? null)) {
+            BasicInformation::where('ulid', $data['basic_information_ulid'])
+                ->update(['date_of_confirmation' => $data['confirmation_date']]);
+        }
 
         return redirect()->route('confirmation')->with('status', 'Confirmation record saved.');
     }

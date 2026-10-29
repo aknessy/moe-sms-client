@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\BasicInformation;
 use App\Models\Lga;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -33,11 +34,15 @@ class BasicInformationFactory extends Factory
             'surname' => $this->faker->lastName($gender[rand(0, 1)]),
             'firstname' => $this->faker->firstName($gender[rand(0, 1)]),
             'othernames' => $this->faker->name($gender[rand(0, 1)]),
+            'gender' => $this->faker->randomElement(BasicInformation::GENDERS),
+            'designation' => $this->faker->randomElement(BasicInformation::RANKS),
             'date_of_birth' => $dateOfBirth = $this->faker->dateTimeBetween('-60 years', '-25 years')->format('Y-m-d'),
             // Joined somewhere between coming of age and today.
-            'date_of_employment' => $this->faker
+            'date_of_employment' => $dateOfEmployment = $this->faker
                 ->dateTimeBetween((new \DateTime($dateOfBirth))->modify('+22 years'), 'now')
                 ->format('Y-m-d'),
+            // Confirmed after the probation that follows appointment.
+            'date_of_confirmation' => $this->faker->optional()->dateTimeBetween($dateOfEmployment, 'now')?->format('Y-m-d'),
             'phone_number' => $this->faker->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),
             'state_of_origin' => $lga?->state_id,

@@ -9,7 +9,8 @@
                     <button type="button" onclick="window.print()" class="btn btn-sm btn-cta-outline px-4">Print</button>
                 </x-registry.search>
 
-                <x-registry.table :headings="['S/N', 'File / Computer No.', 'Surname', 'First Name', 'Other Names', 'Department', 'Designation', 'GL / Step', 'Date of Birth', 'State of Origin', 'LGA']"
+                {{-- Rank and designation are the same thing; the roll calls it rank. --}}
+                <x-registry.table :headings="['S/N', 'File / Computer No.', 'Surname', 'First Name', 'Other Names', 'Gender', 'Department', 'Rank', 'GL / Step', 'Date of Birth', 'State of Origin', 'LGA']"
                                   empty="No staff records captured yet.">
                     @foreach ($staff as $index => $person)
                         <tr class="hover:bg-base-200/60">
@@ -19,8 +20,9 @@
                             <td class="px-3 py-2">{{ $person->surname }}</td>
                             <td class="px-3 py-2">{{ $person->firstname }}</td>
                             <td class="px-3 py-2">{{ $person->othernames }}</td>
+                            <td class="px-3 py-2">{{ $person->gender ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->department ?: '—' }}</td>
-                            <td class="px-3 py-2">{{ $person->designation ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->rank ?: '—' }}</td>
                             <td class="px-3 py-2">{{ trim(($person->grade_level ?: '—') . ($person->step ? ' / ' . $person->step : '')) }}</td>
                             <td class="px-3 py-2">{{ $person->date_of_birth }}</td>
                             <td class="px-3 py-2">{{ $person->state?->name ?: '—' }}</td>

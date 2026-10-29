@@ -93,7 +93,24 @@
                                     <div class="w-full max-w-sm">
                                         <label class="font-normal font-sans text-sm text-base-content">Other names</label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="other-names" placeholder="Other Names" value />
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="other-names" placeholder="Other Names" value="{{ old('other-names') }}" />
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-sm">
+                                        <label class="font-normal font-sans text-sm text-base-content">Gender<span class="text-error">*</span></label>
+                                        <div class="relative">
+                                            <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="gender" required>
+                                                <option value="">Select Option</option>
+                                                @foreach (\App\Models\BasicInformation::GENDERS as $gender)
+                                                    <option value="{{ $gender }}" @selected(old('gender') === $gender)>{{ $gender }}</option>
+                                                @endforeach
+                                            </select>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
+                                                <path d="M9 18l3 3l3 -3"></path>
+                                                <path d="M12 15v6"></path>
+                                                <path d="M15 6l-3 -3l-3 3"></path>
+                                                <path d="M12 3v6"></path>
+                                            </svg>
                                         </div>
                                     </div>
                                 </div>
@@ -121,14 +138,20 @@
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Designation<span class="text-error">*</span></label>
+                                        <label class="font-normal font-sans text-sm text-base-content">Rank / Designation<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="designation" placeholder="e.g. Administrative Officer I" value=""  required/>
+                                            {{-- Stored as `designation`; the nominal roll reads it as rank. --}}
+                                            <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="designation" required>
+                                                <option value="">Select Option</option>
+                                                @foreach (\App\Models\BasicInformation::RANKS as $rank)
+                                                    <option value="{{ $rank }}" @selected(old('designation') === $rank)>{{ $rank }}</option>
+                                                @endforeach
+                                            </select>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M3 7m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
-                                                <path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"></path>
-                                                <path d="M12 12l0 .01"></path>
-                                                <path d="M3 13a20 20 0 0 0 18 0"></path>
+                                                <path d="M9 18l3 3l3 -3"></path>
+                                                <path d="M12 15v6"></path>
+                                                <path d="M15 6l-3 -3l-3 3"></path>
+                                                <path d="M12 3v6"></path>
                                             </svg>
                                         </div>
                                     </div>
@@ -162,6 +185,18 @@
                                         <p class="mt-1 mb-0 text-xs text-base-content/50">
                                             Joined this Commission. With the date of birth it decides whether the officer
                                             leaves on 35 years of service or at 60 — whichever comes first.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
+                                    <div class="w-full max-w-1/2">
+                                        <label class="font-normal font-sans text-sm text-base-content">Date of Confirmation</label>
+                                        <div class="relative">
+                                            <input type="date" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="date-of-confirmation" placeholder="YYYY/MM/DD" value="{{ old('date-of-confirmation') }}" />
+                                        </div>
+                                        <p class="mt-1 mb-0 text-xs text-base-content/50">
+                                            When the appointment was confirmed. Leave it blank if the officer is still
+                                            on probation — recording the confirmation later fills it in.
                                         </p>
                                     </div>
                                 </div>

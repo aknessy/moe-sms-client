@@ -92,9 +92,10 @@ class ReportController extends Controller
     public function nominalRollExport(Request $request)
     {
         $rows = $this->nominalRollQuery($request)->get()->map(fn ($s) => [
-            $s->staff_number, $s->surname, $s->firstname, $s->othernames,
-            $s->department, $s->division, $s->designation, $s->grade_level, $s->step,
-            $s->date_of_birth, $s->date_of_employment,
+            $s->staff_number, $s->surname, $s->firstname, $s->othernames, $s->gender,
+            // Rank and designation are the same thing; the roll calls it rank.
+            $s->department, $s->division, $s->rank, $s->grade_level, $s->step,
+            $s->date_of_birth, $s->date_of_employment, $s->date_of_confirmation,
             $s->state?->name, $s->lga?->lga_name,
             $s->phone_number, $s->email,
             $this->statusOf($s),
@@ -103,9 +104,10 @@ class ReportController extends Controller
         return SpreadsheetExport::download(
             SpreadsheetExport::filename('nominal-roll', $request->query('status')),
             'Nominal Roll',
-            ['File / Computer No.', 'Surname', 'First Name', 'Other Names', 'Department',
-             'Division / Unit', 'Designation', 'Grade Level', 'Step', 'Date of Birth',
-             'Date of Employment', 'State of Origin', 'LGA of Origin', 'Phone', 'Email', 'Status'],
+            ['File / Computer No.', 'Surname', 'First Name', 'Other Names', 'Gender', 'Department',
+             'Division / Unit', 'Rank', 'Grade Level', 'Step', 'Date of Birth',
+             'Date of Employment', 'Date of Confirmation', 'State of Origin', 'LGA of Origin',
+             'Phone', 'Email', 'Status'],
             $rows,
         );
     }

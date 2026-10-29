@@ -60,15 +60,17 @@
             </div>
 
             <x-registry.card title="The Roll" :count="$staff->total()">
-                <x-registry.table :headings="['File / Computer No.', 'Name', 'Department', 'Division', 'Designation', 'GL / Step', 'State / LGA', 'Status']"
+                {{-- Rank and designation are the same thing; the roll calls it rank. --}}
+                <x-registry.table :headings="['File / Computer No.', 'Name', 'Gender', 'Department', 'Division', 'Rank', 'GL / Step', 'State / LGA', 'Status']"
                                   empty="No staff match these filters.">
                     @foreach ($staff as $person)
                         <tr class="hover:bg-base-200/60">
                             <td class="px-3 py-2 font-medium text-base-content">{{ $person->staff_number }}</td>
                             <td class="px-3 py-2">{{ trim($person->surname . ', ' . trim($person->firstname . ' ' . $person->othernames)) }}</td>
+                            <td class="px-3 py-2">{{ $person->gender ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->department ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->division ?: '—' }}</td>
-                            <td class="px-3 py-2">{{ $person->designation ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $person->rank ?: '—' }}</td>
                             <td class="px-3 py-2">{{ trim(($person->grade_level ?: '—') . ($person->step ? ' / ' . $person->step : '')) }}</td>
                             <td class="px-3 py-2">{{ $person->state?->name ?: '—' }} / {{ $person->lga?->lga_name ?: '—' }}</td>
                             <td class="px-3 py-2">

@@ -26,14 +26,17 @@ class BasicInformation extends Model
       'surname',
       'firstname',
       'othernames',
+      'gender',
       'department',
       'division',
+      // Rank and designation are the same thing; the nominal roll calls it rank.
       'designation',
       'grade_level',
       'step',
       'date_of_birth',
       // Joined their current employer; the 35 years of service run from here.
       'date_of_employment',
+      'date_of_confirmation',
       'phone_number',
       'email',
       'state_of_origin',
@@ -48,6 +51,35 @@ class BasicInformation extends Model
       'created_at',
       'updated_at'
     ];
+
+    /**
+     * Every rank an officer may hold, senior first. "Rank" and "designation"
+     * name the same thing — the column is `designation`, the nominal roll
+     * reads it as rank.
+     */
+    public const RANKS = [
+        'Director',
+        'Assistant Director (AD)',
+        'Chief Administrative Officer CAO',
+        'Assistant Chief Administrative Officer (ACAO)',
+        'Administrative Officer I (AO I)',
+        'Administrative Officer II (AO II)',
+        'Senior Executive Officer (SEO)',
+        'Higher Executive Officer (HEO)',
+        'Executive Officer (EO)',
+        'Assistant Executive Officer (AEO)',
+        'Chief Clerical Officer (CCO)',
+        'Gardener',
+        'Security Guard',
+    ];
+
+    public const GENDERS = ['Male', 'Female'];
+
+    /** The rank an officer holds. The column carries the other name for it. */
+    public function getRankAttribute(): ?string
+    {
+        return $this->designation;
+    }
 
     /** The two routes out of the service. */
     public const RETIREMENT_MODES = [
