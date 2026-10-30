@@ -118,10 +118,14 @@ class LeaveEntitlementTest extends TestCase
         $this->assertSame(30, $entitlements[$senior->ulid]);
     }
 
-    public function test_the_day_count_on_the_form_is_readonly(): void
+    public function test_the_day_count_is_only_fixed_for_annual_leave(): void
     {
+        // It used to be readonly outright. The entitlement is an *annual*
+        // leave entitlement, so which it is now depends on the type chosen,
+        // and is decided on the page rather than baked into the field.
         $this->actingAs($this->actor())->get(route('hr-leave'))
-            ->assertSee('readonly data-days', false);
+            ->assertDontSee('readonly data-days', false)
+            ->assertSee('name="days"', false);
     }
 
     /* ------------------------------------------- the columns are numbers */

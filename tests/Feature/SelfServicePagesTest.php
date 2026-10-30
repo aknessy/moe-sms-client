@@ -172,10 +172,14 @@ class SelfServicePagesTest extends TestCase
         $this->assertSame(0, LeaveApplication::count());
     }
 
-    public function test_the_day_count_on_the_form_is_readonly(): void
+    public function test_the_day_count_is_only_fixed_for_annual_leave(): void
     {
+        // See LeaveDayCountTest: the entitlement is an *annual* leave
+        // entitlement, so the field is readonly only when that is the type
+        // chosen, and the page decides which.
         $this->actingAs($this->officer(['grade_level' => 5]))->get(route('my-leave'))
-            ->assertSee('readonly data-days', false);
+            ->assertDontSee('readonly data-days', false)
+            ->assertSee('data-entitlement="21"', false);
     }
 
     /* -------------------------------------------------------- training */

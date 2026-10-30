@@ -15,18 +15,23 @@
                         <x-registry.field name="effective_date" label="Effective Date" type="date" required />
 
                         <div class="w-full">
-                            <label class="font-sans text-sm font-medium text-base-content">Number of Days</label>
+                            <label for="days" class="font-sans text-sm font-medium text-base-content">
+                                Number of Days<span class="text-error">*</span>
+                            </label>
                             <div class="relative mt-1">
-                                {{-- The officer's entitlement, which follows from
-                                     their grade level. Taken from the record on
-                                     save, not from this field. --}}
-                                <input type="text" readonly data-days
-                                       placeholder="Set by the officer's grade level"
-                                       class="w-full bg-base-200 cursor-not-allowed text-base-content/80 text-xs border border-base-300 rounded-md px-3 py-2" />
+                                {{-- Readonly for annual leave only: that is the
+                                     one the officer's grade level sets the
+                                     length of. Every other kind runs for as
+                                     long as the case calls for, so it is asked
+                                     for. --}}
+                                <input id="days" name="days" type="number" min="1" max="365"
+                                       value="{{ old('days') }}" required data-days
+                                       class="w-full text-base-content/80 text-xs border border-base-300 rounded-md px-3 py-2" />
                             </div>
-                            <p class="mt-1 mb-0 text-xs text-base-content/50" data-entitlement-note>
-                                GL 1&ndash;3 &rarr; 14 days, GL 4&ndash;6 &rarr; 21 days, GL 7 and above &rarr; 30 days.
-                            </p>
+                            <p class="mt-1 mb-0 text-xs text-base-content/50" data-entitlement-note></p>
+                            @error('days')
+                                <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="w-full">
@@ -87,37 +92,69 @@
         <x-footer appVersion="{{ $app_version }}"/>
 
         <script>
-            // Neither the day count nor the resumption date is asked for: the
-            // first follows the officer's grade level, the second follows that
-            // and the effective date. The server works both out again on save;
-            // this is only so the clerk can see them.
+            // The day count is not asked for when the leave is annual — that
+            // is the one the officer's grade level sets the length of — and
+            // the resumption date is never asked for. The server works both
+            // out again on save; this is so the clerk can see them.
             (function () {
                 const entitlements = @json($entitlements);
+                const ENTITLEMENT_TYPE = @json(\App\Models\LeaveApplication::ENTITLEMENT_TYPE);
 
                 const staff = document.querySelector('[data-staff-picker] [data-picker-value]');
+                const type = document.getElementById('leave_type');
                 const effective = document.getElementById('effective_date');
                 const days = document.querySelector('[data-days]');
                 const resumption = document.querySelector('[data-resumption]');
                 const note = document.querySelector('[data-entitlement-note]');
 
-                if (! staff || ! effective || ! days || ! resumption) {
+                if (! staff || ! type || ! effective || ! days || ! resumption) {
                     return;
                 }
 
-                function sync() {
+                const readonlyClasses = ['bg-base-200', 'cursor-not-allowed'];
+                const editableClasses = ['bg-white'];
+
+                function syncDays() {
+                    if (type.value !== ENTITLEMENT_TYPE) {
+                        days.readOnly = false;
+                        days.classList.remove(...readonlyClasses);
+                        days.classList.add(...editableClasses);
+
+                        // Clear the entitlement when moving off annual leave,
+                        // so a number set for one kind is not left standing
+                        // for another.
+                        if (days.dataset.wasAnnual === 'yes') {
+                            days.value = '';
+                        }
+
+                        note.textContent = type.value
+                            ? 'How many days this leave runs for.'
+                            : 'Choose the kind of leave first.';
+
+                        return;
+                    }
+
+                    days.readOnly = true;
+                    days.classList.add(...readonlyClasses);
+                    days.classList.remove(...editableClasses);
+
                     const entitlement = entitlements[staff.value] ?? null;
 
                     days.value = entitlement ?? '';
 
-                    if (staff.value && entitlement === null) {
-                        note.textContent = 'This officer has no grade level on record, '
-                            + 'so there is nothing to work their entitlement out from.';
-                    } else if (! note.dataset.original) {
-                        note.dataset.original = note.textContent;
+                    if (! staff.value) {
+                        note.textContent = 'Choose the officer, and their grade level sets this.';
+                    } else if (entitlement === null) {
+                        note.textContent = 'This officer has no grade level on record, so there '
+                            + 'is nothing to work their annual leave entitlement out from.';
                     } else {
-                        note.textContent = note.dataset.original;
+                        note.textContent = 'Set by the officer’s grade level. '
+                            + 'GL 1–3 → 14 days, GL 4–6 → 21 days, '
+                            + 'GL 7 and above → 30 days.';
                     }
+                }
 
+                function syncResumption() {
                     const count = parseInt(days.value, 10);
 
                     if (! effective.value || ! count || count < 1) {
@@ -139,10 +176,16 @@
                         + '-' + pad(date.getDate());
                 }
 
-                note.dataset.original = note.textContent;
+                function sync() {
+                    syncDays();
+                    days.dataset.wasAnnual = type.value === ENTITLEMENT_TYPE ? 'yes' : 'no';
+                    syncResumption();
+                }
 
                 staff.addEventListener('change', sync);
-                effective.addEventListener('input', sync);
+                type.addEventListener('change', sync);
+                effective.addEventListener('input', syncResumption);
+                days.addEventListener('input', syncResumption);
                 sync();
             })();
         </script>

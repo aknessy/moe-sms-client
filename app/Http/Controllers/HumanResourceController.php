@@ -64,33 +64,41 @@ class HumanResourceController extends Controller
 
     public function store_leave_application(Request $request)
     {
+        $annual = LeaveApplication::entitlementApplies($request->input('leave_type'));
+
         $data = $request->validate([
             'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
             'leave_type' => ['required', Rule::in(array_keys(LeaveApplication::TYPES))],
             'effective_date' => ['required', 'date'],
+            // Annual leave runs for as long as the officer's grade level
+            // allows, so it is not asked for. Every other kind runs for as
+            // long as the case calls for, so it is.
+            'days' => ['nullable', Rule::requiredIf(! $annual), 'integer', 'min:1', 'max:365'],
             'reason' => ['nullable', 'string', 'max:1000'],
         ], [
             'basic_information_ulid.required' => 'Choose the officer applying for leave.',
             'basic_information_ulid.exists' => 'That officer is not on the roll.',
             'leave_type.required' => 'Choose the kind of leave.',
+            'days.required' => 'Say how many days the leave runs for.',
+            'days.min' => 'A leave runs for at least one day.',
         ]);
 
-        // The day count is the officer's entitlement, which follows from their
-        // grade level. It is shown readonly and taken from the record, not
-        // from the form.
         $staff = BasicInformation::where('ulid', $data['basic_information_ulid'])->first();
-        $days = $staff?->leaveDays();
+
+        // For annual leave the day count is the officer's entitlement, shown
+        // readonly and taken from the record rather than from the form.
+        $days = $annual ? $staff?->leaveDays() : (int) $data['days'];
 
         if ($days === null) {
             return back()->withInput()->withErrors([
-                'basic_information_ulid' => 'That officer has no grade level on record, '
-                    . 'so there is nothing to work their leave entitlement out from.',
+                'basic_information_ulid' => 'That officer has no grade level on record, so '
+                    . 'there is nothing to work their annual leave entitlement out from.',
             ]);
         }
 
         // The resumption date follows from this and the effective date; see
         // the model.
-        LeaveApplication::create($data + ['days' => $days]);
+        LeaveApplication::create(array_merge($data, ['days' => $days]));
 
         return redirect()->route('hr-leave')->with('status', 'Leave application recorded.');
     }

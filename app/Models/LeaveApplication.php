@@ -31,6 +31,20 @@ class LeaveApplication extends Model
         'Retirement Leave' => 'Retirement Leave',
     ];
 
+    /**
+     * The one kind of leave whose length follows from the grade level. The
+     * entitlement — 14, 21 or 30 days — is an annual leave entitlement; every
+     * other kind runs for as long as the case calls for, so the days are
+     * asked for rather than worked out.
+     */
+    public const ENTITLEMENT_TYPE = 'Annual Leave';
+
+    /** Does the applicant's grade level decide how long this leave runs? */
+    public static function entitlementApplies(?string $type): bool
+    {
+        return $type === self::ENTITLEMENT_TYPE;
+    }
+
     /** Where an application stands. */
     public const STATUSES = [
         'pending' => 'Pending',

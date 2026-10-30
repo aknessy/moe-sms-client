@@ -95,31 +95,43 @@ class SelfServiceController extends Controller
     {
         $staff = $this->staff();
 
+        $annual = LeaveApplication::entitlementApplies($request->input('leave_type'));
+
         $data = $request->validate([
             'leave_type' => ['required', Rule::in(array_keys(LeaveApplication::TYPES))],
             'effective_date' => ['required', 'date'],
+            // Annual leave runs for as long as the grade level allows, so it
+            // is not asked for. Every other kind runs for as long as the case
+            // calls for, so it is.
+            'days' => ['nullable', Rule::requiredIf(! $annual), 'integer', 'min:1', 'max:365'],
             'reason' => ['nullable', 'string', 'max:1000'],
         ], [
             'leave_type.required' => 'Choose the kind of leave you are applying for.',
             'effective_date.required' => 'Say which day the leave should start.',
+            'days.required' => 'Say how many days of leave you are applying for.',
+            'days.min' => 'A leave runs for at least one day.',
         ]);
 
-        $days = $staff->leaveDays();
+        $days = $annual ? $staff->leaveDays() : (int) $data['days'];
 
         if ($days === null) {
             return back()->withInput()->withErrors([
-                'leave_type' => 'There is no grade level on your record, so your leave '
-                    . 'entitlement cannot be worked out. Ask the Registry to correct it.',
+                'leave_type' => 'There is no grade level on your record, so your annual leave '
+                    . 'entitlement cannot be worked out. Ask the Registry to correct it, '
+                    . 'or apply for another kind of leave.',
             ]);
         }
 
-        // Whose application it is comes from the session, not the form, and
-        // the day count from their grade level. Neither is theirs to set.
-        LeaveApplication::create($data + [
+        // Whose application it is comes from the session, not the form. For
+        // annual leave the day count comes from the grade level, and what was
+        // submitted is ignored.
+        LeaveApplication::create(array_merge($data, [
             'basic_information_ulid' => $staff->ulid,
-            'days' => $days,
             'status' => 'pending',
-        ]);
+            // Overrides what was submitted, which is what makes the field
+            // readonly for annual leave more than a suggestion.
+            'days' => $days,
+        ]));
 
         return redirect()->route('my-leave')
             ->with('status', 'Your leave application has been submitted, and is awaiting a decision.');
