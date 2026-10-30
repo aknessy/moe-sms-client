@@ -44,4 +44,19 @@ class DepartmentHead extends Model
     {
         return static::orderBy('department')->get();
     }
+
+    /**
+     * The departments an officer may be put in, for a select. This is the
+     * reference list: a department typed freehand would be one no head
+     * answers for, and an application from it would reach nobody.
+     */
+    public static function options(): array
+    {
+        return static::orderBy('department')->pluck('department', 'department')->all();
+    }
+
+    public static function names(): array
+    {
+        return static::pluck('department')->all();
+    }
 }

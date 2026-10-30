@@ -174,6 +174,7 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
     Route::prefix('config')->group(function(){
         Route::get('/', [ConfigurationController::class, 'index'])->name('config');
         Route::post('/organisation', [ConfigurationController::class, 'storeSettings'])->name('config.organisation');
+        Route::post('/departments', [ConfigurationController::class, 'storeDepartment'])->name('config.departments');
         Route::post('/department-heads', [ConfigurationController::class, 'storeDepartmentHeads'])->name('config.department-heads');
         Route::get('/users-roles', [ConfigurationController::class, 'usersRoles'])->name('users-roles');
         Route::post('/users-roles', [ConfigurationController::class, 'storeUser'])->name('users-roles.store');

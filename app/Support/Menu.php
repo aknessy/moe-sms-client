@@ -276,7 +276,8 @@ class Menu
                 'icon' => 'settings',
                 'children' => [
                     ['label' => 'Settings', 'route' => 'config',
-                     'also' => ['config.organisation', 'config.department-heads']],
+                     'also' => ['config.organisation', 'config.departments',
+                                'config.department-heads']],
                     ['label' => 'Users, Roles & Permissions', 'route' => 'users-roles',
                      'also' => ['users-roles.store', 'users-roles.toggle', 'users-roles.permissions']],
                     ['label' => 'Audit Trail', 'route' => 'audit-trail'],

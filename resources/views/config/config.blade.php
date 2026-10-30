@@ -50,6 +50,33 @@
 
             <x-registry.card title="Heads of Department" :count="$departmentHeads->count()"
                              description="Who an application passes on its way up. A department with nobody named simply goes to the administrators.">
+
+                {{-- The staff wizard offers these and nothing else, so a new
+                     directorate has to be recorded here before anyone can be
+                     put in it. --}}
+                <form method="POST" action="{{ route('config.departments') }}"
+                      class="mb-4 flex flex-col gap-3 rounded-md border border-base-300 bg-base-200/40 px-4 py-3 sm:flex-row sm:items-end">
+                    @csrf
+
+                    <x-registry.field name="department" label="Add a Department"
+                                      placeholder="e.g. Department of Legal Services" />
+
+                    <div class="w-full sm:max-w-xs">
+                        <label for="role" class="font-sans text-sm font-medium text-base-content">Headed By</label>
+                        <div class="relative mt-1">
+                            <select id="role" name="role"
+                                    class="w-full cursor-pointer rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 focus:outline-none focus:border-primary">
+                                <option value="">Nobody named</option>
+                                @foreach ($hodRoles as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md">Add</button>
+                </form>
+
                 <form method="POST" action="{{ route('config.department-heads') }}">
                     @csrf
 

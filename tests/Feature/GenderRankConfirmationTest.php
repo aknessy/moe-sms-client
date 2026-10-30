@@ -32,7 +32,7 @@ class GenderRankConfirmationTest extends TestCase
             'file-number' => 'GRC/F/0001',
             'last-name' => 'Eyo', 'first-name' => 'Bassey', 'other-names' => 'Effiom',
             'gender' => 'Male',
-            'department' => 'Operations', 'division' => 'Calabar HQ',
+            'department' => 'Department of Electoral Operations', 'division' => 'Calabar HQ',
             'designation' => 'Administrative Officer I (AO I)',
             'grade-level' => 9, 'step' => 4,
             'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04',

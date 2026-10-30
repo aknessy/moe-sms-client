@@ -169,7 +169,7 @@ class LeaveEntitlementTest extends TestCase
             'form-type' => 'basic-information',
             'file-number' => 'GL/F/0001',
             'last-name' => 'Eyo', 'first-name' => 'Bassey', 'gender' => 'Male',
-            'department' => 'Operations', 'division' => 'Calabar HQ',
+            'department' => 'Department of Electoral Operations', 'division' => 'Calabar HQ',
             'designation' => 'Executive Officer (EO)',
             // Free text used to be accepted here.
             'grade-level' => 'GL 09', 'step' => 'Step 4',

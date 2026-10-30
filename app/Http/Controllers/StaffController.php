@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BasicInformation;
 use App\Models\Career;
 use App\Models\Confirmation;
+use App\Models\DepartmentHead;
 use App\Models\EduProgress;
 use App\Models\Leave;
 use App\Models\Lga;
@@ -264,7 +265,9 @@ class StaffController extends Controller
             'first-name' => ['required', 'string', 'max:80'],
             'other-names' => ['nullable', 'string', 'max:80'],
             'gender' => ['required', Rule::in(BasicInformation::GENDERS)],
-            'department' => ['required', 'string', 'max:120'],
+            // One of the directorates, not whatever was typed: a department
+            // nobody heads is one an officer's applications reach nobody from.
+            'department' => ['required', Rule::in(DepartmentHead::names())],
             'division' => ['required', 'string', 'max:120'],
             // Rank and designation are the same thing, chosen from a fixed list.
             'designation' => ['required', Rule::in(BasicInformation::RANKS)],

@@ -94,7 +94,7 @@ class StateLgaReferenceTest extends TestCase
             'file-number' => 'REF/F/0002',
             'computer-number' => 'REF/0002',
             'last-name' => 'Okon', 'first-name' => 'Grace', 'other-names' => '',
-            'department' => 'Operations', 'division' => 'Calabar HQ',
+            'department' => 'Department of Electoral Operations', 'division' => 'Calabar HQ',
             'gender' => 'Female',
             'designation' => 'Executive Officer (EO)', 'grade-level' => 9, 'step' => 4,
             'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000002',

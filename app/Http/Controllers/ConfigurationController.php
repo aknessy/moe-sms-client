@@ -83,6 +83,28 @@ class ConfigurationController extends Controller
     }
 
     /**
+     * Add a directorate. The staff wizard offers what is here and nothing
+     * else, so a new one has to be recorded before anyone can be put in it.
+     */
+    public function storeDepartment(Request $request)
+    {
+        $data = $request->validate([
+            'department' => ['required', 'string', 'max:120', 'unique:department_heads,department'],
+            'role' => ['nullable', Rule::in(Role::pluck('role')->all())],
+        ], [
+            'department.required' => 'Give the department a name.',
+            'department.unique' => 'That department is already on the list.',
+        ]);
+
+        DepartmentHead::create([
+            'department' => $data['department'],
+            'role' => $data['role'] ?: null,
+        ]);
+
+        return redirect()->route('config')->with('status', "{$data['department']} added.");
+    }
+
+    /**
      * Which role heads which department. An application is routed by this, so
      * a department left unanswered simply goes to the administrators.
      */

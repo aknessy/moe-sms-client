@@ -118,18 +118,19 @@
                                     <div class="w-full max-w-sm">
                                         <label class="font-normal font-sans text-sm text-base-content">Department<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="department" placeholder="e.g. Voter Education" value=""  required/>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
-                                                <path d="M3 21l18 0"></path>
-                                                <path d="M9 8l1 0"></path>
-                                                <path d="M9 12l1 0"></path>
-                                                <path d="M9 16l1 0"></path>
-                                                <path d="M14 8l1 0"></path>
-                                                <path d="M14 12l1 0"></path>
-                                                <path d="M14 16l1 0"></path>
-                                                <path d="M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16"></path>
-                                            </svg>
+                                            {{-- Picked, not typed: a department
+                                                 nobody heads is one an officer's
+                                                 applications reach nobody from. --}}
+                                            <select class="w-full pl-3 pr-10 py-2 bg-white text-base-content/80 text-xs border border-base-300 rounded-md cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="department" required>
+                                                <option value="">Select Department</option>
+                                                @foreach (\App\Models\DepartmentHead::options() as $value => $label)
+                                                    <option value="{{ $value }}" @selected(old('department') === $value)>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
+                                        <p class="mt-1 mb-0 text-xs text-base-content/50">
+                                            Set under Administration &rarr; Settings.
+                                        </p>
                                     </div>
                                     <div class="w-full max-w-sm">
                                         <label class="font-normal font-sans text-sm text-base-content">Division / Unit<span class="text-error">*</span></label>
