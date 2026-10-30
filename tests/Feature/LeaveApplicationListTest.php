@@ -25,20 +25,23 @@ class LeaveApplicationListTest extends TestCase
         return $this->actingAs($this->actor())->get(route('hr-leave'));
     }
 
+    /**
+     * The day count is not submitted: it is the officer's entitlement, which
+     * follows from their grade level. GL 5 carries 21 days.
+     */
     private function apply(array $overrides = [])
     {
         return $this->actingAs($this->actor())->post(route('hr-leave.store'), array_merge([
-            'basic_information_ulid' => BasicInformation::factory()->create()->ulid,
+            'basic_information_ulid' => BasicInformation::factory()->create(['grade_level' => 5])->ulid,
             'leave_type' => 'Annual Leave',
             'effective_date' => '2026-11-02',
-            'days' => 21,
         ], $overrides));
     }
 
     /** An application already on file, made at a given moment. */
     private function existing(string $surname, string $madeAt, array $overrides = []): LeaveApplication
     {
-        $staff = BasicInformation::factory()->create(['surname' => $surname]);
+        $staff = BasicInformation::factory()->create(['surname' => $surname, 'grade_level' => 5]);
 
         // Made then, so the timestamps the list sorts on are the real ones.
         return $this->travelTo($madeAt, fn () => LeaveApplication::create(array_merge([
@@ -80,7 +83,7 @@ class LeaveApplicationListTest extends TestCase
         $this->existing('Older', '2026-01-01 09:00:00');
 
         $this->apply(['basic_information_ulid' => BasicInformation::factory()
-            ->create(['surname' => 'Fresh'])->ulid]);
+            ->create(['surname' => 'Fresh', 'grade_level' => 5])->ulid]);
 
         $this->assertSame('Fresh', $this->page()->viewData('applications')->first()->staff->surname);
     }
@@ -100,7 +103,7 @@ class LeaveApplicationListTest extends TestCase
     public function test_the_row_carries_the_officers_name_and_grade_level(): void
     {
         $staff = BasicInformation::factory()->create([
-            'surname' => 'Eyo', 'firstname' => 'Bassey', 'grade_level' => 'GL 12',
+            'surname' => 'Eyo', 'firstname' => 'Bassey', 'grade_level' => 12,
         ]);
 
         $this->apply(['basic_information_ulid' => $staff->ulid]);
@@ -115,11 +118,12 @@ class LeaveApplicationListTest extends TestCase
 
     public function test_the_row_carries_the_dates_and_the_day_count(): void
     {
-        $this->apply(['effective_date' => '2026-11-02', 'days' => 21]);
+        $this->apply(['effective_date' => '2026-11-02']);
 
         $response = $this->page();
 
         $response->assertSee('2026-11-02');
+        // GL 5 carries 21 days, so they are back on the 23rd.
         $response->assertSee('21');
         $response->assertSee('2026-11-23');
     }
@@ -145,29 +149,35 @@ class LeaveApplicationListTest extends TestCase
 
     public function test_the_officer_resumes_the_day_after_the_leave_ends(): void
     {
-        // Twenty-one days from 2 November runs to the 22nd; back on the 23rd.
-        $this->apply(['effective_date' => '2026-11-02', 'days' => 21]);
+        // GL 5 carries 21 days: from 2 November that runs to the 22nd, so they
+        // are back on the 23rd.
+        $this->apply(['effective_date' => '2026-11-02']);
 
         $this->assertSame('2026-11-23', LeaveApplication::first()->resumption_date);
     }
 
     public function test_a_single_day_of_leave_is_back_the_next_day(): void
     {
-        $this->apply(['effective_date' => '2026-11-02', 'days' => 1]);
+        LeaveApplication::create([
+            'basic_information_ulid' => BasicInformation::factory()->create()->ulid,
+            'leave_type' => 'Casual Leave',
+            'effective_date' => '2026-11-02',
+            'days' => 1,
+        ]);
 
         $this->assertSame('2026-11-03', LeaveApplication::first()->resumption_date);
     }
 
     public function test_the_resumption_date_carries_across_a_month_end(): void
     {
-        $this->apply(['effective_date' => '2026-12-20', 'days' => 21]);
+        $this->apply(['effective_date' => '2026-12-20']);
 
         $this->assertSame('2027-01-10', LeaveApplication::first()->resumption_date);
     }
 
     public function test_correcting_the_day_count_moves_the_resumption_date(): void
     {
-        $this->apply(['effective_date' => '2026-11-02', 'days' => 21]);
+        $this->apply(['effective_date' => '2026-11-02']);
 
         $application = LeaveApplication::first();
         $application->update(['days' => 10]);
@@ -179,8 +189,7 @@ class LeaveApplicationListTest extends TestCase
     public function test_the_resumption_date_is_not_taken_from_the_form(): void
     {
         // The field on screen is readonly; what is submitted is ignored.
-        $this->apply(['effective_date' => '2026-11-02', 'days' => 21,
-                      'resumption_date' => '2030-01-01']);
+        $this->apply(['effective_date' => '2026-11-02', 'resumption_date' => '2030-01-01']);
 
         $this->assertSame('2026-11-23', LeaveApplication::first()->resumption_date);
     }
@@ -202,19 +211,20 @@ class LeaveApplicationListTest extends TestCase
         $this->assertSame('pending', LeaveApplication::first()->status);
     }
 
-    public function test_an_application_needs_an_officer_a_type_a_date_and_a_day_count(): void
+    public function test_an_application_needs_an_officer_a_type_and_a_date(): void
     {
         $this->actingAs($this->actor())->post(route('hr-leave.store'), [])
-            ->assertSessionHasErrors(['basic_information_ulid', 'leave_type', 'effective_date', 'days']);
+            ->assertSessionHasErrors(['basic_information_ulid', 'leave_type', 'effective_date']);
 
         $this->assertSame(0, LeaveApplication::count());
     }
 
-    public function test_a_leave_of_no_days_is_refused(): void
+    public function test_the_day_count_submitted_is_ignored(): void
     {
-        $this->apply(['days' => 0])->assertSessionHasErrors('days');
+        // It is readonly on screen, and the entitlement is what counts.
+        $this->apply(['days' => 365]);
 
-        $this->assertSame(0, LeaveApplication::count());
+        $this->assertSame(21, LeaveApplication::first()->days);
     }
 
     public function test_a_type_outside_the_list_is_refused(): void

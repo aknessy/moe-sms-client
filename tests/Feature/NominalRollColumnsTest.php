@@ -80,8 +80,8 @@ class NominalRollColumnsTest extends TestCase
 
     public function test_the_highest_grade_level_comes_first(): void
     {
-        $this->officer(['surname' => 'Junior', 'grade_level' => 'GL 07', 'step' => 'Step 1']);
-        $this->officer(['surname' => 'Senior', 'grade_level' => 'GL 14', 'step' => 'Step 1']);
+        $this->officer(['surname' => 'Junior', 'grade_level' => 7, 'step' => 1]);
+        $this->officer(['surname' => 'Senior', 'grade_level' => 14, 'step' => 1]);
 
         $order = $this->order();
 
@@ -91,8 +91,8 @@ class NominalRollColumnsTest extends TestCase
     public function test_grade_level_is_read_as_a_number_not_as_text(): void
     {
         // Sorted as written, "GL 09" would come above "GL 14".
-        $this->officer(['surname' => 'Niner', 'grade_level' => 'GL 09', 'step' => 'Step 1']);
-        $this->officer(['surname' => 'Fourteen', 'grade_level' => 'GL 14', 'step' => 'Step 1']);
+        $this->officer(['surname' => 'Niner', 'grade_level' => 9, 'step' => 1]);
+        $this->officer(['surname' => 'Fourteen', 'grade_level' => 14, 'step' => 1]);
 
         $order = $this->order();
 
@@ -101,31 +101,26 @@ class NominalRollColumnsTest extends TestCase
 
     public function test_the_highest_step_comes_first_within_a_grade_level(): void
     {
-        $this->officer(['surname' => 'StepOne', 'grade_level' => 'GL 10', 'step' => 'Step 1']);
-        $this->officer(['surname' => 'StepNine', 'grade_level' => 'GL 10', 'step' => 'Step 9']);
+        $this->officer(['surname' => 'StepOne', 'grade_level' => 10, 'step' => 1]);
+        $this->officer(['surname' => 'StepNine', 'grade_level' => 10, 'step' => 9]);
 
         $order = $this->order();
 
         $this->assertLessThan(array_search('StepOne', $order), array_search('StepNine', $order));
     }
 
-    public function test_a_grade_level_written_without_its_prefix_sorts_with_the_rest(): void
+    public function test_the_number_on_record_reads_as_a_grade_level_on_the_roll(): void
     {
-        // Both spellings are on record; a bare "12" is the same standing.
-        $this->officer(['surname' => 'Bare', 'grade_level' => '12', 'step' => '4']);
-        $this->officer(['surname' => 'Prefixed', 'grade_level' => 'GL 13', 'step' => 'Step 1']);
-        $this->officer(['surname' => 'Lower', 'grade_level' => 'GL 11', 'step' => 'Step 1']);
+        // The column holds 12; the roll prints the standing in full.
+        $this->officer(['surname' => 'Bare', 'grade_level' => 12, 'step' => 4]);
 
-        $order = $this->order();
-
-        $this->assertLessThan(array_search('Bare', $order), array_search('Prefixed', $order));
-        $this->assertLessThan(array_search('Lower', $order), array_search('Bare', $order));
+        $this->roll()->assertSee('GL 12 / Step 4');
     }
 
     public function test_officers_of_the_same_standing_are_alphabetical(): void
     {
-        $this->officer(['surname' => 'Zulu', 'grade_level' => 'GL 10', 'step' => 'Step 5']);
-        $this->officer(['surname' => 'Alpha', 'grade_level' => 'GL 10', 'step' => 'Step 5']);
+        $this->officer(['surname' => 'Zulu', 'grade_level' => 10, 'step' => 5]);
+        $this->officer(['surname' => 'Alpha', 'grade_level' => 10, 'step' => 5]);
 
         $order = $this->order();
 
@@ -135,7 +130,7 @@ class NominalRollColumnsTest extends TestCase
     public function test_an_officer_with_no_grade_level_sorts_last(): void
     {
         $this->officer(['surname' => 'Ungraded', 'grade_level' => null, 'step' => null]);
-        $this->officer(['surname' => 'Graded', 'grade_level' => 'GL 07', 'step' => 'Step 1']);
+        $this->officer(['surname' => 'Graded', 'grade_level' => 7, 'step' => 1]);
 
         $order = $this->order();
 

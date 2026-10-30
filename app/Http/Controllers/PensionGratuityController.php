@@ -185,7 +185,9 @@ class PensionGratuityController extends Controller
 
             return [
                 $person->staff_number, $person->surname, $person->firstname, $person->othernames,
-                $person->department, $person->designation, $person->grade_level, $person->step,
+                // Held as numbers, written out the way the register reads them.
+                $person->department, $person->designation,
+                $person->grade_level_label, $person->step_label,
                 $person->date_of_birth, $exit?->effective_date,
                 $person->state?->name, $person->lga?->lga_name,
                 $exit ? ucfirst($exit->gratuity_status) : null,

@@ -160,13 +160,19 @@
                                     <div class="w-full max-w-1/3">
                                         <label class="font-normal font-sans text-sm text-base-content">Grade Level<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level" placeholder="e.g. GL 08" value="{{ old('grade-level') }}"  required/>
+                                            {{-- The number alone. Leave entitlement follows
+                                                 the grade level, so it has to be one. --}}
+                                            <input type="number" step="1" min="{{ \App\Models\BasicInformation::GRADE_LEVELS[0] }}" max="{{ \App\Models\BasicInformation::GRADE_LEVELS[1] }}" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="grade-level" placeholder="e.g. 8" value="{{ old('grade-level') }}"  required/>
                                         </div>
+                                        <p class="mt-1 mb-0 text-xs text-base-content/50">
+                                            Decides the officer's leave entitlement:
+                                            1&ndash;3 &rarr; 14 days, 4&ndash;6 &rarr; 21 days, 7 and above &rarr; 30 days.
+                                        </p>
                                     </div>
                                     <div class="w-full max-w-1/3">
                                         <label class="font-normal font-sans text-sm text-base-content">Step<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="step" placeholder="e.g. Step 3" value="{{ old('step') }}"  required/>
+                                            <input type="number" step="1" min="1" max="15" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="step" placeholder="e.g. 3" value="{{ old('step') }}"  required/>
                                         </div>
                                     </div>
                                 </div>

@@ -96,7 +96,7 @@ class StateLgaReferenceTest extends TestCase
             'last-name' => 'Okon', 'first-name' => 'Grace', 'other-names' => '',
             'department' => 'Operations', 'division' => 'Calabar HQ',
             'gender' => 'Female',
-            'designation' => 'Executive Officer (EO)', 'grade-level' => 'GL 09', 'step' => 'Step 4',
+            'designation' => 'Executive Officer (EO)', 'grade-level' => 9, 'step' => 4,
             'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000002',
             'email' => 'grace.okon@inec.gov.ng',
             'state-of-origin' => $state->id,

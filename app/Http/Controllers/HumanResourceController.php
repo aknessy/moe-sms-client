@@ -55,6 +55,10 @@ class HumanResourceController extends Controller
                 ->withQueryString(),
             'leaveTypes' => LeaveApplication::TYPES,
             'staffOptions' => $this->staffOptions(),
+            // What each officer's grade level entitles them to, so choosing
+            // one fills the day count in without a round trip.
+            'entitlements' => BasicInformation::query()->inActiveService()->get()
+                ->mapWithKeys(fn ($s) => [$s->ulid => $s->leaveDays()]),
         ]);
     }
 
@@ -64,19 +68,29 @@ class HumanResourceController extends Controller
             'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
             'leave_type' => ['required', Rule::in(array_keys(LeaveApplication::TYPES))],
             'effective_date' => ['required', 'date'],
-            // A leave of no days is not a leave.
-            'days' => ['required', 'integer', 'min:1', 'max:365'],
             'reason' => ['nullable', 'string', 'max:1000'],
         ], [
             'basic_information_ulid.required' => 'Choose the officer applying for leave.',
             'basic_information_ulid.exists' => 'That officer is not on the roll.',
-            'days.min' => 'A leave runs for at least one day.',
-            'days.required' => 'Say how many days the leave runs for.',
             'leave_type.required' => 'Choose the kind of leave.',
         ]);
 
-        // Worked out from the effective date and the days; see the model.
-        LeaveApplication::create($data);
+        // The day count is the officer's entitlement, which follows from their
+        // grade level. It is shown readonly and taken from the record, not
+        // from the form.
+        $staff = BasicInformation::where('ulid', $data['basic_information_ulid'])->first();
+        $days = $staff?->leaveDays();
+
+        if ($days === null) {
+            return back()->withInput()->withErrors([
+                'basic_information_ulid' => 'That officer has no grade level on record, '
+                    . 'so there is nothing to work their leave entitlement out from.',
+            ]);
+        }
+
+        // The resumption date follows from this and the effective date; see
+        // the model.
+        LeaveApplication::create($data + ['days' => $days]);
 
         return redirect()->route('hr-leave')->with('status', 'Leave application recorded.');
     }

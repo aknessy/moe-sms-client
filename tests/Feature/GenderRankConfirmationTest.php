@@ -34,7 +34,7 @@ class GenderRankConfirmationTest extends TestCase
             'gender' => 'Male',
             'department' => 'Operations', 'division' => 'Calabar HQ',
             'designation' => 'Administrative Officer I (AO I)',
-            'grade-level' => 'GL 09', 'step' => 'Step 4',
+            'grade-level' => 9, 'step' => 4,
             'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04',
             'date-of-confirmation' => '2012-01-04',
             'phone-number' => '08030000001', 'email' => 'bassey.eyo@inec.gov.ng',

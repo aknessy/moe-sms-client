@@ -268,8 +268,10 @@ class StaffController extends Controller
             'division' => ['required', 'string', 'max:120'],
             // Rank and designation are the same thing, chosen from a fixed list.
             'designation' => ['required', Rule::in(BasicInformation::RANKS)],
-            'grade-level' => ['required', 'string', 'max:20'],
-            'step' => ['required', 'string', 'max:20'],
+            // Numbers, not "GL 09": leave entitlement follows the grade level,
+            // and the listings sort by it.
+            'grade-level' => ['required', 'integer', 'between:' . implode(',', BasicInformation::GRADE_LEVELS)],
+            'step' => ['required', 'integer', 'between:1,15'],
             'date-of-birth' => ['required', 'date', 'before:today'],
             // Joined their current employer. With the date of birth it decides
             // the mode of retirement, which the model works out on save.
@@ -520,10 +522,17 @@ class StaffController extends Controller
             ->when(filled($term), function ($query) use ($term) {
                 $like = '%' . trim($term) . '%';
 
-                $query->where(function ($q) use ($like) {
+                $query->where(function ($q) use ($like, $term) {
                     foreach (['surname', 'firstname', 'othernames', 'file_number', 'computer_number',
-                              'department', 'division', 'designation', 'grade_level'] as $column) {
+                              'department', 'division', 'designation'] as $column) {
                         $q->orWhere($column, 'like', $like);
+                    }
+
+                    // Grade level is a number now, but it reads as "GL 09" on
+                    // screen, so a search for that has to find it. Take the
+                    // digits out of the term and match the number itself.
+                    if (preg_match('/^\s*(?:GL\s*)?0*(\d{1,2})\s*$/i', $term, $matches)) {
+                        $q->orWhere('grade_level', (int) $matches[1]);
                     }
 
                     // Searching "Cross River" must still find its officers even
@@ -776,6 +785,16 @@ class StaffController extends Controller
             'reason' => ['nullable', 'string', 'max:1000'],
             'supporting_document' => ['nullable', 'string', 'max:160'],
         ]);
+
+        // Grade level and step are numbers now, so an amendment to either has
+        // to be one. Catch it here rather than at approval time.
+        if (in_array($data['field'], ['grade_level', 'step'], true)
+            && ! ctype_digit(trim($data['requested_value']))) {
+
+            return back()->withInput()->withErrors([
+                'requested_value' => 'Grade level and step are recorded as numbers — give the number alone, e.g. 8.',
+            ]);
+        }
 
         // Origin fields are foreign keys, so the requested name has to name a
         // real state or LGA. Catch it here rather than at approval time.

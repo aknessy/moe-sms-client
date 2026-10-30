@@ -1,4 +1,4 @@
-﻿<x-dashboard :pageTitle="$page_title" :segments="$uri_segments">
+<x-dashboard :pageTitle="$page_title" :segments="$uri_segments">
     <x-slot name="slot">
         <x-registry.page title="Nominal Roll Report" crumb="Reports & Analytics">
             <x-registry.card title="Narrow the Roll"
@@ -8,9 +8,10 @@
                         <x-registry.field name="department" label="Department"
                                           :value="$filters['department'] ?? null"
                                           :options="$departments->mapWithKeys(fn ($d) => [$d => $d])->all()" />
+                        {{-- Held as a number, offered as "GL 09". --}}
                         <x-registry.field name="grade_level" label="Grade Level"
                                           :value="$filters['grade_level'] ?? null"
-                                          :options="$gradeLevels->mapWithKeys(fn ($g) => [$g => $g])->all()" />
+                                          :options="$gradeLevels->mapWithKeys(fn ($g) => [$g => 'GL ' . str_pad((string) $g, 2, '0', STR_PAD_LEFT)])->all()" />
                         <x-registry.field name="state" label="State of Origin"
                                           :value="$filters['state'] ?? null"
                                           :options="$states->all()" />
@@ -78,7 +79,7 @@
                             <td class="px-3 py-2">{{ $person->department ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->division ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->rank ?: '—' }}</td>
-                            <td class="px-3 py-2">{{ trim(($person->grade_level ?: '—') . ($person->step ? ' / ' . $person->step : '')) }}</td>
+                            <td class="px-3 py-2">{{ $person->grade_step }}</td>
                             <td class="px-3 py-2">{{ $person->date_of_birth }}</td>
                             <td class="px-3 py-2">{{ $person->date_of_confirmation ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->phone_number ?: '—' }}</td>

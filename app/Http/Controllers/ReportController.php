@@ -83,7 +83,9 @@ class ReportController extends Controller
 
             'total' => $matching->count(),
             'byDepartment' => $this->countBy($matching, 'department'),
-            'byGradeLevel' => $this->countBy($matching, 'grade_level'),
+            // Counted under "GL 09" rather than a bare 9.
+            'byGradeLevel' => $matching->groupBy(fn ($s) => $s->grade_level_label ?: 'Not recorded')
+                ->map->count()->sortDesc(),
             'byState' => $matching->groupBy(fn ($s) => $s->state?->name ?: 'Not recorded')
                 ->map->count()->sortDesc(),
             'byLga' => $matching->groupBy(fn ($s) => $s->lga?->lga_name ?: 'Not recorded')
@@ -103,7 +105,9 @@ class ReportController extends Controller
         $rows = $this->nominalRollQuery($request)->get()->map(fn ($s) => [
             $s->staff_number, $s->surname, $s->firstname, $s->othernames, $s->gender,
             // Rank and designation are the same thing; the roll calls it rank.
-            $s->department, $s->division, $s->rank, $s->grade_level, $s->step,
+            $s->department, $s->division, $s->rank,
+            // Held as numbers, written out the way the roll reads them.
+            $s->grade_level_label, $s->step_label,
             $s->date_of_birth, $s->date_of_employment, $s->date_of_confirmation,
             $s->state?->name, $s->lga?->lga_name, $postings[$s->ulid]['lga'] ?? null,
             $s->pfa, $s->rsa,
@@ -198,7 +202,7 @@ class ReportController extends Controller
             $rows->map(fn ($r) => [
                 $r->staff->staff_number, $r->staff->surname, $r->staff->firstname,
                 $r->staff->department, $r->staff->designation,
-                $r->staff->grade_level, $r->staff->step,
+                $r->staff->grade_level_label, $r->staff->step_label,
                 $r->staff->date_of_birth, $r->staff->date_of_employment,
                 $r->mode, $r->retires_on->toDateString(), $r->months_left,
             ]),

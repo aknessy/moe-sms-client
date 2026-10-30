@@ -1,4 +1,4 @@
-﻿<x-dashboard :pageTitle="$page_title" :segments="$uri_segments">
+<x-dashboard :pageTitle="$page_title" :segments="$uri_segments">
     <x-slot name="slot">
         <x-registry.page title="Nominall Roll">
             <x-registry.card title="Nominall Roll"
@@ -30,7 +30,7 @@
                             <td class="px-3 py-2">{{ $person->gender ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->department ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->rank ?: '—' }}</td>
-                            <td class="px-3 py-2">{{ trim(($person->grade_level ?: '—') . ($person->step ? ' / ' . $person->step : '')) }}</td>
+                            <td class="px-3 py-2">{{ $person->grade_step }}</td>
                             <td class="px-3 py-2">{{ $person->date_of_birth }}</td>
                             <td class="px-3 py-2">{{ $person->date_of_confirmation ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $person->phone_number ?: '—' }}</td>

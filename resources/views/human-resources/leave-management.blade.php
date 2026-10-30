@@ -13,8 +13,22 @@
 
                     <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                         <x-registry.field name="effective_date" label="Effective Date" type="date" required />
-                        <x-registry.field name="days" label="Number of Days" type="number" required
-                                          placeholder="e.g. 21" />
+
+                        <div class="w-full">
+                            <label class="font-sans text-sm font-medium text-base-content">Number of Days</label>
+                            <div class="relative mt-1">
+                                {{-- The officer's entitlement, which follows from
+                                     their grade level. Taken from the record on
+                                     save, not from this field. --}}
+                                <input type="text" readonly data-days
+                                       placeholder="Set by the officer's grade level"
+                                       class="w-full bg-base-200 cursor-not-allowed text-base-content/80 text-xs border border-base-300 rounded-md px-3 py-2" />
+                            </div>
+                            <p class="mt-1 mb-0 text-xs text-base-content/50" data-entitlement-note>
+                                GL 1&ndash;3 &rarr; 14 days, GL 4&ndash;6 &rarr; 21 days, GL 7 and above &rarr; 30 days.
+                            </p>
+                        </div>
+
                         <div class="w-full">
                             <label class="font-sans text-sm font-medium text-base-content">Resumption Date</label>
                             <div class="relative mt-1">
@@ -51,7 +65,7 @@
                                 {{ trim($application->staff?->surname . ', ' . trim($application->staff?->firstname . ' ' . $application->staff?->othernames)) }}
                                 <span class="block text-base-content/50">{{ $application->staff?->staff_number }}</span>
                             </td>
-                            <td class="px-3 py-2">{{ $application->staff?->grade_level ?: '—' }}</td>
+                            <td class="px-3 py-2">{{ $application->staff?->grade_level_label ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $application->effective_date }}</td>
                             <td class="px-3 py-2">{{ $application->days }}</td>
                             <td class="px-3 py-2">{{ $application->resumption_date }}</td>
@@ -73,19 +87,37 @@
         <x-footer appVersion="{{ $app_version }}"/>
 
         <script>
-            // The resumption date follows the effective date and the number of
-            // days, so it is shown rather than asked for. The server works it
-            // out again on save; this is only so the clerk can see it.
+            // Neither the day count nor the resumption date is asked for: the
+            // first follows the officer's grade level, the second follows that
+            // and the effective date. The server works both out again on save;
+            // this is only so the clerk can see them.
             (function () {
-                const effective = document.getElementById('effective_date');
-                const days = document.getElementById('days');
-                const resumption = document.querySelector('[data-resumption]');
+                const entitlements = @json($entitlements);
 
-                if (! effective || ! days || ! resumption) {
+                const staff = document.querySelector('[data-staff-picker] [data-picker-value]');
+                const effective = document.getElementById('effective_date');
+                const days = document.querySelector('[data-days]');
+                const resumption = document.querySelector('[data-resumption]');
+                const note = document.querySelector('[data-entitlement-note]');
+
+                if (! staff || ! effective || ! days || ! resumption) {
                     return;
                 }
 
                 function sync() {
+                    const entitlement = entitlements[staff.value] ?? null;
+
+                    days.value = entitlement ?? '';
+
+                    if (staff.value && entitlement === null) {
+                        note.textContent = 'This officer has no grade level on record, '
+                            + 'so there is nothing to work their entitlement out from.';
+                    } else if (! note.dataset.original) {
+                        note.dataset.original = note.textContent;
+                    } else {
+                        note.textContent = note.dataset.original;
+                    }
+
                     const count = parseInt(days.value, 10);
 
                     if (! effective.value || ! count || count < 1) {
@@ -107,7 +139,10 @@
                         + '-' + pad(date.getDate());
                 }
 
-                [effective, days].forEach(el => el.addEventListener('input', sync));
+                note.dataset.original = note.textContent;
+
+                staff.addEventListener('change', sync);
+                effective.addEventListener('input', sync);
                 sync();
             })();
         </script>

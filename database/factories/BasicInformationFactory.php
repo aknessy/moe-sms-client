@@ -36,6 +36,9 @@ class BasicInformationFactory extends Factory
             'othernames' => $this->faker->name($gender[rand(0, 1)]),
             'gender' => $this->faker->randomElement(BasicInformation::GENDERS),
             'designation' => $this->faker->randomElement(BasicInformation::RANKS),
+            // Numbers: the grade level decides the officer's leave entitlement.
+            'grade_level' => $this->faker->numberBetween(...BasicInformation::GRADE_LEVELS),
+            'step' => $this->faker->numberBetween(1, 15),
             'date_of_birth' => $dateOfBirth = $this->faker->dateTimeBetween('-60 years', '-25 years')->format('Y-m-d'),
             // Joined somewhere between coming of age and today.
             'date_of_employment' => $dateOfEmployment = $this->faker

@@ -49,7 +49,7 @@ class StaffWizardTest extends TestCase
             'last-name' => 'Eyo', 'first-name' => 'Bassey', 'other-names' => 'Okon',
             'department' => 'Operations', 'division' => 'Calabar HQ',
             'gender' => 'Male',
-            'designation' => 'Executive Officer (EO)', 'grade-level' => 'GL 09', 'step' => 'Step 4',
+            'designation' => 'Executive Officer (EO)', 'grade-level' => 9, 'step' => 4,
             'date-of-birth' => '1985-04-12', 'date-of-employment' => '2010-01-04', 'phone-number' => '08030000001',
             'email' => 'bassey.eyo@inec.gov.ng',
             'state-of-origin' => $crossRiver->id,
@@ -70,8 +70,8 @@ class StaffWizardTest extends TestCase
             'surname' => 'Eyo',
             'email' => 'bassey.eyo@inec.gov.ng',
             'address' => 'No. 4 Marian Road',
-            'grade_level' => 'GL 09',
-            'step' => 'Step 4',
+            'grade_level' => 9,
+            'step' => 4,
         ]);
         $this->assertNotNull(session('staff_draft_ulid'));
     }

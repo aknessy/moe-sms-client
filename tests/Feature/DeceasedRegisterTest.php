@@ -189,7 +189,7 @@ class DeceasedRegisterTest extends TestCase
         $officer->update([
             'firstname' => 'Chidi', 'othernames' => 'Obinna',
             'department' => 'ICT & Voter Registry', 'designation' => 'Data Officer II',
-            'grade_level' => 'GL 08', 'step' => 'Step 1',
+            'grade_level' => 8, 'step' => 1,
         ]);
 
         $row = $this->downloadRows()[1];

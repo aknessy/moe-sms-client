@@ -86,10 +86,11 @@ class DashboardController extends Controller
 
         // --- grade level spread ------------------------------------------------
         $gradeSpread = $active
-            ->filter(fn ($s) => filled($s->grade_level))
-            ->groupBy('grade_level')
-            ->map->count()
-            ->sortKeys();
+            ->filter(fn ($s) => $s->grade_level !== null)
+            ->sortBy('grade_level')
+            // Grouped under "GL 09", having been sorted by the number itself.
+            ->groupBy(fn ($s) => $s->grade_level_label)
+            ->map->count();
 
         // --- discipline ---------------------------------------------------------
         $sanctioned = $queries->filter(fn ($q) => filled($q->sanction) && $q->sanction !== 'none');

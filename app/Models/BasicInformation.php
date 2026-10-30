@@ -75,10 +75,72 @@ class BasicInformation extends Model
 
     public const GENDERS = ['Male', 'Female'];
 
+    protected $casts = [
+        // Held as numbers so they can be sorted and reasoned about; how they
+        // read on screen is presentation, below.
+        'grade_level' => 'integer',
+        'step' => 'integer',
+    ];
+
+    /** The grade levels an officer may be on. */
+    public const GRADE_LEVELS = [1, 17];
+
+    /**
+     * Days of leave a grade level carries. Junior officers on the lowest
+     * levels get a fortnight, the rest of the junior grades three weeks, and
+     * senior officers a month.
+     */
+    public const LEAVE_ENTITLEMENT = [
+        ['up_to' => 3, 'days' => 14],
+        ['up_to' => 6, 'days' => 21],
+        ['up_to' => null, 'days' => 30],
+    ];
+
     /** The rank an officer holds. The column carries the other name for it. */
     public function getRankAttribute(): ?string
     {
         return $this->designation;
+    }
+
+    /** "GL 09", from the number on the column. */
+    public function getGradeLevelLabelAttribute(): ?string
+    {
+        return $this->grade_level === null
+            ? null
+            : 'GL ' . str_pad((string) $this->grade_level, 2, '0', STR_PAD_LEFT);
+    }
+
+    /** "Step 4". */
+    public function getStepLabelAttribute(): ?string
+    {
+        return $this->step === null ? null : 'Step ' . $this->step;
+    }
+
+    /** "GL 09 / Step 4", as the listings print it. */
+    public function getGradeStepAttribute(): string
+    {
+        return trim(($this->grade_level_label ?: '—')
+            . ($this->step === null ? '' : ' / ' . $this->step_label));
+    }
+
+    /**
+     * How many days of leave this officer may take, which follows from their
+     * grade level alone. Null when no grade level is on file — there is
+     * nothing to work it out from.
+     */
+    public function leaveDays(): ?int
+    {
+        if ($this->grade_level === null) {
+            return null;
+        }
+
+        foreach (self::LEAVE_ENTITLEMENT as $band) {
+            if ($band['up_to'] === null || $this->grade_level <= $band['up_to']) {
+                return $band['days'];
+            }
+        }
+
+        return null;
     }
 
     /** The two routes out of the service. */
@@ -164,20 +226,14 @@ class BasicInformation extends Model
 
     /**
      * Highest grade level first, then highest step, so officers of the same
-     * standing sit together.
-     *
-     * Both columns are free text — "GL 09" and a bare "12" are both on record
-     * — so the number is pulled out of them. Sorted as written, GL 9 would
-     * come above GL 14.
+     * standing sit together. Both are numbers, so this is a plain sort — an
+     * officer with neither on file sorts last.
      */
     public function scopeBySeniority($query)
     {
-        // Stripping both words is harmless either way, so one expression does
-        // for both columns. A column with no digits reads as 0 and sorts last.
-        $number = fn (string $column) => "(REPLACE(REPLACE(REPLACE(UPPER({$column}), 'GL', ''), 'STEP', ''), ' ', '') + 0)";
-
-        return $query->orderByRaw($number('grade_level') . ' DESC')
-                     ->orderByRaw($number('step') . ' DESC');
+        return $query->orderByRaw('grade_level IS NULL')
+                     ->orderBy('grade_level', 'desc')
+                     ->orderBy('step', 'desc');
     }
 
     public function scopeDeceased($query)
