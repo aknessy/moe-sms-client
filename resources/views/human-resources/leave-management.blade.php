@@ -60,7 +60,7 @@
 
             <x-registry.card title="Leave Applications" :count="$applications->total()"
                              description="Newest first">
-                <x-registry.table :headings="['S/N', 'Staff Name', 'Grade Level', 'Effective Date', 'No. of Days', 'Resumption Date', 'Action']"
+                <x-registry.table :headings="['S/N', 'Staff Name', 'Grade Level', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status', 'Action']"
                                   empty="No leave applications yet.">
                     @foreach ($applications as $index => $application)
                         <tr class="hover:bg-base-200/60">
@@ -75,11 +75,14 @@
                             <td class="px-3 py-2">{{ $application->days }}</td>
                             <td class="px-3 py-2">{{ $application->resumption_date }}</td>
                             <td class="px-3 py-2">
-                                {{-- What this does is still to be decided. --}}
-                                <button type="button" disabled
-                                        class="rounded-md border border-base-300 px-2 py-1 text-xs text-base-content/40 cursor-not-allowed">
-                                    Action
-                                </button>
+                                <x-status-pill :status="$application->status"
+                                               :label="\App\Models\LeaveApplication::STATUSES[$application->status] ?? 'Pending'" />
+                            </td>
+                            <td class="px-3 py-2">
+                                <a href="{{ route('hr-leave.show', $application->ulid) }}"
+                                   class="rounded-md border border-base-300 px-2 py-1 text-xs text-base-content/70 hover:border-primary hover:text-primary">
+                                    View Letter
+                                </a>
                             </td>
                         </tr>
                     @endforeach

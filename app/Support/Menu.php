@@ -32,6 +32,9 @@ class Menu
     public const ALWAYS_ALLOWED = [
         'logout', 'storage.local', 'docs', 'passport',
         'profile-settings', 'change-password', 'change-password.store',
+        // A notice is addressed to an account, so there is nothing in here
+        // that is not already theirs.
+        'notifications', 'notifications.open', 'notifications.read-all',
     ];
 
     /** Where a self-service officer lands, and is sent back to. */
@@ -142,7 +145,7 @@ class Menu
                 'label' => 'Leave Management',
                 'icon' => 'users',
                 'route' => 'my-leave',
-                'also' => ['my-leave.store'],
+                'also' => ['my-leave.store', 'my-leave.show'],
             ],
             [
                 'label' => 'Training',
@@ -188,7 +191,7 @@ class Menu
                 'icon' => 'users',
                 'children' => [
                     ['label' => 'Leave Management', 'route' => 'hr-leave',
-                     'also' => ['hr-leave.store']],
+                     'also' => ['hr-leave.store', 'hr-leave.show']],
                     ['label' => 'Promotion Exercises', 'route' => 'hr-promotions'],
                     ['label' => 'Performance Appraisal', 'route' => 'hr-appraisal'],
                     ['label' => 'Recruitment', 'route' => 'hr-recruitment'],
@@ -272,7 +275,8 @@ class Menu
                 'label' => 'Administration',
                 'icon' => 'settings',
                 'children' => [
-                    ['label' => 'Settings', 'route' => 'config'],
+                    ['label' => 'Settings', 'route' => 'config',
+                     'also' => ['config.organisation', 'config.department-heads']],
                     ['label' => 'Users, Roles & Permissions', 'route' => 'users-roles',
                      'also' => ['users-roles.store', 'users-roles.toggle', 'users-roles.permissions']],
                     ['label' => 'Audit Trail', 'route' => 'audit-trail'],

@@ -7,6 +7,7 @@ use App\Models\LeaveApplication;
 use App\Models\Training;
 use App\Models\TrainingInterest;
 use App\Models\VoluntaryRetirementRequest;
+use App\Support\LeaveLetter;
 use App\Support\PostingContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -135,6 +136,24 @@ class SelfServiceController extends Controller
 
         return redirect()->route('my-leave')
             ->with('status', 'Your leave application has been submitted, and is awaiting a decision.');
+    }
+
+    /** Their own application, set out as the letter it would be on paper. */
+    public function show_leave(string $ulid)
+    {
+        $staff = $this->staff();
+
+        // Their own, and only their own: the ulid is not a way into anyone
+        // else's record.
+        $application = LeaveApplication::with('staff')
+            ->where('ulid', $ulid)
+            ->where('basic_information_ulid', $staff->ulid)
+            ->firstOrFail();
+
+        return $this->page('self-service/leave-letter', 'Leave Application', 'my-leave', [
+            'letter' => LeaveLetter::for($application),
+            'application' => $application,
+        ]);
     }
 
     /* --------------------------------------------------------- training */

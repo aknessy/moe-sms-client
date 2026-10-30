@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
 use App\Models\LeaveApplication;
+use App\Models\Notification;
+use App\Support\LeaveLetter;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -101,6 +103,28 @@ class HumanResourceController extends Controller
         LeaveApplication::create(array_merge($data, ['days' => $days]));
 
         return redirect()->route('hr-leave')->with('status', 'Leave application recorded.');
+    }
+
+    /**
+     * One application, set out as the letter it would be on paper. This is the
+     * reviewer's view of it — whoever it has to pass on its way up.
+     */
+    public function show_leave_application(string $ulid)
+    {
+        $application = LeaveApplication::with('staff')->where('ulid', $ulid)->firstOrFail();
+
+        // Reaching the letter is dealing with the notice about it, however
+        // they got here.
+        Notification::for(auth()->user())
+            ->where('url', route('hr-leave.show', $ulid))
+            ->unread()
+            ->update(['read_at' => now()]);
+
+        return $this->page('human-resources/leave-letter', 'Leave Application', 'leave-management', [
+            'letter' => LeaveLetter::for($application),
+            'application' => $application,
+            'statuses' => LeaveApplication::STATUSES,
+        ]);
     }
 
     public function promotions()

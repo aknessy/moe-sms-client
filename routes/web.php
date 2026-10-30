@@ -9,6 +9,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FinanceAndAccountController;
 use App\Http\Controllers\HumanResourceController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PensionGratuityController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\ReportController;
@@ -50,6 +51,7 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
 
         Route::get('/leave', [SelfServiceController::class, 'leave'])->name('my-leave');
         Route::post('/leave', [SelfServiceController::class, 'store_leave'])->name('my-leave.store');
+        Route::get('/leave/{ulid}', [SelfServiceController::class, 'show_leave'])->name('my-leave.show');
 
         Route::get('/training', [SelfServiceController::class, 'training'])->name('my-training');
         Route::post('/training', [SelfServiceController::class, 'indicate_interest'])->name('my-training.interest');
@@ -67,9 +69,16 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::post('/voluntary-retirement', [SelfServiceController::class, 'store_retirement'])->name('my-retirement.store');
     });
 
+    // What is waiting for the account signed in. Addressed to them, so open to
+    // every role.
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+    Route::get('/notifications/{ulid}', [NotificationController::class, 'open'])->name('notifications.open');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+
     Route::prefix('human-resources')->group(function(){
         Route::get('/leave-management', [HumanResourceController::class, 'leave'])->name('hr-leave');
         Route::post('/leave-management', [HumanResourceController::class, 'store_leave_application'])->name('hr-leave.store');
+        Route::get('/leave-management/{ulid}', [HumanResourceController::class, 'show_leave_application'])->name('hr-leave.show');
         Route::get('/promotion-exercises', [HumanResourceController::class, 'promotions'])->name('hr-promotions');
         Route::get('/performance-appraisal', [HumanResourceController::class, 'appraisal'])->name('hr-appraisal');
         Route::get('/recruitment', [HumanResourceController::class, 'recruitment'])->name('hr-recruitment');
@@ -164,6 +173,8 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
 
     Route::prefix('config')->group(function(){
         Route::get('/', [ConfigurationController::class, 'index'])->name('config');
+        Route::post('/organisation', [ConfigurationController::class, 'storeSettings'])->name('config.organisation');
+        Route::post('/department-heads', [ConfigurationController::class, 'storeDepartmentHeads'])->name('config.department-heads');
         Route::get('/users-roles', [ConfigurationController::class, 'usersRoles'])->name('users-roles');
         Route::post('/users-roles', [ConfigurationController::class, 'storeUser'])->name('users-roles.store');
         Route::post('/users-roles/{user}/toggle', [ConfigurationController::class, 'toggleUser'])->name('users-roles.toggle');

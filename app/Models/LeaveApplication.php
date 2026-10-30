@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ApplicationRouting;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -93,5 +94,33 @@ class LeaveApplication extends Model
                 $application->resumption_date = $resumption->toDateString();
             }
         });
+
+        // Whoever the application has to pass is told it exists. Here rather
+        // than in the two controllers that raise one, so an application made
+        // either way reaches the same desks.
+        static::created(fn (self $application) => $application->notifyReviewers());
+    }
+
+    /**
+     * Tell the officer's superior, and the administrators, that this is
+     * waiting on them.
+     */
+    public function notifyReviewers(): int
+    {
+        $staff = $this->staff;
+
+        if ($staff === null) {
+            return 0;
+        }
+
+        $name = trim($staff->surname . ', ' . trim($staff->firstname . ' ' . $staff->othernames));
+
+        return Notification::send(
+            ApplicationRouting::recipientsFor($staff),
+            "New leave application from {$name}",
+            "{$this->leave_type} of {$this->days} days, with effect from {$this->effective_date}."
+                . ' Awaiting a decision.',
+            route('hr-leave.show', $this->ulid),
+        );
     }
 }

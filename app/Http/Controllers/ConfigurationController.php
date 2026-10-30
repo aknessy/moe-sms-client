@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
+use App\Models\DepartmentHead;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,7 +37,71 @@ class ConfigurationController extends Controller
 
     public function index()
     {
-        return $this->page('config/config', 'Settings', 'config');
+        // A department that has appeared on a staff record since this was last
+        // opened still needs a head naming.
+        DepartmentHead::syncWithStaffRecords();
+
+        return $this->page('config/config', 'Settings', 'config', [
+            'organisation' => Setting::organisation(),
+            'departmentHeads' => DepartmentHead::ordered(),
+            // Only the roles that head something; the rest are not offered.
+            'hodRoles' => Role::ordered()
+                ->filter(fn ($role) => str_starts_with($role->role, 'HOD '))
+                ->pluck('role', 'role')
+                ->all(),
+        ]);
+    }
+
+    /**
+     * The command's own details, which head every letter the system raises.
+     */
+    public function storeSettings(Request $request)
+    {
+        $data = $request->validate([
+            'organisation_name' => ['required', 'string', 'max:160'],
+            'organisation_command' => ['nullable', 'string', 'max:160'],
+            'organisation_address' => ['nullable', 'string', 'max:400'],
+            'organisation_telephone' => ['nullable', 'string', 'max:60'],
+            'organisation_email' => ['nullable', 'email', 'max:160'],
+            'organisation_commissioner_title' => ['required', 'string', 'max:160'],
+        ], [
+            'organisation_name.required' => 'Give the name this command writes under.',
+            'organisation_commissioner_title.required' =>
+                'Give the title an application is finally addressed to.',
+        ]);
+
+        Setting::putMany([
+            'organisation.name' => $data['organisation_name'],
+            'organisation.command' => $data['organisation_command'] ?? null,
+            'organisation.address' => $data['organisation_address'] ?? null,
+            'organisation.telephone' => $data['organisation_telephone'] ?? null,
+            'organisation.email' => $data['organisation_email'] ?? null,
+            'organisation.commissioner_title' => $data['organisation_commissioner_title'],
+        ]);
+
+        return redirect()->route('config')->with('status', 'Organisation details saved.');
+    }
+
+    /**
+     * Which role heads which department. An application is routed by this, so
+     * a department left unanswered simply goes to the administrators.
+     */
+    public function storeDepartmentHeads(Request $request)
+    {
+        $roles = Role::pluck('role')->all();
+
+        $data = $request->validate([
+            'heads' => ['nullable', 'array'],
+            'heads.*' => ['nullable', Rule::in($roles)],
+        ], [
+            'heads.*.in' => 'That is not a role on the system.',
+        ]);
+
+        foreach ($data['heads'] ?? [] as $id => $role) {
+            DepartmentHead::where('id', $id)->update(['role' => $role ?: null]);
+        }
+
+        return redirect()->route('config')->with('status', 'Department heads saved.');
     }
 
     public function usersRoles()

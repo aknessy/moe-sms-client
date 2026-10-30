@@ -30,6 +30,8 @@ class Role extends Model
         'Registry Officer',
         'User',
         'HOD GAP',
+        // Finance & Account is its own directorate, not part of GAP.
+        'HOD Finance & Account',
         'HOD ICT',
         'HOD EOPs',
         'HOD EPM',

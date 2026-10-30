@@ -42,6 +42,8 @@ class RolesTableTest extends TestCase
             'Registry Officer',
             'User',
             'HOD GAP',
+            // Finance & Account is its own directorate, not part of GAP.
+            'HOD Finance & Account',
             'HOD ICT',
             'HOD EOPs',
             'HOD EPM',
@@ -75,9 +77,10 @@ class RolesTableTest extends TestCase
         $this->assertSame('HOD Procurement', Role::ordered()->last()->role);
     }
 
-    public function test_the_five_heads_of_department_are_there(): void
+    public function test_the_heads_of_department_are_there(): void
     {
-        foreach (['HOD GAP', 'HOD ICT', 'HOD EOPs', 'HOD EPM', 'HOD VEP'] as $role) {
+        foreach (['HOD GAP', 'HOD Finance & Account', 'HOD ICT',
+                  'HOD EOPs', 'HOD EPM', 'HOD VEP'] as $role) {
             $this->assertTrue(Role::where('role', $role)->exists(), "{$role} is missing");
         }
     }

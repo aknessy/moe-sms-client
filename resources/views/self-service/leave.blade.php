@@ -55,7 +55,7 @@
 
             <x-registry.card title="My Leave Applications" :count="$applications->total()"
                              description="Newest first">
-                <x-registry.table :headings="['S/N', 'Type', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status']"
+                <x-registry.table :headings="['S/N', 'Type', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status', '']"
                                   empty="You have not applied for any leave yet.">
                     @foreach ($applications as $index => $application)
                         <tr class="hover:bg-base-200/60">
@@ -70,6 +70,12 @@
                                 @if (filled($application->remarks))
                                     <span class="block mt-1 text-xs text-base-content/50">{{ $application->remarks }}</span>
                                 @endif
+                            </td>
+                            <td class="px-3 py-2">
+                                <a href="{{ route('my-leave.show', $application->ulid) }}"
+                                   class="rounded-md border border-base-300 px-2 py-1 text-xs text-base-content/70 hover:border-primary hover:text-primary">
+                                    View Letter
+                                </a>
                             </td>
                         </tr>
                     @endforeach

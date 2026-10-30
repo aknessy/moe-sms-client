@@ -14,7 +14,25 @@
 		</svg>
     	<span class="text-base font-semibold text-base-content">Welcome, {{ $name ?? auth()->user()?->firstname ?? 'Guest' }}!</span>
 	</div>
-	<div class="flex items-center pr-4 pt-2 pb-2">
+	<div class="flex items-center gap-3 pr-4 pt-2 pb-2">
+		{{-- What is waiting for this account. The count is of unread notices,
+		     so it clears itself as they are dealt with. --}}
+		@php $waiting = auth()->check() ? \App\Models\Notification::for(auth()->user())->unread()->count() : 0; @endphp
+
+		<a href="{{ route('notifications') }}" title="Notifications"
+		   class="relative inline-flex items-center rounded-md p-2 text-base-content/70 transition hover:bg-base-200 hover:text-base-content">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+			     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path>
+				<path d="M9 17v1a3 3 0 0 0 6 0v-1"></path>
+			</svg>
+			@if ($waiting > 0)
+				<span class="absolute -right-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-semibold leading-4 text-white">
+					{{ $waiting > 9 ? '9+' : $waiting }}
+				</span>
+			@endif
+		</a>
+
 		<div class="relative inline-block text-left">
 			<div>
 			  	<button onclick="toggleDropDownMenu('.dropdown-menu')" type="button" class="btn btn-sm btn-cta-outline gap-x-1.5" id="menu-button" aria-expanded="false" aria-haspopup="true">
