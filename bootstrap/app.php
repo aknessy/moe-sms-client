@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsAuthenticated;
+use App\Http\Middleware\EnsureWithinRole;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.session' => EnsureUserIsAuthenticated::class,
             'guest' => RedirectIfAuthenticated::class,
+            // Runs after the session is established, so it has an account to
+            // read the role off.
+            'within.role' => EnsureWithinRole::class,
         ]);
 
         // Anything the framework itself rejects as unauthenticated lands on login too.

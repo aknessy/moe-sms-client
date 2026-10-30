@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Menu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -44,7 +45,14 @@ class LoginController
         // New session id on privilege change, to close off session fixation.
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        // Where they were heading before they were sent here — but only if it
+        // is somewhere their role may go. An officer bounced to the login from
+        // an administrative page would otherwise sign in straight into a 403.
+        $intended = $request->session()->pull('url.intended');
+
+        return redirect()->to(Menu::allows($request->user(), $intended)
+            ? $intended
+            : route(Menu::homeFor($request->user())));
     }
 
     public function logout(Request $request)

@@ -12,6 +12,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\PensionGratuityController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\VoterRegistryController;
 
@@ -32,11 +33,39 @@ Route::middleware('auth.session')->get('/storage/{path}', function (string $path
     return Storage::disk('local')->response($path);
 })->where('path', '.*')->name('storage.local');
 
-// Everything past this point requires a valid session.
-Route::middleware('auth.session')->prefix('dashboard')->group(function(){
+// Everything past this point requires a valid session, and an account may only
+// reach what its role's menu points at — see App\Support\Menu.
+Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(function(){
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile-settings', [ProfileSettingsController::class, 'index'])->name('profile-settings');
     Route::get('/change-password', [ProfileSettingsController::class, 'changePassword'])->name('change-password');
+    Route::post('/change-password', [ProfileSettingsController::class, 'storePassword'])->name('change-password.store');
+
+    /*
+     * An officer's own records. Every page here is about whoever is signed in,
+     * so none of them takes an officer as a parameter.
+     */
+    Route::prefix('me')->group(function(){
+        Route::get('/appraisal', [SelfServiceController::class, 'appraisal'])->name('my-appraisal');
+
+        Route::get('/leave', [SelfServiceController::class, 'leave'])->name('my-leave');
+        Route::post('/leave', [SelfServiceController::class, 'store_leave'])->name('my-leave.store');
+
+        Route::get('/training', [SelfServiceController::class, 'training'])->name('my-training');
+        Route::post('/training', [SelfServiceController::class, 'indicate_interest'])->name('my-training.interest');
+
+        Route::get('/payslip', [SelfServiceController::class, 'payslip'])->name('my-payslip');
+        Route::get('/deductions', [SelfServiceController::class, 'deductions'])->name('my-deductions');
+
+        Route::get('/bio-data', [SelfServiceController::class, 'bioData'])->name('my-bio-data');
+
+        Route::get('/photo', [SelfServiceController::class, 'photo'])->name('my-photo');
+        Route::post('/photo', [SelfServiceController::class, 'store_photo'])->name('my-photo.store');
+        Route::get('/photo/view', [SelfServiceController::class, 'show_photo'])->name('my-photo.show');
+
+        Route::get('/voluntary-retirement', [SelfServiceController::class, 'retirement'])->name('my-retirement');
+        Route::post('/voluntary-retirement', [SelfServiceController::class, 'store_retirement'])->name('my-retirement.store');
+    });
 
     Route::prefix('human-resources')->group(function(){
         Route::get('/leave-management', [HumanResourceController::class, 'leave'])->name('hr-leave');

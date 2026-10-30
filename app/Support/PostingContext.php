@@ -40,6 +40,56 @@ class PostingContext
     }
 
     /**
+     * Where one officer stands. The same answer `all()` gives for them,
+     * without reading the whole roll to get it — the self-service pages only
+     * ever ask about the officer signed in.
+     */
+    public static function for(?BasicInformation $staff): array
+    {
+        if ($staff === null) {
+            return self::default();
+        }
+
+        $theirs = Posting::query()
+            ->where('basic_information_ulid', $staff->ulid)
+            ->orderBy('effective_date')
+            ->get();
+
+        return self::resolve($theirs, State::pluck('name', 'id'),
+                             Lga::pluck('lga_name', 'id'), self::default());
+    }
+
+    /**
+     * One officer's postings, read into where they now stand.
+     *
+     * The state they are in is wherever their last transfer sent them; the
+     * LGA, wherever their last posting of either kind did. A transfer names
+     * the station it sends them to; a deployment does not, so the LGA it sent
+     * them to is where they now are. Anything with no posting behind it falls
+     * back to this command.
+     */
+    private static function resolve(Collection $theirs, Collection $states,
+                                    Collection $lgas, array $default): array
+    {
+        $state = $theirs->where('posting_type', 'transfer')
+            ->whereNotNull('to_state')->last()?->to_state;
+
+        $lga = $theirs->whereNotNull('to_lga')->last()?->to_lga;
+
+        $latest = $theirs->last();
+        $station = $latest?->duty_station
+            ?: ($latest?->to_lga ? ($lgas[$latest->to_lga] ?? null) : null);
+
+        return [
+            'state_id' => $state ?: $default['state_id'],
+            'state' => $state ? ($states[$state] ?? null) : $default['state'],
+            'lga_id' => $lga ?: $default['lga_id'],
+            'lga' => $lga ? ($lgas[$lga] ?? null) : $default['lga'],
+            'station' => $station ?: $default['station'],
+        ];
+    }
+
+    /**
      * Every officer, keyed by ulid: the state their last transfer put them in,
      * the LGA their last posting sent them to, and the station they are
      * presently at.
@@ -61,29 +111,9 @@ class PostingContext
         $default = self::default();
 
         return BasicInformation::query()->get()
-            ->mapWithKeys(function ($staff) use ($postings, $states, $lgas, $default) {
-                $theirs = $postings[$staff->ulid] ?? collect();
-
-                // The state they are in is wherever their last transfer sent
-                // them; the LGA, wherever their last posting of either kind did.
-                $state = $theirs->where('posting_type', 'transfer')
-                    ->whereNotNull('to_state')->last()?->to_state;
-
-                $lga = $theirs->whereNotNull('to_lga')->last()?->to_lga;
-
-                // A transfer names the station it sends them to; a deployment
-                // does not, so the LGA it sent them to is where they now are.
-                $latest = $theirs->last();
-                $station = $latest?->duty_station
-                    ?: ($latest?->to_lga ? ($lgas[$latest->to_lga] ?? null) : null);
-
-                return [$staff->ulid => [
-                    'state_id' => $state ?: $default['state_id'],
-                    'state' => $state ? ($states[$state] ?? null) : $default['state'],
-                    'lga_id' => $lga ?: $default['lga_id'],
-                    'lga' => $lga ? ($lgas[$lga] ?? null) : $default['lga'],
-                    'station' => $station ?: $default['station'],
-                ]];
-            });
+            ->mapWithKeys(fn ($staff) => [
+                $staff->ulid => self::resolve($postings[$staff->ulid] ?? collect(),
+                                              $states, $lgas, $default),
+            ]);
     }
 }

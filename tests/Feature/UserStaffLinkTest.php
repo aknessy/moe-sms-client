@@ -203,6 +203,8 @@ class UserStaffLinkTest extends TestCase
         $staff = BasicInformation::factory()->create(['firstname' => 'Idongesit']);
         $user = User::factory()->create(['basic_information_ulid' => $staff->ulid]);
 
-        $this->actingAs($user)->get(route('dashboard'))->assertSee('Welcome, Idongesit!');
+        // The factory makes a `User`, whose own page this is; the greeting
+        // sits in the navbar, which every dashboard page carries.
+        $this->actingAs($user)->get(route('my-appraisal'))->assertSee('Welcome, Idongesit!');
     }
 }

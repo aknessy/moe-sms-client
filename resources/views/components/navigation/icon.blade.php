@@ -58,6 +58,21 @@
             <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
             @break
 
+        @case('user')
+            {{-- A single officer, for their own profile. --}}
+            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+            @break
+
+        @case('certificate')
+            <path d="M15 15m-3 0a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+            <path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5"></path>
+            <path d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -1 1.73"></path>
+            <path d="M6 9l12 0"></path>
+            <path d="M6 12l3 0"></path>
+            <path d="M6 15l2 0"></path>
+            @break
+
         @case('chevron')
             <path d="M6 9l6 6l6 -6"></path>
             @break

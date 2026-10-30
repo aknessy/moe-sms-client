@@ -45,6 +45,10 @@ class BasicInformation extends Model
       'rsa',
       'nhis',
       'address',
+      // Passport photograph: the path on the private disk, and what the
+      // officer called the file they sent.
+      'photo_path',
+      'photo_name',
       'is_deceased',
       'is_retired',
       'mode_of_retirement',
@@ -319,5 +323,34 @@ class BasicInformation extends Model
     public function referee(): HasMany
     {
         return $this->hasMany(Referee::class, 'basic_information_ulid', 'ulid');
+    }
+
+    /** The leave this officer has applied for, newest first. */
+    public function leaveApplications(): HasMany
+    {
+        return $this->hasMany(LeaveApplication::class, 'basic_information_ulid', 'ulid');
+    }
+
+    /** Trainings this officer has put their name down for. */
+    public function trainingInterests(): HasMany
+    {
+        return $this->hasMany(TrainingInterest::class, 'basic_information_ulid', 'ulid');
+    }
+
+    /** Requests this officer has made to leave the service early. */
+    public function voluntaryRetirementRequests(): HasMany
+    {
+        return $this->hasMany(VoluntaryRetirementRequest::class, 'basic_information_ulid', 'ulid');
+    }
+
+    /** The dashboard account that signs in as this officer, if any. */
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'basic_information_ulid', 'ulid');
+    }
+
+    public function getHasPhotoAttribute(): bool
+    {
+        return filled($this->photo_path);
     }
 }

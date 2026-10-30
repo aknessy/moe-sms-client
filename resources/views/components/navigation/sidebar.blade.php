@@ -1,4 +1,6 @@
 <?php
+    use App\Support\Menu;
+
     // Tab carries the content area's background so the two merge, lifted on every edge but the right.
     $currentPageClasses = 'text-sm font-medium bg-base-200 text-base-content rounded-l-lg shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.18),0_-4px_6px_-2px_rgba(0,0,0,0.18),0_4px_6px_-2px_rgba(0,0,0,0.18)]';
     $defaultPageClasses = 'text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white';
@@ -6,127 +8,22 @@
     // subordinate to the parent's content-coloured tab.
     $currentSubPageClasses = 'text-sm font-medium bg-[#1B5E20]/30 text-white rounded-l-lg';
 
-    // Not every page passes :segments down from the dashboard component, so fall back to the request.
-    $segments = $segments ?? explode('/', request()->getRequestUri());
-    $section = $segments[1] ?? null;
-    $subSection = $segments[2] ?? null;
-    $leafSection = $segments[3] ?? null;
-    $inDashboard = $section == 'dashboard';
+    // What this account may see. An officer on the `User` role gets their own
+    // corner of the system; everyone else still gets the whole menu.
+    $menu = Menu::forUser(auth()->user());
 
-    // The whole menu lives here: one entry per item, so adding a page is a one-line change.
-    // A group is open (and tab-highlighted) whenever the url sits inside one of its `sections`.
-    $menu = [
-        [
-            'label' => 'Dashboard',
-            'icon' => 'dashboard',
-            'route' => 'dashboard',
-            'sections' => [null],
-        ],
-        [
-            'label' => 'Human Resources',
-            'icon' => 'users',
-            'sections' => ['human-resources'],
-            'children' => [
-                ['label' => 'Leave Management', 'route' => 'hr-leave'],
-                ['label' => 'Promotion Exercises', 'route' => 'hr-promotions'],
-                ['label' => 'Performance Appraisal', 'route' => 'hr-appraisal'],
-                ['label' => 'Recruitment', 'route' => 'hr-recruitment'],
-                ['label' => 'Training & Capacity', 'route' => 'hr-training'],
-                ['label' => 'Establishment Strength', 'route' => 'hr-establishment'],
-            ],
-        ],
-        [
-            'label' => 'Registry',
-            'icon' => 'archive',
-            'sections' => ['staff', 'registry'],
-            'children' => [
-                ['label' => 'Add Staff Record', 'route' => 'basic-info', 'section' => 'staff'],
-                ['label' => 'Staff Bio-data', 'route' => 'bio-data'],
-                ['label' => 'Nominall Roll', 'route' => 'nominal-roll'],
-                ['label' => 'Posting & Deployment', 'route' => 'posting-deployment'],
-                ['label' => 'Confirmation of Appointment', 'route' => 'confirmation'],
-                ['label' => 'Record of Service', 'route' => 'record-of-service'],
-                ['label' => 'Query & Discipline', 'route' => 'query-discipline'],
-                ['label' => 'Record Amendments', 'route' => 'record-amendments'],
-            ],
-        ],
-        [
-            'label' => 'Pension & Gratuity',
-            'icon' => 'coins',
-            'sections' => ['pension-gratuity'],
-            'children' => [
-                ['label' => 'Retirement & Exit', 'route' => 'retirement-exit'],
-                ['label' => 'CPS', 'route' => 'cps'],
-                ['label' => 'Deceased', 'route' => 'deceased'],
-            ],
-        ],
-        [
-            'label' => 'Finance/Account',
-            'icon' => 'wallet',
-            'sections' => ['finance-account'],
-            'children' => [
-                ['label' => 'Salary Structure', 'route' => 'salary-structure'],
-                ['label' => 'Allowances', 'route' => 'allowances'],
-                ['label' => 'Staff Deductions', 'route' => 'staff-deductions'],
-                ['label' => 'Loans & Advances', 'route' => 'loans-advances'],
-                ['label' => 'Pay Roll', 'route' => 'payroll'],
-                ['label' => 'Pay Slip', 'route' => 'payslip'],
-                ['label' => 'Arrears & Variations', 'route' => 'arrears-variations'],
-                ['label' => 'Remittances', 'route' => 'remittances'],
-            ],
-        ],
-        [
-            'label' => 'ICT/Voter Registry',
-            'icon' => 'fingerprint',
-            'sections' => ['ict'],
-            'children' => [
-                ['label' => 'Overview', 'route' => 'voter-registry', 'section' => 'ict', 'leaf' => null],
-                ['label' => 'Ad-hoc Staff', 'route' => 'adhoc-staff'],
-                ['label' => 'Voter Registration', 'route' => 'voter-registration'],
-                ['label' => 'Polling Units', 'route' => 'polling-units'],
-                ['label' => 'Device & Asset Register', 'route' => 'device-register'],
-            ],
-        ],
-        [
-            'label' => 'Reports & Analytics',
-            'icon' => 'chart',
-            'sections' => ['reports'],
-            'children' => [
-                ['label' => 'Nominal Roll Report', 'route' => 'nominal-roll-report'],
-                ['label' => 'Retirement Projection', 'route' => 'retirement-projection'],
-                ['label' => 'Payroll Report', 'route' => 'payroll-report'],
-                ['label' => 'Headcount & Audit', 'route' => 'headcount-report'],
-            ],
-        ],
-        [
-            'label' => 'Administration',
-            'icon' => 'settings',
-            'sections' => ['config'],
-            'children' => [
-                ['label' => 'Settings', 'route' => 'config', 'leaf' => null],
-                ['label' => 'Users, Roles & Permissions', 'route' => 'users-roles'],
-                ['label' => 'Audit Trail', 'route' => 'audit-trail'],
-                ['label' => 'Reference Data', 'route' => 'reference-data'],
-                ['label' => 'Notification Templates', 'route' => 'notification-templates'],
-                ['label' => 'Backup & Data', 'route' => 'backup-data'],
-            ],
-        ],
-    ];
+    // Which entry is current is read off the route being served, not off the
+    // url: the self-service pages all sit under one prefix, so segments can no
+    // longer tell them apart.
+    $currentRoute = request()->route()?->getName();
 
-    // A child is current when its own url matches the one being viewed.
-    $isCurrent = function (array $child) use ($inDashboard, $subSection, $leafSection) {
-        if (! $inDashboard) {
-            return false;
-        }
-
-        if (array_key_exists('section', $child)) {
-            return $subSection === $child['section']
-                && (! array_key_exists('leaf', $child) || $leafSection === $child['leaf']);
-        }
-
-        return $leafSection === last(explode('.', $child['route']))
-            || request()->url() === route($child['route']);
-    };
+    // An entry is current when the route being served is its own, or one of the
+    // sibling routes that belong to the same page.
+    $isCurrent = fn (array $item) => $currentRoute !== null
+        && in_array($currentRoute, array_merge(
+            isset($item['route']) ? [$item['route']] : [],
+            $item['also'] ?? [],
+        ), true);
 ?>
 
 <div>
@@ -149,7 +46,11 @@
         <div class="flex flex-col flex-1 overflow-y-auto">
             <nav class="flex-1 pl-3 px-0 py-4 bg-[#2E7D32]">
                 @foreach ($menu as $group)
-                    @php $groupOpen = $inDashboard && in_array($subSection, $group['sections'], true); @endphp
+                    {{-- A group is open when the page being served is its own or one of its children's. --}}
+                    @php
+                        $groupOpen = $isCurrent($group)
+                            || collect($group['children'] ?? [])->contains(fn ($child) => $isCurrent($child));
+                    @endphp
 
                     @if (empty($group['children']))
                         <a href="{{ route($group['route']) }}" class="flex items-center px-4 py-2 group mb-3 active:outline-none focus:outline-none {{ $groupOpen ? $currentPageClasses : $defaultPageClasses }}">
