@@ -25,7 +25,7 @@ return new class extends Migration
     private const OBVIOUS = [
         'ICT & Voter Registry' => 'HOD ICT',
         'Voter Education & Publicity' => 'HOD VEP',
-        'Operations' => 'HOD EOPs',
+        'Department of Electoral Operations' => 'HOD EOPs',
     ];
 
     public function up(): void

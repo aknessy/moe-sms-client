@@ -318,6 +318,24 @@ class LeaveNotificationTest extends TestCase
             ApplicationRouting::immediateSuperior($staff)['title']);
     }
 
+    public function test_a_department_named_in_full_does_not_stutter(): void
+    {
+        // Departments are on record in full, so "The Head of Department,
+        // Department of Electoral Operations" has to lose a Department.
+        $staff = $this->officer(['department' => 'Department of Electoral Operations']);
+
+        $this->assertSame('The Head, Department of Electoral Operations',
+            ApplicationRouting::immediateSuperior($staff)['title']);
+    }
+
+    public function test_an_officer_with_no_department_still_has_a_desk_named(): void
+    {
+        $staff = $this->officer(['department' => null]);
+
+        $this->assertSame('The Head of Department',
+            ApplicationRouting::immediateSuperior($staff)['title']);
+    }
+
     public function test_away_from_headquarters_the_superior_is_the_electoral_officer(): void
     {
         $lga = $this->anLgaAwayFromHeadquarters();

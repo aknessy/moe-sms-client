@@ -63,14 +63,31 @@ class ApplicationRouting
         return self::headOfDepartment($staff);
     }
 
+    /**
+     * The desk a department's head sits at, named so it does not stutter.
+     *
+     * Departments are recorded in full — "Department of Electoral Operations"
+     * — so the usual "The Head of Department, X" would read "The Head of
+     * Department, Department of Electoral Operations". Where the name already
+     * says what it is, the title does not repeat it.
+     */
+    public static function headTitleFor(?string $department): string
+    {
+        if (blank($department)) {
+            return 'The Head of Department';
+        }
+
+        return str_starts_with(strtolower($department), 'department of')
+            ? "The Head, {$department}"
+            : "The Head of Department, {$department}";
+    }
+
     /** The head of this officer's department, where one has been named. */
     public static function headOfDepartment(BasicInformation $staff): array
     {
         $role = DepartmentHead::roleFor($staff->department);
 
-        $title = filled($staff->department)
-            ? "The Head of Department, {$staff->department}"
-            : 'The Head of Department';
+        $title = self::headTitleFor($staff->department);
 
         // No role set against the department means nobody has said who heads
         // it. The letter still names the desk; only the notice has nowhere to
