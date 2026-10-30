@@ -129,6 +129,21 @@ class LeaveLetterTest extends TestCase
             ->assertSee('The Administrative Secretary');
     }
 
+    public function test_through_stands_bold_on_a_line_of_its_own(): void
+    {
+        $staff = $this->applicant();
+        $application = $this->apply($staff);
+
+        $html = $this->actingAs($this->account($staff))
+            ->get(route('my-leave.show', $application->ulid))->getContent();
+
+        // Bold, and the desk it names on the line below rather than beside it.
+        $this->assertMatchesRegularExpression(
+            '/font-bold[^>]*>Through:<\/p>\s*<p[^>]*>The Administrative Secretary,<\/p>/',
+            $html,
+        );
+    }
+
     public function test_at_headquarters_it_goes_through_the_head_of_department(): void
     {
         DepartmentHead::updateOrCreate(['department' => 'Operations'], ['role' => 'HOD EOPs']);

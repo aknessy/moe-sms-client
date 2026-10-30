@@ -54,10 +54,11 @@
             <p class="m-0">{{ $head['command'] }}.</p>
         @endif
 
+        {{-- "Through:" stands on its own line above the desk it names, as it
+             does on a minuted letter. --}}
         @foreach ($chain['through'] as $desk)
-            <p class="mt-2 mb-0">
-                <span class="italic">Through:</span> {{ $desk }},
-            </p>
+            <p class="mt-3 mb-0 font-bold">Through:</p>
+            <p class="m-0">{{ $desk }},</p>
         @endforeach
     </div>
 
