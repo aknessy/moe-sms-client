@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BasicInformation;
 use App\Models\LeaveApplication;
 use App\Models\Notification;
+use App\Support\Appraisal;
 use App\Support\LeaveLetter;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -147,9 +148,28 @@ class HumanResourceController extends Controller
         return $this->page('human-resources/promotion-exercises', 'Promotion Exercises', 'promotion-exercises');
     }
 
-    public function appraisal()
+    /**
+     * The Annual Performance Evaluation Report, a section at a time.
+     *
+     * One route rather than thirteen: these are parts of one report on one
+     * officer, so the section travels as a parameter and the officer travels
+     * with it — moving between sections must not lose who is being reported
+     * on.
+     */
+    public function appraisal(Request $request)
     {
-        return $this->page('human-resources/performance-appraisal', 'Performance Appraisal', 'performance-appraisal');
+        $section = Appraisal::resolve($request->query('section'));
+        $selected = $request->query('staff');
+
+        return $this->page('human-resources/performance-appraisal', 'Performance Appraisal', 'performance-appraisal', [
+            'section' => $section,
+            'sectionLabel' => Appraisal::label($section),
+            'selected' => $selected,
+            'staff' => $selected
+                ? BasicInformation::where('ulid', $selected)->first()
+                : null,
+            'staffOptions' => $this->staffOptions(),
+        ]);
     }
 
     public function recruitment()
