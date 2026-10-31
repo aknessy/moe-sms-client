@@ -8,6 +8,7 @@ use App\Models\Training;
 use App\Models\TrainingInterest;
 use App\Models\VoluntaryRetirementRequest;
 use App\Support\LeaveLetter;
+use App\Support\Menu;
 use App\Support\PostingContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -89,6 +90,16 @@ class SelfServiceController extends Controller
             'leaveTypes' => LeaveApplication::TYPES,
             // Readonly on the form: it follows from their grade level.
             'days' => $staff->leaveDays(),
+            // An administrator is an officer too: they apply for their own
+            // leave on this page like anyone else, and the table above is
+            // theirs. Everyone else's goes in its own table below, so the two
+            // are never confused for each other.
+            'others' => Menu::isSelfService(auth()->user())
+                ? null
+                : LeaveApplication::with('staff')
+                    ->where('basic_information_ulid', '!=', $staff->ulid)
+                    ->newestFirst()
+                    ->paginate(15, ['*'], 'others'),
         ]);
     }
 

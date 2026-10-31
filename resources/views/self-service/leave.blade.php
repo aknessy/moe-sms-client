@@ -55,7 +55,8 @@
 
             <x-registry.card title="My Leave Applications" :count="$applications->total()"
                              description="Newest first">
-                <x-registry.table :headings="['S/N', 'Type', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status', '']"
+                <x-registry.table wide
+                                  :headings="['S/N', 'Type', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status', '']"
                                   empty="You have not applied for any leave yet.">
                     @foreach ($applications as $index => $application)
                         <tr class="hover:bg-base-200/60">
@@ -83,6 +84,45 @@
 
                 <x-registry.paginator :items="$applications" />
             </x-registry.card>
+
+            {{-- An administrator is an officer too: the table above is their
+                 own leave, this one is everyone else's. --}}
+            @if ($others !== null)
+                <x-registry.card title="Other Staff's Leave Applications" :count="$others->total()"
+                                 description="Every other officer's, newest first">
+                    {{-- Nine columns: wide, so it scrolls rather than wraps. --}}
+                    <x-registry.table wide
+                                      :headings="['S/N', 'Staff Name', 'Grade Level', 'Type', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status', '']"
+                                      empty="No other officer has applied for leave.">
+                        @foreach ($others as $index => $application)
+                            <tr class="hover:bg-base-200/60">
+                                <td class="px-3 py-2 text-base-content/60">{{ $others->firstItem() + $index }}</td>
+                                <td class="px-3 py-2 font-medium text-base-content">
+                                    {{ trim($application->staff?->surname . ', ' . trim($application->staff?->firstname . ' ' . $application->staff?->othernames)) }}
+                                    <span class="block text-base-content/50">{{ $application->staff?->staff_number }}</span>
+                                </td>
+                                <td class="px-3 py-2">{{ $application->staff?->grade_level_label ?: '—' }}</td>
+                                <td class="px-3 py-2">{{ $application->leave_type }}</td>
+                                <td class="px-3 py-2">{{ $application->effective_date }}</td>
+                                <td class="px-3 py-2">{{ $application->days }}</td>
+                                <td class="px-3 py-2">{{ $application->resumption_date }}</td>
+                                <td class="px-3 py-2">
+                                    <x-status-pill :status="$application->status"
+                                                   :label="\App\Models\LeaveApplication::STATUSES[$application->status] ?? 'Pending'" />
+                                </td>
+                                <td class="px-3 py-2">
+                                    <a href="{{ route('hr-leave.show', $application->ulid) }}"
+                                       class="rounded-md border border-base-300 px-2 py-1 text-xs text-base-content/70 hover:border-primary hover:text-primary">
+                                        View Letter
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-registry.table>
+
+                    <x-registry.paginator :items="$others" />
+                </x-registry.card>
+            @endif
         </x-registry.page>
 
         <x-footer appVersion="{{ $app_version }}"/>

@@ -59,9 +59,40 @@
             </x-registry.card>
 
             <x-registry.card title="Leave Applications" :count="$applications->total()"
-                             description="Newest first">
-                <x-registry.table :headings="['S/N', 'Staff Name', 'Grade Level', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status', 'Action']"
-                                  empty="No leave applications yet.">
+                             description="Every officer's, newest first">
+
+                {{-- Standing to filter by. "All" is the absence of one, so it
+                     carries no query string. --}}
+                <div class="flex flex-wrap items-center gap-2 py-3">
+                    @php
+                        $tabs = ['' => 'All'] + $statuses;
+                        $pill = 'rounded-full border px-3 py-1 text-xs font-medium transition';
+                    @endphp
+
+                    @foreach ($tabs as $value => $label)
+                        @php
+                            $current = (string) $status === (string) $value;
+                            $count = $value === '' ? $total : ($counts[$value] ?? 0);
+                        @endphp
+
+                        <a href="{{ $value === '' ? route('hr-leave') : route('hr-leave', ['status' => $value]) }}"
+                           class="{{ $pill }} {{ $current
+                                ? 'border-[#2E7D32] bg-[#2E7D32] text-white'
+                                : 'border-base-300 bg-white text-base-content/70 hover:border-[#2E7D32]/50' }}">
+                            {{ $label }}
+                            <span class="{{ $current ? 'text-white/70' : 'text-base-content/40' }}">{{ $count }}</span>
+                        </a>
+                    @endforeach
+                </div>
+
+                {{-- Eight columns, and a name and a leave type that are both
+                     as long as they are: wide, so the table scrolls sideways
+                     rather than wrapping every cell onto three lines. --}}
+                <x-registry.table wide
+                                  :headings="['S/N', 'Staff Name', 'Grade Level', 'Effective Date', 'No. of Days', 'Resumption Date', 'Status', 'Action']"
+                                  :empty="$status === null
+                                        ? 'No leave applications yet.'
+                                        : 'No applications are ' . strtolower($statuses[$status]) . '.'">
                     @foreach ($applications as $index => $application)
                         <tr class="hover:bg-base-200/60">
                             {{-- Serial continues across pages rather than restarting at 1. --}}

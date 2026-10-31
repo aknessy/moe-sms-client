@@ -48,13 +48,28 @@ class HumanResourceController extends Controller
 
     public function leave(Request $request)
     {
+        // Everyone's applications, in whatever standing is asked for. Anything
+        // that is not one of the statuses shows the lot.
+        $status = $request->query('status');
+        $filtered = in_array($status, array_keys(LeaveApplication::STATUSES), true);
+
         return $this->page('human-resources/leave-management', 'Leave Management', 'leave-management', [
             // Newest first: the applications waiting to be dealt with are the
             // ones just made.
             'applications' => LeaveApplication::with('staff')
+                ->when($filtered, fn ($q) => $q->where('status', $status))
                 ->newestFirst()
                 ->paginate(self::PER_PAGE)
                 ->withQueryString(),
+            'status' => $filtered ? $status : null,
+            // How many sit in each standing, so the tabs say what is behind
+            // them before they are opened.
+            'counts' => LeaveApplication::query()
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status'),
+            'total' => LeaveApplication::count(),
+            'statuses' => LeaveApplication::STATUSES,
             'leaveTypes' => LeaveApplication::TYPES,
             'staffOptions' => $this->staffOptions(),
             // What each officer's grade level entitles them to, so choosing
