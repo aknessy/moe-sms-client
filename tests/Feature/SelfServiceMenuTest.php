@@ -57,9 +57,91 @@ class SelfServiceMenuTest extends TestCase
 
         foreach (['Dashboard', 'Human Resources', 'Registry', 'Pension & Gratuity',
                   'Finance/Account', 'ICT/Voter Registry', 'Reports & Analytics',
-                  'Administration'] as $entry) {
+                  'Administration', 'My Records'] as $entry) {
             $response->assertSee($entry);
         }
+    }
+
+    /* ------------------------------- an administrator is an officer too */
+
+    public function test_the_full_menu_carries_everything_an_officer_can_reach(): void
+    {
+        // Whatever the `User` role may see or do, a role above it may too.
+        // These pages were always reachable; only the menu left them out.
+        $missing = array_diff(
+            Menu::routeNames(Menu::selfService()),
+            Menu::routeNames(Menu::full()),
+        );
+
+        $this->assertSame([], array_values($missing),
+            'the full menu should name every route the self-service menu does');
+    }
+
+    public function test_the_administrator_can_reach_their_own_records_from_the_menu(): void
+    {
+        $response = $this->actingAs($this->officer('Administrator'))->get(route('dashboard'));
+
+        foreach (['my-appraisal', 'my-leave', 'my-training', 'my-payslip',
+                  'my-deductions', 'my-bio-data', 'my-photo', 'my-retirement'] as $route) {
+            $response->assertSee(route($route));
+        }
+    }
+
+    public function test_my_records_reads_the_same_either_way(): void
+    {
+        // Built from the self-service menu rather than written out again, so
+        // the two cannot come to offer different things.
+        $ownRecords = collect(Menu::ownRecords()['children'])->pluck('label')->all();
+
+        $this->assertSame(
+            ['Performance Appraisal', 'Leave Management', 'Training', 'Payslip',
+             'Deductions', 'Bio-data', 'Change Password', 'Update Photo',
+             'Voluntary Retirement'],
+            $ownRecords,
+        );
+    }
+
+    public function test_my_records_comes_last(): void
+    {
+        // Personal rather than operational, so it sits below the work.
+        $this->assertSame('My Records', collect(Menu::full())->last()['label']);
+    }
+
+    public static function pagesAnOfficerHasThatAnAdministratorShouldToo(): array
+    {
+        return [
+            'their appraisal' => ['my-appraisal'],
+            'their leave' => ['my-leave'],
+            'training' => ['my-training'],
+            'their payslip' => ['my-payslip'],
+            'their deductions' => ['my-deductions'],
+            'their bio-data' => ['my-bio-data'],
+            'their photo' => ['my-photo'],
+            'voluntary retirement' => ['my-retirement'],
+        ];
+    }
+
+    #[DataProvider('pagesAnOfficerHasThatAnAdministratorShouldToo')]
+    public function test_an_administrator_may_open_their_own_pages(string $route): void
+    {
+        $this->actingAs($this->officer('Administrator'))->get(route($route))->assertOk();
+    }
+
+    public function test_an_administrator_may_apply_for_their_own_leave(): void
+    {
+        $staff = BasicInformation::factory()->create(['grade_level' => 5]);
+        $admin = User::factory()->create([
+            'basic_information_ulid' => $staff->ulid,
+            'role' => 'Administrator',
+        ]);
+
+        $this->actingAs($admin)->post(route('my-leave.store'), [
+            'leave_type' => 'Annual Leave',
+            'effective_date' => '2026-11-02',
+        ])->assertRedirect(route('my-leave'));
+
+        $this->assertSame($staff->ulid,
+            \App\Models\LeaveApplication::first()->basic_information_ulid);
     }
 
     public static function rolesWithTheRunOfTheSystem(): array
