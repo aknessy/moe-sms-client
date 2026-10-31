@@ -5,6 +5,8 @@
     'value' => null,
     'required' => false,
     'placeholder' => 'Search by name, file or computer number',
+    // A line under the label, where what is being chosen needs saying.
+    'description' => null,
 ])
 
 @php
@@ -19,6 +21,10 @@
     <label for="{{ $id }}" class="font-sans text-sm font-medium text-base-content">
         {{ $label }}@if($required)<span class="text-error">*</span>@endif
     </label>
+
+    @if ($description)
+        <p class="mt-0.5 mb-0 text-xs text-base-content/50">{{ $description }}</p>
+    @endif
 
     <div class="relative mt-1">
         {{-- The value that actually gets submitted. --}}
