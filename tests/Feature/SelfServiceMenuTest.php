@@ -57,54 +57,42 @@ class SelfServiceMenuTest extends TestCase
 
         foreach (['Dashboard', 'Human Resources', 'Registry', 'Pension & Gratuity',
                   'Finance/Account', 'ICT/Voter Registry', 'Reports & Analytics',
-                  'Administration', 'My Records'] as $entry) {
+                  'Administration'] as $entry) {
             $response->assertSee($entry);
         }
     }
 
     /* ------------------------------- an administrator is an officer too */
 
-    public function test_the_full_menu_carries_everything_an_officer_can_reach(): void
+    public function test_the_administrator_has_no_corner_of_their_own(): void
     {
-        // Whatever the `User` role may see or do, a role above it may too.
-        // These pages were always reachable; only the menu left them out.
-        $missing = array_diff(
-            Menu::routeNames(Menu::selfService()),
-            Menu::routeNames(Menu::full()),
-        );
-
-        $this->assertSame([], array_values($missing),
-            'the full menu should name every route the self-service menu does');
+        // The self-service pages have administrative counterparts — their own
+        // leave sits in the Human Resources listing, their bio-data in the
+        // Registry — so a second menu of the same things was only clutter.
+        $this->assertNotContains('My Records', array_column(Menu::full(), 'label'));
     }
 
-    public function test_the_administrator_can_reach_their_own_records_from_the_menu(): void
+    public function test_changing_a_password_sits_under_administration(): void
+    {
+        $administration = collect(Menu::full())->firstWhere('label', 'Administration');
+
+        $this->assertContains('Change Password', array_column($administration['children'], 'label'));
+    }
+
+    public function test_voluntary_retirement_sits_under_pension_and_gratuity(): void
+    {
+        $pension = collect(Menu::full())->firstWhere('label', 'Pension & Gratuity');
+
+        $this->assertContains('Voluntary Retirement', array_column($pension['children'], 'label'));
+        $this->assertContains('my-retirement', array_column($pension['children'], 'route'));
+    }
+
+    public function test_the_administrator_reaches_both_from_the_menu(): void
     {
         $response = $this->actingAs($this->officer('Administrator'))->get(route('dashboard'));
 
-        foreach (['my-appraisal', 'my-leave', 'my-training', 'my-payslip',
-                  'my-deductions', 'my-bio-data', 'my-photo', 'my-retirement'] as $route) {
-            $response->assertSee(route($route));
-        }
-    }
-
-    public function test_my_records_reads_the_same_either_way(): void
-    {
-        // Built from the self-service menu rather than written out again, so
-        // the two cannot come to offer different things.
-        $ownRecords = collect(Menu::ownRecords()['children'])->pluck('label')->all();
-
-        $this->assertSame(
-            ['Performance Appraisal', 'Leave Management', 'Training', 'Payslip',
-             'Deductions', 'Bio-data', 'Change Password', 'Update Photo',
-             'Voluntary Retirement'],
-            $ownRecords,
-        );
-    }
-
-    public function test_my_records_comes_last(): void
-    {
-        // Personal rather than operational, so it sits below the work.
-        $this->assertSame('My Records', collect(Menu::full())->last()['label']);
+        $response->assertSee(route('change-password'));
+        $response->assertSee(route('my-retirement'));
     }
 
     public static function pagesAnOfficerHasThatAnAdministratorShouldToo(): array
@@ -121,6 +109,10 @@ class SelfServiceMenuTest extends TestCase
         ];
     }
 
+    /**
+     * Taking an entry off the administrator's menu is not taking the page
+     * away: an administrator is an officer too, and these are still theirs.
+     */
     #[DataProvider('pagesAnOfficerHasThatAnAdministratorShouldToo')]
     public function test_an_administrator_may_open_their_own_pages(string $route): void
     {

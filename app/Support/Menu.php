@@ -128,33 +128,6 @@ class Menu
     }
 
     /**
-     * An officer's own corner, gathered into one group.
-     *
-     * An administrator is an officer too — they apply for their own leave,
-     * put their name down for a training and change their own password like
-     * anyone else. They could always reach these pages; only the menu left
-     * them out. Built from the self-service menu rather than written out
-     * again, so the two cannot come to offer different things.
-     */
-    public static function ownRecords(): array
-    {
-        $children = [];
-
-        foreach (self::selfService() as $group) {
-            // A group with no children is an entry in its own right.
-            foreach ($group['children'] ?? [$group] as $child) {
-                $children[] = [
-                    'label' => $child['label'],
-                    'route' => $child['route'],
-                    'also' => $child['also'] ?? [],
-                ];
-            }
-        }
-
-        return ['label' => 'My Records', 'icon' => 'user', 'children' => $children];
-    }
-
-    /**
      * An officer's own corner of the system: what they are, what they are
      * owed, and the few things they may ask for.
      */
@@ -258,6 +231,11 @@ class Menu
                     ['label' => 'CPS', 'route' => 'cps'],
                     ['label' => 'Deceased', 'route' => 'deceased',
                      'also' => ['deceased.store', 'deceased.export']],
+                    // An officer's own application to leave early. It sits
+                    // here rather than in a corner of its own: leaving the
+                    // service is what this section is about.
+                    ['label' => 'Voluntary Retirement', 'route' => 'my-retirement',
+                     'also' => ['my-retirement.store']],
                 ],
             ],
             [
@@ -311,12 +289,12 @@ class Menu
                     ['label' => 'Reference Data', 'route' => 'reference-data'],
                     ['label' => 'Notification Templates', 'route' => 'notification-templates'],
                     ['label' => 'Backup & Data', 'route' => 'backup-data'],
+                    // The one thing here that is about the account signed in
+                    // rather than about the system.
+                    ['label' => 'Change Password', 'route' => 'change-password',
+                     'also' => ['change-password.store']],
                 ],
             ],
-            // Last, because it is personal rather than operational — but
-            // there, because whoever is signed in is an officer as well as
-            // whatever else their role makes them.
-            self::ownRecords(),
         ];
     }
 }
