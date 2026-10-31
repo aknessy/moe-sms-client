@@ -35,6 +35,9 @@ class Menu
         // A notice is addressed to an account, so there is nothing in here
         // that is not already theirs.
         'notifications', 'notifications.open', 'notifications.read-all',
+        // Reached from the navbar's Options menu rather than a sidebar, so it
+        // belongs to no role's menu in particular.
+        'my-photo', 'my-photo.store', 'my-photo.show',
     ];
 
     /** Where a self-service officer lands, and is sent back to. */
@@ -168,8 +171,9 @@ class Menu
                     ['label' => 'Bio-data', 'route' => 'my-bio-data'],
                     ['label' => 'Change Password', 'route' => 'change-password',
                      'also' => ['change-password.store']],
-                    ['label' => 'Update Photo', 'route' => 'my-photo',
-                     'also' => ['my-photo.store', 'my-photo.show']],
+                    // Update Photo is not here: it lives in the navbar's
+                    // Options menu, which every role carries, so it is the
+                    // one place it need not be repeated per menu.
                     ['label' => 'Voluntary Retirement', 'route' => 'my-retirement',
                      'also' => ['my-retirement.store']],
                 ],

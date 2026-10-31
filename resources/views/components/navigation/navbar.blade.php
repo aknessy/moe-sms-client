@@ -37,13 +37,32 @@
 			<div>
 			  	<button onclick="toggleDropDownMenu('.dropdown-menu')" type="button" class="btn btn-sm btn-cta-outline gap-x-1.5" id="menu-button" aria-expanded="false" aria-haspopup="true">
 					<span>Options</span>
-					<img src="{{ Vite::asset('resources/images/avatars/avatar-1.png') }}" alt="Avatar" class="rounded-full size-5 border bordr-white" />
+					{{-- The officer's own photograph once they have sent one
+					     in, so uploading it shows somewhere. --}}
+					<img src="{{ auth()->user()?->staff?->has_photo
+					              ? route('my-photo.show')
+					              : Vite::asset('resources/images/avatars/avatar-1.png') }}"
+					     alt="Avatar" class="rounded-full size-5 border bordr-white object-cover" />
 					<svg class="-mr-1 size-5 text-base-content/40" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
 				  		<path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
 					</svg>
 			  	</button>
 			</div>
-			<div id="dropdown-menu" class="dropdown-menu hidden absolute right-0 z-10 divide-y divide-neutral-content/20 mt-2 w-56 origin-top-right rounded-md bg-[#2E7D32] ring-1 shadow-lg ring-base-content/10 focus:outline-hidden" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+			{{-- Rounded on every corner, with overflow-hidden so the band at
+			     the top cannot square the two above it. --}}
+			<div id="dropdown-menu" class="dropdown-menu hidden absolute right-0 z-10 divide-y divide-neutral-content/20 mt-2 w-60 origin-top-right overflow-hidden rounded-lg bg-[#2E7D32] ring-1 shadow-lg ring-base-content/10 focus:outline-hidden" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+
+				{{-- Who is signed in, and as what. A darker shade of the menu
+				     itself, so it reads as a band rather than another item. --}}
+				<div class="bg-[#1B5E20] px-4 py-3" role="none">
+					<p class="m-0 truncate text-sm font-semibold text-neutral-content">
+						{{ auth()->user()?->full_name ?: auth()->user()?->username }}
+					</p>
+					<p class="m-0 truncate text-xs text-neutral-content/60">
+						{{ auth()->user()?->role ?: 'No role' }}
+					</p>
+				</div>
+
 			  	<div class="py-1" role="none">
 					<!-- Active: "bg-base-200 text-base-content outline-hidden", Not Active: "text-neutral-content/80" -->
 					<a href="#" class="block items-centerpx-4 py-2 px-3 text-sm text-neutral-content hover:opacity-40 active:bg-opacity-40 focus:bg-opacity-40 hover:text-neutral-content focus:text-neutral-content active:text-neutral-content" role="menuitem" tabindex="-1" id="menu-item-0">
@@ -52,7 +71,22 @@
 							<span>Profile settings</span>
 						</div>
 					</a>
-					<a href="#" class="block px-3 py-2 text-sm text-neutral-content hover:opacity-40 active:bg-opacity-40 focus:bg-opacity-40 hover:text-neutral-content focus:text-neutral-content active:text-neutral-content" role="menuitem" tabindex="-1" id="menu-item-1">
+					{{-- Here rather than in a sidebar: every role carries the
+					     navbar, so this is the one place it need not be
+					     repeated per menu. --}}
+					<a href="{{ route('my-photo') }}" class="block px-3 py-2 text-sm text-neutral-content hover:opacity-40 active:bg-opacity-40 focus:bg-opacity-40 hover:text-neutral-content focus:text-neutral-content active:text-neutral-content" role="menuitem" tabindex="-1" id="menu-item-1">
+						<div class="flex items-center gap-x-2">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
+								<path d="M15 8h.01"></path>
+								<path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z"></path>
+								<path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"></path>
+								<path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"></path>
+							</svg>
+							<span>Update photo</span>
+						</div>
+					</a>
+
+					<a href="#" class="block px-3 py-2 text-sm text-neutral-content hover:opacity-40 active:bg-opacity-40 focus:bg-opacity-40 hover:text-neutral-content focus:text-neutral-content active:text-neutral-content" role="menuitem" tabindex="-1" id="menu-item-2">
 						<div class="flex items-center gap-x-2">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
 								<path d="M20.993 11.63a9 9 0 0 1 -9.362 9.362l9.362 -9.362z"></path>

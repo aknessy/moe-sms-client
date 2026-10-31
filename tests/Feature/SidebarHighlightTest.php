@@ -140,7 +140,8 @@ class SidebarHighlightTest extends TestCase
             'their deductions' => ['my-deductions', 'Deductions'],
             'their bio-data' => ['my-bio-data', 'Bio-data'],
             'changing their password' => ['change-password', 'Change Password'],
-            'their photo' => ['my-photo', 'Update Photo'],
+            // Update Photo is not in any sidebar: it is reached from the
+            // navbar's Options menu.
             'voluntary retirement' => ['my-retirement', 'Voluntary Retirement'],
         ];
     }

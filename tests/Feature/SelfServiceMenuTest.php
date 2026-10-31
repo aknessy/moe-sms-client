@@ -170,14 +170,31 @@ class SelfServiceMenuTest extends TestCase
         $this->assertSame(['Payslip', 'Deductions'], array_column($accounts['children'], 'label'));
     }
 
-    public function test_profile_carries_the_four_things_an_officer_may_change(): void
+    public function test_profile_carries_the_things_an_officer_may_change(): void
     {
         $profile = collect(Menu::selfService())->firstWhere('label', 'Profile');
 
+        // Update Photo is not among them: it sits in the navbar's Options
+        // menu, which every role carries.
         $this->assertSame(
-            ['Bio-data', 'Change Password', 'Update Photo', 'Voluntary Retirement'],
+            ['Bio-data', 'Change Password', 'Voluntary Retirement'],
             array_column($profile['children'], 'label'),
         );
+    }
+
+    public function test_updating_a_photo_is_reached_from_the_navbar(): void
+    {
+        // One place rather than one per role's menu.
+        $response = $this->actingAs($this->officer('User'))->get(route('my-appraisal'));
+
+        $response->assertSee(route('my-photo'));
+        $response->assertSee('Update photo');
+    }
+
+    public function test_an_administrator_reaches_it_from_the_same_place(): void
+    {
+        $this->actingAs($this->officer('Administrator'))->get(route('dashboard'))
+            ->assertSee(route('my-photo'));
     }
 
     /* ------------------------------------------------------- enforcement */
