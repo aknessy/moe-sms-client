@@ -285,26 +285,61 @@ class SelfServiceController extends Controller
 
     /* ---------------------------------------------- voluntary retirement */
 
+    /**
+     * May this account raise a request on another officer's behalf? An
+     * officer applies for themselves and no one else; anyone with the run of
+     * the system may do it for whoever walks in with the paperwork.
+     */
+    private function mayApplyForOthers(): bool
+    {
+        return ! Menu::isSelfService(auth()->user());
+    }
+
     public function retirement()
     {
         $staff = $this->staff();
+        $forOthers = $this->mayApplyForOthers();
 
         return $this->page('self-service/retirement', 'Voluntary Retirement', 'my-retirement', [
             'requests' => $staff->voluntaryRetirementRequests()->newestFirst()->get(),
             'pending' => $staff->voluntaryRetirementRequests()->pending()->exists(),
             'retiresOn' => $staff->retiresOn(),
+            'forOthers' => $forOthers,
+            // The officers a request may be raised for, and when each of them
+            // falls due anyway, so picking one says what it is they are asking
+            // to bring forward.
+            'staffOptions' => $forOthers ? $this->activeStaffOptions() : [],
+            'dueDates' => $forOthers ? $this->retirementDueDates() : [],
+            // Everyone else's requests, so whoever handles them sees what is
+            // waiting without hunting for it.
+            'others' => $forOthers
+                ? VoluntaryRetirementRequest::with('staff')
+                    ->where('basic_information_ulid', '!=', $staff->ulid)
+                    ->newestFirst()
+                    ->get()
+                : null,
         ]);
     }
 
     public function store_retirement(Request $request)
     {
-        $staff = $this->staff();
+        // Whose request this is: their own unless they may raise one for
+        // someone else and have named them.
+        $applicant = $this->applicantFor($request);
+
+        if ($applicant instanceof \Illuminate\Http\RedirectResponse) {
+            return $applicant;
+        }
+
+        $ownRequest = $applicant->ulid === $this->staff()->ulid;
 
         // One request at a time: a second would only be the same question
         // asked twice while the first is still being considered.
-        if ($staff->voluntaryRetirementRequests()->pending()->exists()) {
+        if ($applicant->voluntaryRetirementRequests()->pending()->exists()) {
             return back()->withInput()->withErrors([
-                'intended_date' => 'You already have a request awaiting a decision.',
+                'intended_date' => $ownRequest
+                    ? 'You already have a request awaiting a decision.'
+                    : 'That officer already has a request awaiting a decision.',
             ]);
         }
 
@@ -313,17 +348,71 @@ class SelfServiceController extends Controller
             'intended_date' => ['required', 'date', 'after:today'],
             'reason' => ['required', 'string', 'max:1000'],
         ], [
-            'intended_date.required' => 'Say which day you intend to leave the service.',
-            'intended_date.after' => 'The day you intend to leave must be a day still to come.',
-            'reason.required' => 'Give your reason for applying to retire early.',
+            'intended_date.required' => 'Say which day the officer intends to leave the service.',
+            'intended_date.after' => 'The day of leaving must be a day still to come.',
+            'reason.required' => 'Give the reason for applying to retire early.',
         ]);
 
         VoluntaryRetirementRequest::create($data + [
-            'basic_information_ulid' => $staff->ulid,
+            'basic_information_ulid' => $applicant->ulid,
             'status' => 'pending',
         ]);
 
-        return redirect()->route('my-retirement')
-            ->with('status', 'Your application for voluntary retirement has been submitted.');
+        return redirect()->route('my-retirement')->with('status', $ownRequest
+            ? 'Your application for voluntary retirement has been submitted.'
+            : 'The application for voluntary retirement has been submitted.');
+    }
+
+    /**
+     * The officer a request is being raised for. Their own unless this account
+     * may raise one for someone else and has named them — an officer cannot
+     * put another officer out of the service by editing the form.
+     */
+    private function applicantFor(Request $request): BasicInformation|\Illuminate\Http\RedirectResponse
+    {
+        $staff = $this->staff();
+        $named = $request->input('basic_information_ulid');
+
+        if (! $this->mayApplyForOthers() || blank($named) || $named === $staff->ulid) {
+            return $staff;
+        }
+
+        $applicant = BasicInformation::query()
+            ->inActiveService()
+            ->where('ulid', $named)
+            ->first();
+
+        if ($applicant === null) {
+            return back()->withInput()->withErrors([
+                'basic_information_ulid' => 'That officer is not in active service.',
+            ]);
+        }
+
+        return $applicant;
+    }
+
+    /** Officers a request may be raised for, as the picker lists them. */
+    private function activeStaffOptions()
+    {
+        return BasicInformation::query()
+            ->inActiveService()
+            ->orderBy('surname')
+            ->get()
+            ->mapWithKeys(fn ($s) => [
+                $s->ulid => trim("{$s->surname}, {$s->firstname} {$s->othernames}")
+                    . " ({$s->staff_number})",
+            ]);
+    }
+
+    /** When each officer falls due to leave anyway, and by which route. */
+    private function retirementDueDates()
+    {
+        return BasicInformation::query()
+            ->inActiveService()
+            ->get()
+            ->mapWithKeys(fn ($s) => [$s->ulid => [
+                'on' => $s->retiresOn()?->toDateString(),
+                'mode' => $s->mode_of_retirement_label,
+            ]]);
     }
 }
