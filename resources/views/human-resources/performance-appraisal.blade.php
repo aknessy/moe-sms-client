@@ -2,17 +2,14 @@
     <x-slot name="slot">
         <x-registry.page title="Performance Appraisal" crumb="Human Resources">
 
-            {{-- The sections of the report, and where in them you are. --}}
+            {{-- The sections of the report, and who it is on. The two sit
+                 together because both belong to the whole report rather than
+                 to any one section of it. --}}
             <div class="w-full mb-4 bg-white px-4 py-3 border border-base-300 rounded-md">
                 <x-appraisal-sections :active="$section" :staff="$staff" />
-            </div>
 
-            {{-- Who the report is on. Full width, so it reads as belonging to
-                 the whole report rather than to the section below it. --}}
-            <x-registry.card title="Select Staff"
-                             description="The officer this Annual Performance Evaluation Report is on">
                 <form method="GET" action="{{ route('hr-appraisal') }}"
-                      class="flex flex-col gap-4 lg:flex-row lg:items-end">
+                      class="mt-3 flex w-full flex-col gap-4 border-t border-base-200 pt-3 lg:flex-row lg:items-end">
 
                     {{-- Keeps the section you are on when the officer changes. --}}
                     <input type="hidden" name="section" value="{{ $section }}" />
@@ -28,7 +25,7 @@
                         @endif
                     </div>
                 </form>
-            </x-registry.card>
+            </div>
 
             <x-registry.card :title="$sectionLabel"
                              :description="$staff
