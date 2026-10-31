@@ -111,6 +111,12 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
 
         Route::get('/record-of-service', [StaffController::class, 'record_of_service'])->name('record-of-service');
 
+        Route::get('/promotion-brief', [StaffController::class, 'promotion_brief'])->name('promotion-brief');
+        Route::post('/promotion-brief', [StaffController::class, 'store_promotion_brief'])->name('promotion-brief.store');
+        Route::post('/promotion-brief/entry', [StaffController::class, 'store_promotion_brief_entry'])->name('promotion-brief.entry');
+        Route::post('/promotion-brief/{ulid}/review', [StaffController::class, 'review_promotion_brief'])->name('promotion-brief.review');
+        Route::delete('/promotion-brief/{ulid}', [StaffController::class, 'remove_promotion_brief_entry'])->name('promotion-brief.remove');
+
         Route::get('/query-discipline', [StaffController::class, 'query_discipline'])->name('query-discipline');
         Route::post('/query-discipline', [StaffController::class, 'store_query'])->name('query-discipline.store');
         Route::get('/query-discipline/{ulid}/response', [StaffController::class, 'query_response'])->name('query-response');

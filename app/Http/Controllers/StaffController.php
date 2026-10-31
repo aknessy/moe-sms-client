@@ -12,11 +12,13 @@ use App\Models\Lga;
 use App\Models\NextOfKin;
 use App\Models\Posting;
 use App\Models\Promotion;
+use App\Models\PromotionBrief;
 use App\Models\RecordAmendment;
 use App\Models\Referee;
 use App\Models\StaffExit;
 use App\Models\StaffQuery;
 use App\Models\State;
+use App\Support\PromotionDue;
 use App\Support\PostingContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -686,6 +688,138 @@ class StaffController extends Controller
         }
 
         return redirect()->route('confirmation')->with('status', 'Confirmation record saved.');
+    }
+
+    /**
+     * The brief put up for a year's promotion exercise.
+     *
+     * Who is due can be worked out from the records at any time, so the page
+     * shows that — but a brief is a document, and what it says has to stay
+     * said after the officers on it have moved. So the list is recorded, and
+     * once it is, the record is what shows.
+     */
+    public function promotion_brief(Request $request){
+        $year = (int) ($request->query('year') ?: now()->year);
+
+        $recorded = PromotionBrief::with('staff')
+            ->forYear($year)
+            ->mostOverdueFirst()
+            ->get();
+
+        // Who the records say is due, less anyone already on the brief —
+        // what is left is what recording it would add.
+        $candidates = PromotionDue::forYear($year)
+            ->reject(fn ($row) => $recorded->contains('basic_information_ulid', $row['staff']->ulid))
+            ->values();
+
+        return $this->registryPage('registry/promotion-brief', 'Promotion Brief', 'promotion-brief', [
+            'year' => $year,
+            'years' => PromotionDue::years(),
+            'recorded' => $recorded,
+            'candidates' => $candidates,
+            'statuses' => PromotionBrief::STATUSES,
+            'yearsOnGrade' => PromotionDue::YEARS_ON_GRADE,
+            // Officers who may be added by hand, for the ones the rule misses.
+            'staffOptions' => BasicInformation::query()
+                ->inActiveService()
+                ->orderBy('surname')
+                ->get()
+                ->mapWithKeys(fn ($s) => [$s->ulid => trim("{$s->surname}, {$s->firstname} {$s->othernames}")
+                    . " ({$s->staff_number})"])
+                ->all(),
+        ]);
+    }
+
+    /** Put everyone the records say is due onto the year's brief. */
+    public function store_promotion_brief(Request $request){
+        $data = $request->validate([
+            'year' => ['required', 'integer', 'between:1960,2100'],
+        ]);
+
+        $year = (int) $data['year'];
+        $added = 0;
+
+        foreach (PromotionDue::forYear($year) as $row) {
+            // Already on it means already put up; recording again adds nobody.
+            if (PromotionBrief::forYear($year)
+                ->where('basic_information_ulid', $row['staff']->ulid)->exists()) {
+                continue;
+            }
+
+            PromotionBrief::record($year, $row['staff']);
+            $added++;
+        }
+
+        return redirect()->route('promotion-brief', ['year' => $year])
+            ->with('status', $added === 0
+                ? "Nobody new to add: the {$year} brief already has everyone the records say is due."
+                : $added . ' officer' . ($added === 1 ? '' : 's')
+                    . " added to the {$year} brief.");
+    }
+
+    /** Put one officer on the brief by hand, for the ones the rule misses. */
+    public function store_promotion_brief_entry(Request $request){
+        $data = $request->validate([
+            'year' => ['required', 'integer', 'between:1960,2100'],
+            'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
+            'remarks' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'basic_information_ulid.required' => 'Choose the officer to add to the brief.',
+        ]);
+
+        $year = (int) $data['year'];
+
+        $staff = BasicInformation::query()
+            ->inActiveService()
+            ->where('ulid', $data['basic_information_ulid'])
+            ->first();
+
+        if ($staff === null) {
+            return back()->withInput()->withErrors([
+                'basic_information_ulid' => 'That officer is not in active service.',
+            ]);
+        }
+
+        if (PromotionBrief::forYear($year)->where('basic_information_ulid', $staff->ulid)->exists()) {
+            return back()->withInput()->withErrors([
+                'basic_information_ulid' => "That officer is already on the {$year} brief.",
+            ]);
+        }
+
+        $entry = PromotionBrief::record($year, $staff);
+
+        if (filled($data['remarks'] ?? null)) {
+            $entry->update(['remarks' => $data['remarks']]);
+        }
+
+        return redirect()->route('promotion-brief', ['year' => $year])
+            ->with('status', trim("{$staff->surname}, {$staff->firstname}") . " added to the {$year} brief.");
+    }
+
+    /** Where an entry stands once the exercise has been held. */
+    public function review_promotion_brief(Request $request, string $ulid){
+        $entry = PromotionBrief::where('ulid', $ulid)->firstOrFail();
+
+        $data = $request->validate([
+            'status' => ['required', Rule::in(array_keys(PromotionBrief::STATUSES))],
+            'remarks' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $entry->update($data);
+
+        return redirect()->route('promotion-brief', ['year' => $entry->year])
+            ->with('status', 'Brief entry updated.');
+    }
+
+    /** Take an officer off a brief, for one put on in error. */
+    public function remove_promotion_brief_entry(string $ulid){
+        $entry = PromotionBrief::where('ulid', $ulid)->firstOrFail();
+        $year = $entry->year;
+
+        $entry->delete();
+
+        return redirect()->route('promotion-brief', ['year' => $year])
+            ->with('status', "Officer taken off the {$year} brief.");
     }
 
     public function record_of_service(Request $request){
