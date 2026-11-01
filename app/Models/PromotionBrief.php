@@ -20,13 +20,14 @@ class PromotionBrief extends Model
     protected $fillable = [
         'year', 'basic_information_ulid',
         'designation', 'grade_level', 'step',
-        'last_moved_on', 'due_on', 'status', 'remarks',
+        'last_moved_on', 'due_on', 'status', 'remarks', 'on_brief_at',
     ];
 
     protected $casts = [
         'year' => 'integer',
         'grade_level' => 'integer',
         'step' => 'integer',
+        'on_brief_at' => 'datetime',
     ];
 
     /** Where an entry stands once the exercise has been held. */
@@ -35,6 +36,12 @@ class PromotionBrief extends Model
         'promoted' => 'Promoted',
         'deferred' => 'Deferred',
     ];
+
+    /**
+     * Taken off the list. Kept rather than deleted, so that reopening the
+     * year does not quietly stage them all over again.
+     */
+    public const EXCLUDED = 'excluded';
 
     public function uniqueIds(): array
     {
@@ -57,6 +64,23 @@ class PromotionBrief extends Model
         return $query->orderByRaw('due_on IS NULL')->orderBy('due_on')->orderBy('id');
     }
 
+    /** Worked up but not yet put up. */
+    public function scopeStaged($query)
+    {
+        return $query->whereNull('on_brief_at')->where('status', '!=', self::EXCLUDED);
+    }
+
+    /** On the brief itself. */
+    public function scopeOnBrief($query)
+    {
+        return $query->whereNotNull('on_brief_at')->where('status', '!=', self::EXCLUDED);
+    }
+
+    public function getIsOnBriefAttribute(): bool
+    {
+        return $this->on_brief_at !== null;
+    }
+
     public function getGradeStepAttribute(): string
     {
         return trim(($this->grade_level === null
@@ -72,12 +96,14 @@ class PromotionBrief extends Model
     }
 
     /**
-     * Put an officer on a year's brief, with their standing as it is now. An
-     * officer already on it is left as they were rather than overwritten —
-     * the brief records what was put up, and re-recording should not quietly
-     * restate it.
+     * Put an officer on a year's list, with their standing as it is now.
+     *
+     * Staged rather than on the brief: the list is looked over before it is
+     * put up. An officer already there is left as they were — including one
+     * taken off, who stays off, so that reopening the year does not stage
+     * them all over again.
      */
-    public static function record(int $year, BasicInformation $staff): self
+    public static function stage(int $year, BasicInformation $staff): self
     {
         return static::firstOrCreate(
             ['year' => $year, 'basic_information_ulid' => $staff->ulid],
@@ -90,5 +116,45 @@ class PromotionBrief extends Model
                 'status' => 'pending',
             ],
         );
+    }
+
+    /**
+     * Stage everyone the records say is due in a year. Idempotent: an officer
+     * already staged, already on the brief or already taken off is left as
+     * they are, so this may be run as often as the year is opened.
+     */
+    public static function stageEveryoneDue(int $year): int
+    {
+        $staged = 0;
+
+        foreach (PromotionDue::forYear($year) as $row) {
+            if (static::forYear($year)
+                ->where('basic_information_ulid', $row['staff']->ulid)->exists()) {
+                continue;
+            }
+
+            static::stage($year, $row['staff']);
+            $staged++;
+        }
+
+        return $staged;
+    }
+
+    /** Put the worked-up list up as the brief. */
+    public function putOnBrief(): void
+    {
+        if ($this->on_brief_at === null) {
+            $this->update(['on_brief_at' => now()]);
+        }
+    }
+
+    /**
+     * Take an officer off. The row stays, marked, so reopening the year does
+     * not stage them again — the decision to leave them off is itself a
+     * thing that was decided.
+     */
+    public function takeOff(): void
+    {
+        $this->update(['status' => self::EXCLUDED, 'on_brief_at' => null]);
     }
 }

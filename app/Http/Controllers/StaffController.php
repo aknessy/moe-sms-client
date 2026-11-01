@@ -691,32 +691,28 @@ class StaffController extends Controller
     }
 
     /**
-     * The brief put up for a year's promotion exercise.
+     * A year's promotion exercise, in the two steps it is done in.
      *
-     * Who is due can be worked out from the records at any time, so the page
-     * shows that — but a brief is a document, and what it says has to stay
-     * said after the officers on it have moved. So the list is recorded, and
-     * once it is, the record is what shows.
+     * Opening the year works the list up: everyone the records say is due is
+     * staged, ready to be looked over, added to and taken from. The brief
+     * itself is what the transfer puts there, and stays as it was put up
+     * after the officers on it have moved.
      */
     public function promotion_brief(Request $request){
         $year = (int) ($request->query('year') ?: now()->year);
 
-        $recorded = PromotionBrief::with('staff')
-            ->forYear($year)
-            ->mostOverdueFirst()
-            ->get();
-
-        // Who the records say is due, less anyone already on the brief —
-        // what is left is what recording it would add.
-        $candidates = PromotionDue::forYear($year)
-            ->reject(fn ($row) => $recorded->contains('basic_information_ulid', $row['staff']->ulid))
-            ->values();
+        // Drafting is what opening the year does. Idempotent, so an officer
+        // already staged, already on the brief or already taken off is left
+        // exactly as they are.
+        PromotionBrief::stageEveryoneDue($year);
 
         return $this->registryPage('registry/promotion-brief', 'Promotion Brief', 'promotion-brief', [
             'year' => $year,
             'years' => PromotionDue::years(),
-            'recorded' => $recorded,
-            'candidates' => $candidates,
+            'staged' => PromotionBrief::with('staff')->forYear($year)
+                ->staged()->mostOverdueFirst()->get(),
+            'brief' => PromotionBrief::with('staff')->forYear($year)
+                ->onBrief()->mostOverdueFirst()->get(),
             'statuses' => PromotionBrief::STATUSES,
             'bands' => PromotionDue::describeBands(),
             // Officers who may be added by hand, for the ones the rule misses.
@@ -730,41 +726,44 @@ class StaffController extends Controller
         ]);
     }
 
-    /** Put everyone the records say is due onto the year's brief. */
+    /**
+     * Put the worked-up list up as the brief: everyone staged moves across.
+     * This is the step that turns a list being argued over into a document.
+     */
     public function store_promotion_brief(Request $request){
         $data = $request->validate([
             'year' => ['required', 'integer', 'between:1960,2100'],
         ]);
 
         $year = (int) $data['year'];
-        $added = 0;
 
-        foreach (PromotionDue::forYear($year) as $row) {
-            // Already on it means already put up; recording again adds nobody.
-            if (PromotionBrief::forYear($year)
-                ->where('basic_information_ulid', $row['staff']->ulid)->exists()) {
-                continue;
-            }
+        // Stage first, so the button does the whole job even if the year has
+        // not been opened — it is the same idempotent draft either way.
+        PromotionBrief::stageEveryoneDue($year);
 
-            PromotionBrief::record($year, $row['staff']);
-            $added++;
+        $staged = PromotionBrief::forYear($year)->staged()->get();
+
+        foreach ($staged as $entry) {
+            $entry->putOnBrief();
         }
 
+        $moved = $staged->count();
+
         return redirect()->route('promotion-brief', ['year' => $year])
-            ->with('status', $added === 0
-                ? "Nobody new to add: the {$year} brief already has everyone the records say is due."
-                : $added . ' officer' . ($added === 1 ? '' : 's')
-                    . " added to the {$year} brief.");
+            ->with('status', $moved === 0
+                ? "Nothing to add: everyone worked up is already on the {$year} brief."
+                : $moved . ' officer' . ($moved === 1 ? '' : 's')
+                    . " added to the {$year} promotion brief.");
     }
 
-    /** Put one officer on the brief by hand, for the ones the rule misses. */
+    /** Add one officer to the list by hand, for the ones the rule misses. */
     public function store_promotion_brief_entry(Request $request){
         $data = $request->validate([
             'year' => ['required', 'integer', 'between:1960,2100'],
             'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ], [
-            'basic_information_ulid.required' => 'Choose the officer to add to the brief.',
+            'basic_information_ulid.required' => 'Choose the officer to add to the list.',
         ]);
 
         $year = (int) $data['year'];
@@ -780,20 +779,29 @@ class StaffController extends Controller
             ]);
         }
 
-        if (PromotionBrief::forYear($year)->where('basic_information_ulid', $staff->ulid)->exists()) {
+        $existing = PromotionBrief::forYear($year)
+            ->where('basic_information_ulid', $staff->ulid)->first();
+
+        if ($existing !== null && $existing->status !== PromotionBrief::EXCLUDED) {
             return back()->withInput()->withErrors([
-                'basic_information_ulid' => "That officer is already on the {$year} brief.",
+                'basic_information_ulid' => $existing->is_on_brief
+                    ? "That officer is already on the {$year} brief."
+                    : "That officer is already on the {$year} list.",
             ]);
         }
 
-        $entry = PromotionBrief::record($year, $staff);
+        // An officer taken off earlier is put back rather than refused: the
+        // row is kept only to stop them being staged again automatically.
+        $entry = $existing === null
+            ? PromotionBrief::stage($year, $staff)
+            : tap($existing)->update(['status' => 'pending']);
 
         if (filled($data['remarks'] ?? null)) {
             $entry->update(['remarks' => $data['remarks']]);
         }
 
         return redirect()->route('promotion-brief', ['year' => $year])
-            ->with('status', trim("{$staff->surname}, {$staff->firstname}") . " added to the {$year} brief.");
+            ->with('status', trim("{$staff->surname}, {$staff->firstname}") . " added to the {$year} list.");
     }
 
     /** Where an entry stands once the exercise has been held. */
@@ -811,15 +819,18 @@ class StaffController extends Controller
             ->with('status', 'Brief entry updated.');
     }
 
-    /** Take an officer off a brief, for one put on in error. */
+    /**
+     * Take an officer off, whether staged or already on the brief. The row
+     * stays, marked, so reopening the year does not stage them again.
+     */
     public function remove_promotion_brief_entry(string $ulid){
         $entry = PromotionBrief::where('ulid', $ulid)->firstOrFail();
         $year = $entry->year;
 
-        $entry->delete();
+        $entry->takeOff();
 
         return redirect()->route('promotion-brief', ['year' => $year])
-            ->with('status', "Officer taken off the {$year} brief.");
+            ->with('status', "Officer taken off the {$year} list.");
     }
 
     public function record_of_service(Request $request){

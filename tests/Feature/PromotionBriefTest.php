@@ -307,7 +307,7 @@ class PromotionBriefTest extends TestCase
 
     /* ------------------------------------------- the year's listing */
 
-    public function test_the_listing_shows_who_falls_due_that_year(): void
+    public function test_opening_the_year_stages_who_falls_due(): void
     {
         $this->officer(['surname' => 'Due', 'date_of_employment' => '2023-05-01']);
         $this->officer(['surname' => 'NotYet', 'date_of_employment' => '2025-05-01']);
@@ -315,8 +315,8 @@ class PromotionBriefTest extends TestCase
         $response = $this->brief(2026);
 
         $response->assertSee('Due');
-        $this->assertFalse($response->viewData('candidates')
-            ->contains(fn ($r) => $r['staff']->surname === 'NotYet'));
+        $this->assertFalse($response->viewData('staged')
+            ->contains(fn ($e) => $e->staff->surname === 'NotYet'));
     }
 
     public function test_someone_due_in_an_earlier_year_is_carried_along(): void
@@ -324,12 +324,12 @@ class PromotionBriefTest extends TestCase
         // Still waiting, so leaving them off would quietly lose them.
         $this->officer(['surname' => 'Waiting', 'date_of_employment' => '2020-01-01']);
 
-        $candidates = $this->brief(2026)->viewData('candidates');
+        $staged = $this->brief(2026)->viewData('staged');
 
-        $overdue = $candidates->first(fn ($r) => $r['staff']->surname === 'Waiting');
+        $overdue = $staged->first(fn ($e) => $e->staff->surname === 'Waiting');
 
         $this->assertNotNull($overdue);
-        $this->assertTrue($overdue['overdue']);
+        $this->assertTrue($overdue->is_overdue);
     }
 
     public function test_the_longest_standing_are_listed_first(): void
@@ -337,25 +337,40 @@ class PromotionBriefTest extends TestCase
         $this->officer(['surname' => 'Recent', 'date_of_employment' => '2023-10-01']);
         $this->officer(['surname' => 'Older', 'date_of_employment' => '2021-01-01']);
 
-        $order = $this->brief(2026)->viewData('candidates')
-            ->map(fn ($r) => $r['staff']->surname)->all();
+        $order = $this->brief(2026)->viewData('staged')
+            ->map(fn ($e) => $e->staff->surname)->all();
 
         $this->assertLessThan(array_search('Recent', $order), array_search('Older', $order));
     }
 
-    /* --------------------------------------------- recording the brief */
+    /* ---------------------------------- the brief starts empty */
 
-    public function test_recording_puts_everyone_due_on_the_brief(): void
+    public function test_the_brief_is_empty_until_the_list_is_added_to_it(): void
+    {
+        $this->officer(['surname' => 'One', 'date_of_employment' => '2023-01-01']);
+
+        $response = $this->brief(2026);
+
+        // Staged, but not yet put up.
+        $this->assertSame(1, $response->viewData('staged')->count());
+        $this->assertSame(0, $response->viewData('brief')->count());
+        $response->assertSee('Nothing has been added to the 2026 brief yet.');
+    }
+
+    /* ----------------------------------- adding the list to the brief */
+
+    public function test_adding_moves_everyone_staged_onto_the_brief(): void
     {
         $this->officer(['surname' => 'One', 'date_of_employment' => '2023-01-01']);
         $this->officer(['surname' => 'Two', 'date_of_employment' => '2022-01-01']);
 
         $this->record(2026)->assertRedirect(route('promotion-brief', ['year' => 2026]));
 
-        $this->assertSame(2, PromotionBrief::forYear(2026)->count());
+        $this->assertSame(2, PromotionBrief::forYear(2026)->onBrief()->count());
+        $this->assertSame(0, PromotionBrief::forYear(2026)->staged()->count());
     }
 
-    public function test_a_recorded_entry_keeps_the_standing_it_was_drawn_at(): void
+    public function test_an_entry_keeps_the_standing_it_was_drawn_at(): void
     {
         $staff = $this->officer([
             'surname' => 'Eyo', 'grade_level' => 9, 'step' => 3,
@@ -376,25 +391,26 @@ class PromotionBriefTest extends TestCase
         $this->assertSame(9, $entry->fresh()->grade_level);
     }
 
-    public function test_recording_twice_adds_nobody_twice(): void
+    public function test_adding_twice_adds_nobody_twice(): void
     {
         $this->officer(['surname' => 'One', 'date_of_employment' => '2023-01-01']);
 
         $this->record(2026);
         $this->record(2026);
 
-        $this->assertSame(1, PromotionBrief::forYear(2026)->count());
+        $this->assertSame(1, PromotionBrief::forYear(2026)->onBrief()->count());
     }
 
-    public function test_someone_already_recorded_is_no_longer_a_candidate(): void
+    public function test_someone_on_the_brief_is_no_longer_staged(): void
     {
         $this->officer(['surname' => 'One', 'date_of_employment' => '2023-01-01']);
 
         $this->record(2026);
 
-        // What is left is what recording again would add.
-        $this->assertSame(0, $this->brief(2026)->viewData('candidates')->count());
-        $this->assertSame(1, $this->brief(2026)->viewData('recorded')->count());
+        $response = $this->brief(2026);
+
+        $this->assertSame(0, $response->viewData('staged')->count());
+        $this->assertSame(1, $response->viewData('brief')->count());
     }
 
     public function test_each_year_has_its_own_brief(): void
@@ -403,8 +419,8 @@ class PromotionBriefTest extends TestCase
 
         $this->record(2026);
 
-        $this->assertSame(1, PromotionBrief::forYear(2026)->count());
-        $this->assertSame(0, PromotionBrief::forYear(2027)->count());
+        $this->assertSame(1, PromotionBrief::forYear(2026)->onBrief()->count());
+        $this->assertSame(0, PromotionBrief::forYear(2027)->onBrief()->count());
     }
 
     /* ---------------------------------------- the button that adds them */
@@ -425,7 +441,7 @@ class PromotionBriefTest extends TestCase
 
         $this->brief(2026)
             ->assertSee('Add to Promotion Brief')
-            ->assertSee('Everyone the records say is due is already on the 2026 brief.');
+            ->assertSee('Nobody is waiting to be added to the 2026 brief.');
     }
 
     public function test_the_add_button_is_there_with_nobody_due_at_all(): void
@@ -435,7 +451,7 @@ class PromotionBriefTest extends TestCase
 
     /* ----------------------------------------------- printing the brief */
 
-    public function test_a_recorded_brief_can_be_printed(): void
+    public function test_a_brief_that_has_been_put_up_can_be_printed(): void
     {
         $this->officer(['date_of_employment' => '2023-01-01']);
         $this->record(2026);
@@ -447,6 +463,9 @@ class PromotionBriefTest extends TestCase
 
     public function test_an_empty_brief_offers_nothing_to_print(): void
     {
+        // Staged but not put up: there is nothing to print yet.
+        $this->officer(['date_of_employment' => '2023-01-01']);
+
         $this->brief(2026)->assertDontSee('Print the Brief');
     }
 
@@ -517,7 +536,8 @@ class PromotionBriefTest extends TestCase
 
     public function test_the_same_officer_cannot_be_added_twice(): void
     {
-        $staff = $this->officer(['date_of_employment' => '2023-01-01']);
+        // Not due, so nothing stages them automatically.
+        $staff = $this->officer(['date_of_employment' => '2025-06-01']);
 
         $payload = ['year' => 2026, 'basic_information_ulid' => $staff->ulid];
 
@@ -587,7 +607,36 @@ class PromotionBriefTest extends TestCase
         $this->actingAs($this->actor())->delete(route('promotion-brief.remove', $entry->ulid))
             ->assertRedirect(route('promotion-brief', ['year' => 2026]));
 
-        $this->assertSame(0, PromotionBrief::count());
+        $this->assertSame(0, PromotionBrief::forYear(2026)->onBrief()->count());
+        $this->assertSame(0, PromotionBrief::forYear(2026)->staged()->count());
+    }
+
+    public function test_an_officer_taken_off_is_not_staged_again(): void
+    {
+        // The row is kept, marked, precisely so that reopening the year does
+        // not undo the decision to leave them off.
+        $this->officer(['surname' => 'Dropped', 'date_of_employment' => '2023-01-01']);
+
+        $entry = $this->brief(2026)->viewData('staged')->first();
+
+        $this->actingAs($this->actor())->delete(route('promotion-brief.remove', $entry->ulid));
+
+        $this->assertSame(0, $this->brief(2026)->viewData('staged')->count());
+    }
+
+    public function test_an_officer_taken_off_can_be_put_back_by_hand(): void
+    {
+        $staff = $this->officer(['surname' => 'Dropped', 'date_of_employment' => '2023-01-01']);
+
+        $entry = $this->brief(2026)->viewData('staged')->first();
+        $this->actingAs($this->actor())->delete(route('promotion-brief.remove', $entry->ulid));
+
+        $this->actingAs($this->actor())->post(route('promotion-brief.entry'), [
+            'year' => 2026,
+            'basic_information_ulid' => $staff->ulid,
+        ])->assertRedirect(route('promotion-brief', ['year' => 2026]));
+
+        $this->assertSame(1, $this->brief(2026)->viewData('staged')->count());
     }
 
     /* ------------------------------------------------- who may see it */
