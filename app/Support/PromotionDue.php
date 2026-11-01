@@ -16,8 +16,51 @@ use Illuminate\Support\Collection;
  */
 class PromotionDue
 {
-    /** Years an officer serves on a grade level before falling due. */
-    public const YEARS_ON_GRADE = 3;
+    /**
+     * Years an officer serves before falling due, by grade level.
+     *
+     * Junior officers move up in two; from GL 7 it is three. GL 17 falls in
+     * no band at all, which is what says an officer there has nowhere left to
+     * rise to.
+     */
+    public const YEARS_ON_GRADE = [
+        ['up_to' => 6, 'years' => 2],
+        ['up_to' => 16, 'years' => 3],
+    ];
+
+    /**
+     * How long this officer serves before falling due. Null where there is no
+     * grade level on record, or where they are above the last band and so
+     * cannot be promoted further.
+     */
+    public static function yearsOnGradeFor(BasicInformation $staff): ?int
+    {
+        if ($staff->grade_level === null) {
+            return null;
+        }
+
+        foreach (self::YEARS_ON_GRADE as $band) {
+            if ($staff->grade_level <= $band['up_to']) {
+                return $band['years'];
+            }
+        }
+
+        return null;
+    }
+
+    /** "GL 1–6 after 2 years, GL 7–16 after 3 years", for the page to say. */
+    public static function describeBands(): string
+    {
+        $from = 1;
+        $parts = [];
+
+        foreach (self::YEARS_ON_GRADE as $band) {
+            $parts[] = "GL {$from}\u{2013}{$band['up_to']} after {$band['years']} years";
+            $from = $band['up_to'] + 1;
+        }
+
+        return implode(', ', $parts);
+    }
 
     /**
      * The day this officer last moved, which is what their next promotion is
@@ -46,20 +89,26 @@ class PromotionDue
         return null;
     }
 
-    /** The day they fall due, or null where there is nothing to count from. */
+    /**
+     * The day they fall due: how long their grade level asks of them, counted
+     * from the day they last moved. Null where either is unknown.
+     */
     public static function dueOn(BasicInformation $staff): ?Carbon
     {
-        return self::lastMovedOn($staff)?->copy()->addYears(self::YEARS_ON_GRADE);
+        $years = self::yearsOnGradeFor($staff);
+
+        return $years === null
+            ? null
+            : self::lastMovedOn($staff)?->copy()->addYears($years);
     }
 
     /**
-     * An officer already on the top grade level has nowhere to be promoted
-     * to, so they never fall due however long they have served.
+     * An officer above the last band has nowhere to be promoted to, so they
+     * never fall due however long they have served.
      */
     public static function canRise(BasicInformation $staff): bool
     {
-        return $staff->grade_level !== null
-            && $staff->grade_level < BasicInformation::GRADE_LEVELS[1];
+        return self::yearsOnGradeFor($staff) !== null;
     }
 
     /**

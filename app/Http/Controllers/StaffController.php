@@ -718,7 +718,7 @@ class StaffController extends Controller
             'recorded' => $recorded,
             'candidates' => $candidates,
             'statuses' => PromotionBrief::STATUSES,
-            'yearsOnGrade' => PromotionDue::YEARS_ON_GRADE,
+            'bands' => PromotionDue::describeBands(),
             // Officers who may be added by hand, for the ones the rule misses.
             'staffOptions' => BasicInformation::query()
                 ->inActiveService()

@@ -71,9 +71,63 @@ class PromotionBriefTest extends TestCase
             ->post(route('promotion-brief.store'), ['year' => $year]);
     }
 
+    /* ------------------------------------------- how long each serves */
+
+    public static function gradeLevelsAndTheirYears(): array
+    {
+        return [
+            'junior, lowest' => [1, 2],
+            'junior, lower band top' => [6, 2],
+            'senior, first level' => [7, 3],
+            'senior, mid' => [12, 3],
+            'senior, last level that may rise' => [16, 3],
+            // Nowhere left to go.
+            'the top grade level' => [17, null],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('gradeLevelsAndTheirYears')]
+    public function test_a_grade_level_asks_its_own_number_of_years(int $gradeLevel, ?int $years): void
+    {
+        $staff = $this->officer(['grade_level' => $gradeLevel]);
+
+        $this->assertSame($years, PromotionDue::yearsOnGradeFor($staff));
+    }
+
+    public function test_an_officer_with_no_grade_level_has_nothing_to_count_against(): void
+    {
+        $staff = $this->officer(['grade_level' => null, 'date_of_employment' => '2020-01-01']);
+
+        $this->assertNull(PromotionDue::yearsOnGradeFor($staff));
+        $this->assertNull(PromotionDue::dueOn($staff));
+    }
+
+    public function test_a_junior_officer_falls_due_in_two_years(): void
+    {
+        $staff = $this->officer(['grade_level' => 5, 'date_of_employment' => '2024-04-01']);
+
+        $this->assertSame('2026-04-01', PromotionDue::dueOn($staff)->toDateString());
+    }
+
+    public function test_the_same_date_falls_differently_by_grade_level(): void
+    {
+        // The only difference between them is where they stand.
+        $junior = $this->officer(['grade_level' => 5, 'date_of_employment' => '2024-04-01']);
+        $senior = $this->officer(['grade_level' => 12, 'date_of_employment' => '2024-04-01']);
+
+        $this->assertSame('2026-04-01', PromotionDue::dueOn($junior)->toDateString());
+        $this->assertSame('2027-04-01', PromotionDue::dueOn($senior)->toDateString());
+    }
+
+    public function test_the_bands_read_as_the_page_says_them(): void
+    {
+        $this->assertSame('GL 1–6 after 2 years, GL 7–16 after 3 years',
+            PromotionDue::describeBands());
+    }
+
     /* ------------------------------------------------- who falls due */
 
-    public function test_an_officer_falls_due_three_years_after_their_last_promotion(): void
+    public function test_a_senior_officer_falls_due_three_years_after_their_last_promotion(): void
     {
         $staff = $this->officer();
         $this->promoted($staff, '2023-04-01');
@@ -90,6 +144,7 @@ class PromotionBriefTest extends TestCase
         $this->assertSame('2026-04-01', PromotionDue::dueOn($staff->fresh())->toDateString());
     }
 
+    /** GL 9 throughout these, so three years is what is being counted. */
     public function test_an_officer_never_promoted_counts_from_confirmation(): void
     {
         $staff = $this->officer([

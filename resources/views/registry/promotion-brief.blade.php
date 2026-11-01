@@ -3,7 +3,7 @@
         <x-registry.page title="Promotion Brief">
 
             <x-registry.card title="Promotion Exercise Year"
-                             :description="'An officer falls due ' . $yearsOnGrade . ' years after their last promotion — or, where they have never been promoted, after their appointment was confirmed.'">
+                             :description="$bands . ', counted from their last promotion — or, where they have never been promoted, from the day their appointment was confirmed.'">
                 <form method="GET" action="{{ route('promotion-brief') }}"
                       class="flex w-full flex-col gap-4 py-3 sm:flex-row sm:items-end">
                     <div class="w-full sm:max-w-xs">
