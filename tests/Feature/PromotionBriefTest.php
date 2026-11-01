@@ -407,6 +407,80 @@ class PromotionBriefTest extends TestCase
         $this->assertSame(0, PromotionBrief::forYear(2027)->count());
     }
 
+    /* ---------------------------------------- the button that adds them */
+
+    public function test_the_add_all_button_is_there_with_officers_to_add(): void
+    {
+        $this->officer(['date_of_employment' => '2023-01-01']);
+
+        $this->brief(2026)->assertSee('Add All to the 2026 Brief');
+    }
+
+    public function test_the_add_all_button_stays_once_everyone_is_on(): void
+    {
+        // It used to go missing the moment it had been used, which read as
+        // the page losing a feature.
+        $this->officer(['date_of_employment' => '2023-01-01']);
+        $this->record(2026);
+
+        $this->brief(2026)
+            ->assertSee('Add All to the 2026 Brief')
+            ->assertSee('Everyone the records say is due is already on the 2026 brief.');
+    }
+
+    public function test_the_add_all_button_is_there_with_nobody_due_at_all(): void
+    {
+        $this->brief(2026)->assertSee('Add All to the 2026 Brief');
+    }
+
+    /* ----------------------------------------------- printing the brief */
+
+    public function test_a_recorded_brief_can_be_printed(): void
+    {
+        $this->officer(['date_of_employment' => '2023-01-01']);
+        $this->record(2026);
+
+        $this->brief(2026)
+            ->assertSee('Print the Brief')
+            ->assertSee('window.print()', false);
+    }
+
+    public function test_an_empty_brief_offers_nothing_to_print(): void
+    {
+        $this->brief(2026)->assertDontSee('Print the Brief');
+    }
+
+    public function test_the_printed_sheet_carries_the_commands_letterhead(): void
+    {
+        Setting::putMany([
+            'organisation.name' => 'Independent National Electoral Commission',
+            'organisation.command' => 'Cross River State Office',
+        ]);
+
+        $this->officer(['date_of_employment' => '2023-01-01']);
+        $this->record(2026);
+
+        $response = $this->brief(2026);
+
+        $response->assertSee('Independent National Electoral Commission');
+        $response->assertSee('Cross River State Office');
+        $response->assertSee('Promotion Brief');
+        $response->assertSee('1 officer listed');
+    }
+
+    public function test_the_dashboard_chrome_is_kept_off_the_sheet(): void
+    {
+        $this->officer(['date_of_employment' => '2023-01-01']);
+        $this->record(2026);
+
+        $html = $this->brief(2026)->getContent();
+
+        // The year picker and the add-by-hand form are for the screen; the
+        // Action column has nothing to act with on paper.
+        $this->assertStringContainsString('print-hide', $html);
+        $this->assertStringContainsString('print-no-last-column', $html);
+    }
+
     /* ------------------------------------------------ adding by hand */
 
     public function test_an_officer_can_be_added_by_hand(): void

@@ -2,6 +2,7 @@
     <x-slot name="slot">
         <x-registry.page title="Promotion Brief">
 
+            <div class="print-hide">
             <x-registry.card title="Promotion Exercise Year"
                              :description="$bands . ', counted from their last promotion — or, where they have never been promoted, from the day their appointment was confirmed.'">
                 <form method="GET" action="{{ route('promotion-brief') }}"
@@ -16,10 +17,13 @@
                     </div>
                 </form>
             </x-registry.card>
+            </div>
 
             {{-- Who the records say is due but who is not yet on the brief.
-                 Recording them is what turns the calculation into a document. --}}
-            @if ($candidates->isNotEmpty())
+                 Recording them is what turns the calculation into a document.
+                 Shown even when it is empty, so the button that does it does
+                 not go missing the moment it has been used. --}}
+            <div class="print-hide">
                 <x-registry.card title="Due for Promotion in {{ $year }}" :count="$candidates->count()"
                                  description="Worked out from the records, and not yet recorded on the brief">
                     <x-registry.table wide
@@ -52,19 +56,56 @@
                           class="flex flex-wrap items-center justify-end gap-2 py-3">
                         @csrf
                         <input type="hidden" name="year" value="{{ $year }}" />
-                        <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md">
-                            Record All on the {{ $year }} Brief
+
+                        @if ($candidates->isEmpty())
+                            <p class="m-0 mr-auto text-xs text-base-content/50">
+                                Everyone the records say is due is already on the {{ $year }} brief.
+                            </p>
+                        @endif
+
+                        <button type="submit" @disabled($candidates->isEmpty())
+                                class="btn btn-sm px-4 {{ $candidates->isEmpty()
+                                    ? 'btn-cta-outline cursor-not-allowed opacity-50'
+                                    : 'btn-cta shadow-md' }}">
+                            Add All to the {{ $year }} Brief
                         </button>
                     </form>
                 </x-registry.card>
-            @endif
+            </div>
+
+            {{-- The brief as it goes on paper: the command's name at the head,
+                 the year it covers, and nothing of the dashboard around it. --}}
+            <div class="hidden print:block">
+                <h1 class="m-0 text-center font-alkalami text-lg font-bold uppercase tracking-wide">
+                    {{ \App\Models\Setting::get('organisation.name') }}
+                </h1>
+                @if (filled(\App\Models\Setting::get('organisation.command')))
+                    <p class="m-0 text-center text-sm font-semibold uppercase">
+                        {{ \App\Models\Setting::get('organisation.command') }}
+                    </p>
+                @endif
+                <h2 class="mt-3 mb-1 text-center text-sm font-bold uppercase underline">
+                    Promotion Brief &mdash; {{ $year }}
+                </h2>
+                <p class="mt-0 mb-4 text-center text-xs">
+                    {{ $bands }}.
+                    {{ $recorded->count() . ' officer' . ($recorded->count() === 1 ? '' : 's') . ' listed.' }}
+                </p>
+            </div>
 
             <x-registry.card title="The {{ $year }} Brief" :count="$recorded->count()"
                              description="Recorded as it stood when the brief was drawn, longest-standing first">
 
+                @if ($recorded->isNotEmpty())
+                    <div class="flex flex-wrap items-center justify-end gap-2 pt-3 print-hide">
+                        <button type="button" onclick="window.print()"
+                                class="btn btn-sm btn-cta-outline px-4">Print the Brief</button>
+                    </div>
+                @endif
+
                 {{-- Added by hand, for an officer the rule misses. --}}
                 <form method="POST" action="{{ route('promotion-brief.entry') }}"
-                      class="mb-4 flex flex-col gap-4 rounded-md border border-base-300 bg-base-200/40 px-4 py-3 sm:flex-row sm:items-end">
+                      class="print-hide mb-4 mt-3 flex flex-col gap-4 rounded-md border border-base-300 bg-base-200/40 px-4 py-3 sm:flex-row sm:items-end">
                     @csrf
                     <input type="hidden" name="year" value="{{ $year }}" />
 
@@ -82,6 +123,8 @@
                     <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md shrink-0">Add</button>
                 </form>
 
+                {{-- The Action column is for the screen; see app.css. --}}
+                <div class="print-no-last-column">
                 <x-registry.table wide
                                   :headings="['S/N', 'Staff Name', 'Rank', 'Grade / Step', 'Last Moved', 'Fell Due', 'Status', 'Action']"
                                   empty="Nothing has been recorded on the {{ $year }} brief yet.">
@@ -141,6 +184,7 @@
                         </tr>
                     @endforeach
                 </x-registry.table>
+                </div>
             </x-registry.card>
         </x-registry.page>
 
