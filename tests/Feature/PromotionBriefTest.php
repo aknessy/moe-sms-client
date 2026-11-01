@@ -409,14 +409,14 @@ class PromotionBriefTest extends TestCase
 
     /* ---------------------------------------- the button that adds them */
 
-    public function test_the_add_all_button_is_there_with_officers_to_add(): void
+    public function test_the_add_button_is_there_with_officers_to_add(): void
     {
         $this->officer(['date_of_employment' => '2023-01-01']);
 
-        $this->brief(2026)->assertSee('Add All to the 2026 Brief');
+        $this->brief(2026)->assertSee('Add to Promotion Brief');
     }
 
-    public function test_the_add_all_button_stays_once_everyone_is_on(): void
+    public function test_the_add_button_stays_once_everyone_is_on(): void
     {
         // It used to go missing the moment it had been used, which read as
         // the page losing a feature.
@@ -424,13 +424,13 @@ class PromotionBriefTest extends TestCase
         $this->record(2026);
 
         $this->brief(2026)
-            ->assertSee('Add All to the 2026 Brief')
+            ->assertSee('Add to Promotion Brief')
             ->assertSee('Everyone the records say is due is already on the 2026 brief.');
     }
 
-    public function test_the_add_all_button_is_there_with_nobody_due_at_all(): void
+    public function test_the_add_button_is_there_with_nobody_due_at_all(): void
     {
-        $this->brief(2026)->assertSee('Add All to the 2026 Brief');
+        $this->brief(2026)->assertSee('Add to Promotion Brief');
     }
 
     /* ----------------------------------------------- printing the brief */
@@ -468,17 +468,32 @@ class PromotionBriefTest extends TestCase
         $response->assertSee('1 officer listed');
     }
 
-    public function test_the_dashboard_chrome_is_kept_off_the_sheet(): void
+    public function test_only_the_brief_goes_on_paper(): void
     {
         $this->officer(['date_of_employment' => '2023-01-01']);
         $this->record(2026);
 
         $html = $this->brief(2026)->getContent();
 
-        // The year picker and the add-by-hand form are for the screen; the
-        // Action column has nothing to act with on paper.
+        // Everything used to work the list up stays on the screen.
         $this->assertStringContainsString('print-hide', $html);
-        $this->assertStringContainsString('print-no-last-column', $html);
+    }
+
+    public function test_the_printable_brief_carries_no_status_or_controls(): void
+    {
+        $this->officer(['date_of_employment' => '2023-01-01']);
+        $this->record(2026);
+
+        $html = $this->brief(2026)->getContent();
+
+        // What came of each officer is settled in the section above, so the
+        // brief itself is the list and nothing else. The printable table is
+        // the last one on the page.
+        $printable = substr($html, strpos($html, 'As it goes on paper') ?: 0);
+
+        $this->assertStringNotContainsString('promotion-brief/entry', $printable);
+        $this->assertStringNotContainsString('Remove', $printable);
+        $this->assertStringNotContainsString('Deferred', $printable);
     }
 
     /* ------------------------------------------------ adding by hand */

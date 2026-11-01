@@ -70,13 +70,6 @@
     td {
         border-bottom: 1px solid #ddd;
     }
-
-    /* A listing's Action column is for the screen: on paper there is nothing
-       to act with, and the controls in it print as empty boxes. */
-    .print-no-last-column th:last-child,
-    .print-no-last-column td:last-child {
-        display: none !important;
-    }
 }
 
 @layer components {
