@@ -33,6 +33,23 @@ class Setting extends Model
         'organisation.commissioner_title' => 'The Resident Electoral Commissioner',
     ];
 
+    /**
+     * Rules the installation sets rather than the code. Kept apart from the
+     * organisation's details because they govern what the system works out,
+     * not what it prints at the head of a letter.
+     */
+    public const RULES = [
+        // The lowest grade level an officer may be on and still be considered
+        // for promotion. Anyone below it is left off the brief.
+        'promotion.lowest_grade_level' => '3',
+    ];
+
+    /** Every setting's default, whichever group it belongs to. */
+    public static function defaults(): array
+    {
+        return self::ORGANISATION + self::RULES;
+    }
+
     protected static function booted(): void
     {
         // Any write makes what is held stale, whichever way it was written.
@@ -55,9 +72,17 @@ class Setting extends Model
         // cleared field reads the same as one never filled in. A fallback
         // that is itself empty reads as nothing at all rather than as a
         // blank string, which a letter would print a label in front of.
-        $value = filled($value) ? $value : ($default ?? self::ORGANISATION[$key] ?? null);
+        $value = filled($value) ? $value : ($default ?? self::defaults()[$key] ?? null);
 
         return filled($value) ? $value : null;
+    }
+
+    /** A setting that is a number, read as one. */
+    public static function integer(string $key, ?int $default = null): ?int
+    {
+        $value = self::get($key, $default === null ? null : (string) $default);
+
+        return $value === null ? null : (int) $value;
     }
 
     public static function put(string $key, ?string $value): void

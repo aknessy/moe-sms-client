@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\BasicInformation;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -48,13 +49,21 @@ class PromotionDue
         return null;
     }
 
-    /** "GL 1–6 after 2 years, GL 7–16 after 3 years", for the page to say. */
+    /**
+     * "GL 3–6 after 2 years, GL 7–16 after 3 years", for the page to say.
+     * Starts at the lowest grade level considered, so the page does not
+     * promise to look at officers it will leave off.
+     */
     public static function describeBands(): string
     {
-        $from = 1;
+        $from = self::lowestGradeLevel();
         $parts = [];
 
         foreach (self::YEARS_ON_GRADE as $band) {
+            if ($band['up_to'] < $from) {
+                continue;
+            }
+
             $parts[] = "GL {$from}\u{2013}{$band['up_to']} after {$band['years']} years";
             $from = $band['up_to'] + 1;
         }
@@ -103,12 +112,24 @@ class PromotionDue
     }
 
     /**
-     * An officer above the last band has nowhere to be promoted to, so they
-     * never fall due however long they have served.
+     * The lowest grade level an officer may be on and still be considered.
+     * Set in Settings, because where the line falls is a matter for the
+     * command rather than for the code.
+     */
+    public static function lowestGradeLevel(): int
+    {
+        return Setting::integer('promotion.lowest_grade_level') ?? 1;
+    }
+
+    /**
+     * Whether this officer may be promoted at all: above the last band there
+     * is nowhere to rise to, and below the lowest grade level set in Settings
+     * they are not considered.
      */
     public static function canRise(BasicInformation $staff): bool
     {
-        return self::yearsOnGradeFor($staff) !== null;
+        return self::yearsOnGradeFor($staff) !== null
+            && $staff->grade_level >= self::lowestGradeLevel();
     }
 
     /**

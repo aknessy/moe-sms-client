@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BasicInformation;
 use App\Models\Promotion;
 use App\Models\PromotionBrief;
+use App\Models\Setting;
 use App\Models\User;
 use App\Support\PromotionDue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,8 +122,129 @@ class PromotionBriefTest extends TestCase
 
     public function test_the_bands_read_as_the_page_says_them(): void
     {
-        $this->assertSame('GL 1–6 after 2 years, GL 7–16 after 3 years',
+        // Starts at the lowest grade level considered, which is 3 by default,
+        // so the page does not promise to look at officers it will leave off.
+        $this->assertSame('GL 3–6 after 2 years, GL 7–16 after 3 years',
             PromotionDue::describeBands());
+    }
+
+    /* ------------------------------- the lowest grade level considered */
+
+    public function test_the_lowest_grade_level_considered_is_three_by_default(): void
+    {
+        $this->assertSame(3, PromotionDue::lowestGradeLevel());
+    }
+
+    public function test_an_officer_below_the_lowest_grade_level_is_not_considered(): void
+    {
+        $below = $this->officer(['grade_level' => 2, 'date_of_employment' => '2020-01-01']);
+        $at = $this->officer(['grade_level' => 3, 'date_of_employment' => '2020-01-01']);
+
+        $this->assertFalse(PromotionDue::canRise($below));
+        $this->assertTrue(PromotionDue::canRise($at));
+    }
+
+    public function test_the_brief_leaves_off_those_below_the_line(): void
+    {
+        $this->officer(['surname' => 'TooJunior', 'grade_level' => 2,
+                        'date_of_employment' => '2020-01-01']);
+        $this->officer(['surname' => 'JustAbove', 'grade_level' => 3,
+                        'date_of_employment' => '2020-01-01']);
+
+        $surnames = PromotionDue::forYear(2026)->map(fn ($r) => $r['staff']->surname)->all();
+
+        $this->assertNotContains('TooJunior', $surnames);
+        $this->assertContains('JustAbove', $surnames);
+    }
+
+    public function test_lowering_the_line_brings_more_officers_in(): void
+    {
+        $this->officer(['surname' => 'OnOne', 'grade_level' => 1,
+                        'date_of_employment' => '2020-01-01']);
+
+        $this->assertNotContains('OnOne',
+            PromotionDue::forYear(2026)->map(fn ($r) => $r['staff']->surname)->all());
+
+        Setting::put('promotion.lowest_grade_level', '1');
+
+        $this->assertContains('OnOne',
+            PromotionDue::forYear(2026)->map(fn ($r) => $r['staff']->surname)->all());
+    }
+
+    public function test_raising_the_line_leaves_officers_out(): void
+    {
+        $this->officer(['surname' => 'OnTen', 'grade_level' => 10,
+                        'date_of_employment' => '2020-01-01']);
+
+        Setting::put('promotion.lowest_grade_level', '12');
+
+        $this->assertNotContains('OnTen',
+            PromotionDue::forYear(2026)->map(fn ($r) => $r['staff']->surname)->all());
+    }
+
+    public function test_the_page_says_where_the_line_falls(): void
+    {
+        Setting::put('promotion.lowest_grade_level', '7');
+
+        $this->assertSame('GL 7–16 after 3 years', PromotionDue::describeBands());
+    }
+
+    /* ------------------------------------------- setting it in Settings */
+
+    public function test_an_administrator_sets_the_lowest_grade_level(): void
+    {
+        $this->actingAs($this->actor())->post(route('config.rules'), [
+            'promotion_lowest_grade_level' => 5,
+        ])->assertRedirect(route('config'));
+
+        $this->assertSame(5, PromotionDue::lowestGradeLevel());
+    }
+
+    public function test_the_lowest_grade_level_may_be_one(): void
+    {
+        $this->actingAs($this->actor())->post(route('config.rules'), [
+            'promotion_lowest_grade_level' => 1,
+        ])->assertRedirect(route('config'));
+
+        $this->assertSame(1, PromotionDue::lowestGradeLevel());
+    }
+
+    public function test_below_one_is_refused(): void
+    {
+        $this->actingAs($this->actor())->post(route('config.rules'), [
+            'promotion_lowest_grade_level' => 0,
+        ])->assertSessionHasErrors('promotion_lowest_grade_level');
+
+        $this->assertSame(3, PromotionDue::lowestGradeLevel());
+    }
+
+    public function test_a_level_off_the_scale_is_refused(): void
+    {
+        $this->actingAs($this->actor())->post(route('config.rules'), [
+            'promotion_lowest_grade_level' => 18,
+        ])->assertSessionHasErrors('promotion_lowest_grade_level');
+    }
+
+    public function test_the_settings_page_shows_what_it_is_set_to(): void
+    {
+        Setting::put('promotion.lowest_grade_level', '6');
+
+        $this->actingAs($this->actor())->get(route('config'))
+            ->assertOk()
+            ->assertSee('Lowest Grade Level Considered')
+            ->assertSee('value="6"', false);
+    }
+
+    public function test_an_officer_cannot_change_it(): void
+    {
+        $officer = User::factory()->create([
+            'basic_information_ulid' => BasicInformation::factory()->create()->ulid,
+            'role' => 'User',
+        ]);
+
+        $this->actingAs($officer)->post(route('config.rules'), [
+            'promotion_lowest_grade_level' => 1,
+        ])->assertForbidden();
     }
 
     /* ------------------------------------------------- who falls due */

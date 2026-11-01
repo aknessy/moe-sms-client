@@ -8,6 +8,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\PromotionDue;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -43,6 +44,8 @@ class ConfigurationController extends Controller
 
         return $this->page('config/config', 'Settings', 'config', [
             'organisation' => Setting::organisation(),
+            'lowestGradeLevel' => PromotionDue::lowestGradeLevel(),
+            'topGradeLevel' => BasicInformation::GRADE_LEVELS[1],
             'departmentHeads' => DepartmentHead::ordered(),
             // Only the roles that head something; the rest are not offered.
             'hodRoles' => Role::ordered()
@@ -80,6 +83,29 @@ class ConfigurationController extends Controller
         ]);
 
         return redirect()->route('config')->with('status', 'Organisation details saved.');
+    }
+
+    /**
+     * Rules the command sets rather than the code. At present, how far down
+     * the grade levels a promotion exercise reaches.
+     */
+    public function storeRules(Request $request)
+    {
+        $data = $request->validate([
+            'promotion_lowest_grade_level' => [
+                'required', 'integer',
+                'between:1,' . BasicInformation::GRADE_LEVELS[1],
+            ],
+        ], [
+            'promotion_lowest_grade_level.required' =>
+                'Give the lowest grade level considered for promotion.',
+            'promotion_lowest_grade_level.between' =>
+                'That is not a grade level on the scale.',
+        ]);
+
+        Setting::put('promotion.lowest_grade_level', (string) $data['promotion_lowest_grade_level']);
+
+        return redirect()->route('config')->with('status', 'Promotion rules saved.');
     }
 
     /**
