@@ -81,6 +81,7 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::get('/leave-management/{ulid}', [HumanResourceController::class, 'show_leave_application'])->name('hr-leave.show');
         Route::get('/promotion-exercises', [HumanResourceController::class, 'promotions'])->name('hr-promotions');
         Route::get('/performance-appraisal', [HumanResourceController::class, 'appraisal'])->name('hr-appraisal');
+        Route::post('/performance-appraisal/bio-data', [HumanResourceController::class, 'store_appraisal_bio_data'])->name('hr-appraisal.bio-data');
         Route::get('/recruitment', [HumanResourceController::class, 'recruitment'])->name('hr-recruitment');
         Route::get('/training', [HumanResourceController::class, 'training'])->name('hr-training');
         Route::get('/establishment-strength', [HumanResourceController::class, 'establishment'])->name('hr-establishment');

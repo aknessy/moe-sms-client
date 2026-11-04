@@ -40,13 +40,30 @@
                              :description="$staff
                                 ? 'For ' . trim($staff->surname . ', ' . trim($staff->firstname . ' ' . $staff->othernames))
                                 : 'Choose an officer above to begin'">
-                <div class="py-12 text-center">
-                    <p class="m-0 text-sm text-base-content/60">
-                        {{ $staff
-                            ? 'This section has not been built yet.'
-                            : 'Choose the officer this report is on.' }}
-                    </p>
-                </div>
+
+                @if ($staff === null)
+                    <div class="py-12 text-center">
+                        <p class="m-0 text-sm text-base-content/60">
+                            Choose the officer this report is on.
+                        </p>
+                    </div>
+                @else
+                    {{-- A section renders its own partial where it has one,
+                         and says so plainly where it has not. --}}
+                    @includeFirst([
+                        'human-resources.appraisal.' . $section,
+                        'human-resources.appraisal.not-built',
+                    ])
+
+                    {{-- A section with a form of its own carries its own way
+                         onward, saving as it goes. The rest only move. --}}
+                    @if (! $sectionHasForm && $continueLabel !== null)
+                        <div class="flex flex-wrap items-center justify-end gap-2 border-t border-base-200 py-3">
+                            <a href="{{ route('hr-appraisal', ['section' => $nextSection, 'staff' => $staff->ulid]) }}"
+                               class="btn btn-sm btn-cta px-4 shadow-md">{{ $continueLabel }}</a>
+                        </div>
+                    @endif
+                @endif
             </x-registry.card>
         </x-registry.page>
 

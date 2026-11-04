@@ -60,4 +60,32 @@ class Appraisal
     {
         return count(self::SECTIONS);
     }
+
+    /**
+     * Sections that take a form of their own, and so carry their own save
+     * and their own way on to the next. The rest are still to be built.
+     */
+    public const WITH_FORMS = ['bio-data'];
+
+    public static function hasForm(?string $section): bool
+    {
+        return in_array(self::resolve($section), self::WITH_FORMS, true);
+    }
+
+    /** The section after this one, or null at the end of the report. */
+    public static function next(?string $section): ?string
+    {
+        $slugs = array_keys(self::SECTIONS);
+        $at = array_search(self::resolve($section), $slugs, true);
+
+        return $slugs[$at + 1] ?? null;
+    }
+
+    /** "Continue to Career History", or null at the end of the report. */
+    public static function continueLabel(?string $section): ?string
+    {
+        $next = self::next($section);
+
+        return $next === null ? null : 'Continue to ' . self::SECTIONS[$next];
+    }
 }

@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
+use App\Models\DepartmentHead;
 use App\Models\LeaveApplication;
+use App\Models\Lga;
 use App\Models\Notification;
+use App\Models\State;
 use App\Support\Appraisal;
 use App\Support\LeaveLetter;
+use App\Support\PostingContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -161,15 +165,98 @@ class HumanResourceController extends Controller
         $section = Appraisal::resolve($request->query('section'));
         $selected = $request->query('staff');
 
+        $staff = $selected
+            ? BasicInformation::with(['state', 'lga'])->where('ulid', $selected)->first()
+            : null;
+
         return $this->page('human-resources/performance-appraisal', 'Performance Appraisal', 'performance-appraisal', [
             'section' => $section,
             'sectionLabel' => Appraisal::label($section),
             'selected' => $selected,
-            'staff' => $selected
-                ? BasicInformation::where('ulid', $selected)->first()
-                : null,
+            'staff' => $staff,
             'staffOptions' => $this->staffOptions(),
+            // Where the next section is, and what the button to it says.
+            'nextSection' => Appraisal::next($section),
+            'continueLabel' => Appraisal::continueLabel($section),
+            // A section with a form of its own carries its own way onward.
+            'sectionHasForm' => Appraisal::hasForm($section),
+            'states' => State::orderBy('name')->pluck('name', 'id')->all(),
+            'departments' => DepartmentHead::options(),
+            // Which office the officer sits in decides whether a department
+            // is a question worth asking of them.
+            'atHeadquarters' => PostingContext::atHeadquarters($staff),
+            'deployment' => $staff === null ? null : PostingContext::deploymentFor($staff),
         ]);
+    }
+
+    /**
+     * Correct the officer's record from the Bio-data section, then move on.
+     *
+     * The appraisal shows what the Registry holds, and what it holds is
+     * sometimes wrong — so it may be put right here rather than sending the
+     * reporting officer away to another module and back.
+     */
+    public function store_appraisal_bio_data(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+
+        // A department is only asked of an officer at the state office, so
+        // it is only required — and only written — when it was asked.
+        $atHeadquarters = PostingContext::atHeadquarters($staff);
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'surname' => ['required', 'string', 'max:60'],
+            'firstname' => ['required', 'string', 'max:60'],
+            'othernames' => ['nullable', 'string', 'max:60'],
+            'date_of_birth' => ['required', 'date'],
+            'state_of_origin' => ['required', 'exists:states,id'],
+            'grade_level' => ['required', 'integer',
+                              'between:' . implode(',', BasicInformation::GRADE_LEVELS)],
+            'step' => ['required', 'integer', 'between:1,15'],
+            'department' => [Rule::requiredIf($atHeadquarters), 'nullable',
+                             Rule::in(DepartmentHead::names())],
+            'division' => ['required', 'string', 'max:120'],
+        ], [
+            'state_of_origin.required' => 'Choose the state the officer hails from.',
+            'department.required' => 'Choose the department the officer belongs to.',
+            'division.required' => 'Give the unit the officer serves in.',
+        ]);
+
+        // The column holds a blank rather than a null for an officer with no
+        // other names.
+        $changes = [
+            'surname' => $data['surname'],
+            'firstname' => $data['firstname'],
+            'othernames' => $data['othernames'] ?? '',
+            'date_of_birth' => $data['date_of_birth'],
+            'state_of_origin' => $data['state_of_origin'],
+            'grade_level' => $data['grade_level'],
+            'step' => $data['step'],
+            'division' => $data['division'],
+        ];
+
+        if ($atHeadquarters) {
+            $changes['department'] = $data['department'];
+        }
+
+        // The LGA of origin belongs to a state. Moving the officer to another
+        // one leaves it pointing somewhere they are not from, so it goes.
+        if ((int) $data['state_of_origin'] !== (int) $staff->state_of_origin
+            && ! Lga::where('id', $staff->lga_of_origin)
+                    ->where('state_id', $data['state_of_origin'])->exists()) {
+
+            $changes['lga_of_origin'] = null;
+        }
+
+        $staff->update($changes);
+
+        $next = Appraisal::next($request->input('section'));
+
+        return redirect()->route('hr-appraisal', array_filter([
+            'section' => $next,
+            'staff' => $staff->ulid,
+        ]))->with('status', 'Bio-data saved.');
     }
 
     public function recruitment()

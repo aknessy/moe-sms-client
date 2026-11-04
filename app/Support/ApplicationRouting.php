@@ -45,12 +45,8 @@ class ApplicationRouting
     public static function immediateSuperior(BasicInformation $staff): array
     {
         $posting = PostingContext::for($staff);
-        $headquarters = PostingContext::default();
 
-        $atHeadquarters = $posting['lga_id'] !== null
-            && $posting['lga_id'] === $headquarters['lga_id'];
-
-        if (! $atHeadquarters && filled($posting['lga'])) {
+        if (! PostingContext::atHeadquarters($staff) && filled($posting['lga'])) {
             $officer = self::electoralOfficerOf($posting['lga_id'], $staff);
 
             return [

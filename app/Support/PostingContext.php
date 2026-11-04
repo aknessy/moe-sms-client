@@ -40,6 +40,38 @@ class PostingContext
     }
 
     /**
+     * Whether this officer sits at the state office rather than out in a
+     * local government. Their posting LGA being this command's own is what
+     * says so — there is no other mark of it on the record.
+     */
+    public static function atHeadquarters(?BasicInformation $staff): bool
+    {
+        if ($staff === null) {
+            return true;
+        }
+
+        $posting = self::for($staff);
+
+        return $posting['lga_id'] !== null
+            && $posting['lga_id'] === self::default()['lga_id'];
+    }
+
+    /**
+     * Where an officer is deployed, as it reads: "State Office", or the local
+     * government office they are out at.
+     */
+    public static function deploymentFor(?BasicInformation $staff): string
+    {
+        if (self::atHeadquarters($staff)) {
+            return 'State Office';
+        }
+
+        $lga = self::for($staff)['lga'];
+
+        return filled($lga) ? "{$lga} Local Government Office" : 'Local Government Office';
+    }
+
+    /**
      * Where one officer stands. The same answer `all()` gives for them,
      * without reading the whole roll to get it — the self-service pages only
      * ever ask about the officer signed in.
