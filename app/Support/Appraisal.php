@@ -28,6 +28,18 @@ class Appraisal
         'counter-signing-officer-report' => "Counter Signing Officer's Report",
     ];
 
+    /**
+     * The kinds of qualification an appraisal asks after. "Tertiary" is what
+     * the staff wizard already records against an institution, so it stays
+     * among them rather than being renamed out from under the data.
+     */
+    public const QUALIFICATION_TYPES = [
+        'Educational',
+        'Professional',
+        'Technical',
+        'Tertiary',
+    ];
+
     /** The one a report opens on. */
     public static function firstSection(): string
     {

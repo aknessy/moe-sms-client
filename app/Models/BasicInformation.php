@@ -363,10 +363,15 @@ class BasicInformation extends Model
      * was obtained.
      *
      * The education records hold a run of entries apiece; this flattens them
-     * into the one list an appraisal reads. The year comes off the day they
-     * left the institution, that being when the qualification was obtained.
+     * into the one list an appraisal reads.
      *
-     * @return \Illuminate\Support\Collection<array{type: ?string, qualification: ?string, institution: ?string, year: ?string}>
+     * The year is whatever was recorded against the qualification, falling
+     * back to the day the officer left the institution — that being when a
+     * qualification obtained through study was obtained. The dates either
+     * side of it are carried through so that editing a qualification here
+     * does not throw away what the wizard recorded about the schooling.
+     *
+     * @return \Illuminate\Support\Collection<array{type: ?string, qualification: ?string, institution: ?string, year: ?string, start_date: ?string, end_date: ?string}>
      */
     public function qualifications()
     {
@@ -376,9 +381,12 @@ class BasicInformation extends Model
                 'type' => $entry['institution_type'] ?? null,
                 'qualification' => $entry['qualification'] ?? null,
                 'institution' => $entry['institution_name'] ?? null,
-                'year' => filled($entry['end_date'] ?? null)
-                    ? Carbon::parse($entry['end_date'])->format('Y')
-                    : null,
+                'year' => $entry['year_obtained']
+                    ?? (filled($entry['end_date'] ?? null)
+                        ? Carbon::parse($entry['end_date'])->format('Y')
+                        : null),
+                'start_date' => $entry['start_date'] ?? null,
+                'end_date' => $entry['end_date'] ?? null,
             ])
             ->filter(fn ($entry) => filled($entry['qualification']))
             ->sortBy('year')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
 use App\Models\DepartmentHead;
+use App\Models\EduProgress;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Notification;
@@ -269,10 +270,8 @@ class HumanResourceController extends Controller
     }
 
     /**
-     * The officer's service dates, from the Career History section.
-     *
-     * Qualifications are not here: they are a run of entries held against
-     * the education record, and are maintained where they are entered.
+     * The officer's service dates and what they have qualified in, from the
+     * Career History section.
      */
     public function store_appraisal_career_history(Request $request)
     {
@@ -286,6 +285,14 @@ class HumanResourceController extends Controller
             'date_of_present_appointment' => ['nullable', 'date', 'after_or_equal:date_of_employment'],
             // Most officers hold no acting appointment at all.
             'date_of_acting_appointment' => ['nullable', 'date', 'after_or_equal:date_of_employment'],
+
+            // The repeating rows. A row counts for nothing without the
+            // qualification itself, so that is the only one asked for.
+            'qual_name' => ['nullable', 'array'],
+            'qual_name.*' => ['nullable', 'string', 'max:160'],
+            'qual_type.*' => ['nullable', 'string', 'max:80'],
+            'qual_institution.*' => ['nullable', 'string', 'max:160'],
+            'qual_year.*' => ['nullable', 'integer', 'between:1950,' . (now()->year + 1)],
         ], [
             'date_of_employment.required' => 'Give the day the officer first joined the service.',
             'date_of_confirmation.after_or_equal' =>
@@ -294,11 +301,16 @@ class HumanResourceController extends Controller
                 'The present appointment cannot predate the first one.',
             'date_of_acting_appointment.after_or_equal' =>
                 'An acting appointment cannot predate the first one.',
+            'qual_year.*.between' => 'That is not a year a qualification could have been obtained in.',
         ]);
 
         // The mode of retirement follows the date of employment; the model
         // recalculates it as the record is saved.
-        $staff->update(collect($data)->except('staff')->all());
+        $staff->update(collect($data)->except([
+            'staff', 'qual_name', 'qual_type', 'qual_institution', 'qual_year',
+        ])->all());
+
+        $this->storeQualifications($request, $staff);
 
         $next = Appraisal::next($request->input('section'));
 
@@ -306,6 +318,54 @@ class HumanResourceController extends Controller
             'section' => $next,
             'staff' => $staff->ulid,
         ]))->with('status', 'Career history saved.');
+    }
+
+    /**
+     * Write back the qualifications the section was showing.
+     *
+     * The rows arrive as parallel arrays and line up by position, which is
+     * what lets a row be cloned without renumbering anything. A row with no
+     * qualification named is not a row.
+     *
+     * The form carries the schooling dates through untouched, so editing a
+     * qualification here does not throw away what the wizard recorded about
+     * the institution it came from.
+     */
+    private function storeQualifications(Request $request, BasicInformation $staff): void
+    {
+        // Absent entirely means the section was not showing them, so there is
+        // nothing to say about them either way.
+        if (! $request->has('qual_name')) {
+            return;
+        }
+
+        $entries = [];
+
+        foreach ((array) $request->input('qual_name', []) as $row => $qualification) {
+            if (blank($qualification)) {
+                continue;
+            }
+
+            $entries[] = array_filter([
+                'institution_type' => $request->input("qual_type.{$row}"),
+                'institution_name' => $request->input("qual_institution.{$row}"),
+                'qualification' => $qualification,
+                'year_obtained' => $request->input("qual_year.{$row}"),
+                'start_date' => $request->input("qual_start.{$row}"),
+                'end_date' => $request->input("qual_end.{$row}"),
+            ], fn ($value) => filled($value));
+        }
+
+        // What the form showed is the whole of it, so what it sends back
+        // replaces what was there.
+        EduProgress::where('basic_information_ulid', $staff->ulid)->delete();
+
+        if ($entries !== []) {
+            EduProgress::create([
+                'basic_information_ulid' => $staff->ulid,
+                'educational_record' => $entries,
+            ]);
+        }
     }
 
     public function recruitment()
