@@ -269,10 +269,7 @@ class HumanResourceController extends Controller
         ]))->with('status', 'Bio-data saved.');
     }
 
-    /**
-     * The officer's service dates and what they have qualified in, from the
-     * Career History section.
-     */
+    /** The officer's service dates, from the Career History section. */
     public function store_appraisal_career_history(Request $request)
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
@@ -285,14 +282,6 @@ class HumanResourceController extends Controller
             'date_of_present_appointment' => ['nullable', 'date', 'after_or_equal:date_of_employment'],
             // Most officers hold no acting appointment at all.
             'date_of_acting_appointment' => ['nullable', 'date', 'after_or_equal:date_of_employment'],
-
-            // The repeating rows. A row counts for nothing without the
-            // qualification itself, so that is the only one asked for.
-            'qual_name' => ['nullable', 'array'],
-            'qual_name.*' => ['nullable', 'string', 'max:160'],
-            'qual_type.*' => ['nullable', 'string', 'max:80'],
-            'qual_institution.*' => ['nullable', 'string', 'max:160'],
-            'qual_year.*' => ['nullable', 'integer', 'between:1950,' . (now()->year + 1)],
         ], [
             'date_of_employment.required' => 'Give the day the officer first joined the service.',
             'date_of_confirmation.after_or_equal' =>
@@ -301,23 +290,45 @@ class HumanResourceController extends Controller
                 'The present appointment cannot predate the first one.',
             'date_of_acting_appointment.after_or_equal' =>
                 'An acting appointment cannot predate the first one.',
-            'qual_year.*.between' => 'That is not a year a qualification could have been obtained in.',
         ]);
 
         // The mode of retirement follows the date of employment; the model
         // recalculates it as the record is saved.
-        $staff->update(collect($data)->except([
-            'staff', 'qual_name', 'qual_type', 'qual_institution', 'qual_year',
-        ])->all());
+        $staff->update(collect($data)->except('staff')->all());
+
+        return $this->onwardFrom($request, $staff, 'Career history saved.');
+    }
+
+    /** What the officer has qualified in, from the Qualifications section. */
+    public function store_appraisal_qualifications(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+
+        $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            // The repeating rows. A row counts for nothing without the
+            // qualification itself, so that is the only one asked for.
+            'qual_name' => ['nullable', 'array'],
+            'qual_name.*' => ['nullable', 'string', 'max:160'],
+            'qual_type.*' => ['nullable', 'string', 'max:80'],
+            'qual_institution.*' => ['nullable', 'string', 'max:160'],
+            'qual_year.*' => ['nullable', 'integer', 'between:1950,' . (now()->year + 1)],
+        ], [
+            'qual_year.*.between' => 'That is not a year a qualification could have been obtained in.',
+        ]);
 
         $this->storeQualifications($request, $staff);
 
-        $next = Appraisal::next($request->input('section'));
+        return $this->onwardFrom($request, $staff, 'Qualifications saved.');
+    }
 
+    /** Back to the report, at the section after the one just saved. */
+    private function onwardFrom(Request $request, BasicInformation $staff, string $message)
+    {
         return redirect()->route('hr-appraisal', array_filter([
-            'section' => $next,
+            'section' => Appraisal::next($request->input('section')),
             'staff' => $staff->ulid,
-        ]))->with('status', 'Career history saved.');
+        ]))->with('status', $message);
     }
 
     /**
