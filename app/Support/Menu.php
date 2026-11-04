@@ -198,7 +198,7 @@ class Menu
                      'also' => ['hr-leave.store', 'hr-leave.show']],
                     ['label' => 'Promotion Exercises', 'route' => 'hr-promotions'],
                     ['label' => 'Performance Appraisal', 'route' => 'hr-appraisal',
-                     'also' => ['hr-appraisal.bio-data']],
+                     'also' => ['hr-appraisal.bio-data', 'hr-appraisal.career-history']],
                     ['label' => 'Recruitment', 'route' => 'hr-recruitment'],
                     ['label' => 'Training & Capacity', 'route' => 'hr-training'],
                     ['label' => 'Establishment Strength', 'route' => 'hr-establishment'],

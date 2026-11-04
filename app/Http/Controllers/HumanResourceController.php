@@ -11,6 +11,7 @@ use App\Models\State;
 use App\Support\Appraisal;
 use App\Support\LeaveLetter;
 use App\Support\PostingContext;
+use App\Support\PromotionDue;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -166,7 +167,8 @@ class HumanResourceController extends Controller
         $selected = $request->query('staff');
 
         $staff = $selected
-            ? BasicInformation::with(['state', 'lga'])->where('ulid', $selected)->first()
+            ? BasicInformation::with(['state', 'lga', 'eduProgress', 'promotion'])
+                ->where('ulid', $selected)->first()
             : null;
 
         return $this->page('human-resources/performance-appraisal', 'Performance Appraisal', 'performance-appraisal', [
@@ -182,6 +184,13 @@ class HumanResourceController extends Controller
             'sectionHasForm' => Appraisal::hasForm($section),
             'states' => State::orderBy('name')->pluck('name', 'id')->all(),
             'departments' => DepartmentHead::options(),
+            'qualifications' => $staff?->qualifications() ?? collect(),
+            // Nobody has said when the present appointment began, so the
+            // form opens on the day their last promotion took effect. It is
+            // a suggestion until it is saved.
+            'presentAppointment' => $staff === null ? null
+                : ($staff->date_of_present_appointment
+                    ?: PromotionDue::lastMovedOn($staff)?->toDateString()),
             // Which office the officer sits in decides whether a department
             // is a question worth asking of them.
             'atHeadquarters' => PostingContext::atHeadquarters($staff),
@@ -257,6 +266,46 @@ class HumanResourceController extends Controller
             'section' => $next,
             'staff' => $staff->ulid,
         ]))->with('status', 'Bio-data saved.');
+    }
+
+    /**
+     * The officer's service dates, from the Career History section.
+     *
+     * Qualifications are not here: they are a run of entries held against
+     * the education record, and are maintained where they are entered.
+     */
+    public function store_appraisal_career_history(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'date_of_employment' => ['required', 'date'],
+            // An officer on probation has not been confirmed yet.
+            'date_of_confirmation' => ['nullable', 'date', 'after_or_equal:date_of_employment'],
+            'date_of_present_appointment' => ['nullable', 'date', 'after_or_equal:date_of_employment'],
+            // Most officers hold no acting appointment at all.
+            'date_of_acting_appointment' => ['nullable', 'date', 'after_or_equal:date_of_employment'],
+        ], [
+            'date_of_employment.required' => 'Give the day the officer first joined the service.',
+            'date_of_confirmation.after_or_equal' =>
+                'An appointment cannot be confirmed before it began.',
+            'date_of_present_appointment.after_or_equal' =>
+                'The present appointment cannot predate the first one.',
+            'date_of_acting_appointment.after_or_equal' =>
+                'An acting appointment cannot predate the first one.',
+        ]);
+
+        // The mode of retirement follows the date of employment; the model
+        // recalculates it as the record is saved.
+        $staff->update(collect($data)->except('staff')->all());
+
+        $next = Appraisal::next($request->input('section'));
+
+        return redirect()->route('hr-appraisal', array_filter([
+            'section' => $next,
+            'staff' => $staff->ulid,
+        ]))->with('status', 'Career history saved.');
     }
 
     public function recruitment()

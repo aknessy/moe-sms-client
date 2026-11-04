@@ -37,6 +37,10 @@ class BasicInformation extends Model
       // Joined their current employer; the 35 years of service run from here.
       'date_of_employment',
       'date_of_confirmation',
+      // The day they took the post they presently hold, and an acting one
+      // where they hold it. See the Career History section of the appraisal.
+      'date_of_present_appointment',
+      'date_of_acting_appointment',
       'phone_number',
       'email',
       'state_of_origin',
@@ -352,5 +356,32 @@ class BasicInformation extends Model
     public function getHasPhotoAttribute(): bool
     {
         return filled($this->photo_path);
+    }
+
+    /**
+     * What this officer has qualified in, oldest first, with the year each
+     * was obtained.
+     *
+     * The education records hold a run of entries apiece; this flattens them
+     * into the one list an appraisal reads. The year comes off the day they
+     * left the institution, that being when the qualification was obtained.
+     *
+     * @return \Illuminate\Support\Collection<array{type: ?string, qualification: ?string, institution: ?string, year: ?string}>
+     */
+    public function qualifications()
+    {
+        return $this->eduProgress
+            ->flatMap(fn ($record) => $record->educational_record ?? [])
+            ->map(fn ($entry) => [
+                'type' => $entry['institution_type'] ?? null,
+                'qualification' => $entry['qualification'] ?? null,
+                'institution' => $entry['institution_name'] ?? null,
+                'year' => filled($entry['end_date'] ?? null)
+                    ? Carbon::parse($entry['end_date'])->format('Y')
+                    : null,
+            ])
+            ->filter(fn ($entry) => filled($entry['qualification']))
+            ->sortBy('year')
+            ->values();
     }
 }
