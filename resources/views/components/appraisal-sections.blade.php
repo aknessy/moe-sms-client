@@ -19,7 +19,7 @@
 <div class="mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
     <p class="m-0 text-sm text-base-content/60">
         @if ($open)
-            Reporting on
+            Appraisal for
             <span class="font-semibold text-[#1B5E20]">{{ $staff->surname }}, {{ $staff->firstname }}</span>
             <span class="text-base-content/50">({{ $staff->staff_number }})</span>
         @else
