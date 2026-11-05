@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
+use App\Models\Department;
 use App\Models\StaffExit;
 use App\Models\State;
 use App\Models\User;
@@ -76,7 +77,10 @@ class ReportController extends Controller
         return $this->page('reports/nominal-roll-report', 'Nominal Roll Report', 'nominal-roll-report', [
             'filters' => $request->only(['department', 'state', 'grade_level', 'status']),
             'statuses' => self::STATUSES,
-            'departments' => $this->distinct('department'),
+            // The directorates themselves, not whatever happens to be on a
+            // staff record: a department with nobody in it yet is still one
+            // the roll may be asked for.
+            'departments' => Department::orderBy('department')->pluck('department'),
             'gradeLevels' => $this->distinct('grade_level'),
             'states' => State::whereIn('id', BasicInformation::query()->distinct()->pluck('state_of_origin'))
                 ->orderBy('name')->pluck('name', 'id'),

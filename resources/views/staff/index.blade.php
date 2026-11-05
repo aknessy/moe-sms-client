@@ -121,21 +121,35 @@
                                             {{-- Picked, not typed: a department
                                                  nobody heads is one an officer's
                                                  applications reach nobody from. --}}
-                                            <select class="w-full pl-3 pr-10 py-2 bg-white text-base-content/80 text-xs border border-base-300 rounded-md cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="department" required>
+                                            <select id="department" class="w-full pl-3 pr-10 py-2 bg-white text-base-content/80 text-xs border border-base-300 rounded-md cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="department" required>
                                                 <option value="">Select Department</option>
-                                                @foreach (\App\Models\DepartmentHead::options() as $value => $label)
+                                                @foreach (\App\Models\Department::options() as $value => $label)
                                                     <option value="{{ $value }}" @selected(old('department') === $value)>{{ $label }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
                                         <p class="mt-1 mb-0 text-xs text-base-content/50">
-                                            Set under Administration &rarr; Settings.
+                                            Set under Administration &rarr; Departments &amp; Units.
                                         </p>
                                     </div>
                                     <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Division / Unit<span class="text-error">*</span></label>
+                                        {{-- The place they sit, which is not the
+                                             desk they hold: "Calabar HQ" is an
+                                             office, and belongs to no department. --}}
+                                        <label class="font-normal font-sans text-sm text-base-content">Office<span class="text-error">*</span></label>
                                         <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="division" placeholder="e.g. Calabar HQ" value=""  required/>
+                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="division" placeholder="e.g. Calabar HQ" value="{{ old('division') }}" required/>
+                                        </div>
+                                    </div>
+                                    <div class="w-full max-w-sm">
+                                        <label class="font-normal font-sans text-sm text-base-content">Unit</label>
+                                        <div class="relative">
+                                            {{-- A unit belongs to a department, so
+                                                 only that department's are offered. --}}
+                                            <select id="unit" name="unit" data-selected="{{ old('unit') }}" disabled
+                                                    class="w-full pl-3 pr-10 py-2 bg-white text-base-content/80 text-xs border border-base-300 rounded-md cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow disabled:bg-base-200 disabled:cursor-not-allowed">
+                                                <option value="">Select a department first</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="w-full max-w-sm">
@@ -350,6 +364,45 @@
         // Restore both after a failed submission.
         if ($state.val()) {
             fillLgas($state.val(), $lga.data('selected'));
+        }
+
+        // A unit belongs to a department, the same way an LGA belongs to a
+        // state, so the second select is filled from the first.
+        const unitsByDepartment = @json(\App\Models\Department::unitsByDepartment());
+
+        const $department = $('#department');
+        const $unit = $('#unit');
+
+        function fillUnits(department, preselect) {
+            const units = unitsByDepartment[department] || [];
+
+            $unit.empty().prop('disabled', units.length === 0);
+
+            if (units.length === 0) {
+                $unit.append($('<option>', {
+                    value: '',
+                    text: department ? 'That department has no units yet' : 'Select a department first',
+                }));
+                return;
+            }
+
+            $unit.append($('<option>', { value: '', text: 'Select Option' }));
+
+            units.forEach(function (unit) {
+                $unit.append($('<option>', {
+                    value: unit,
+                    text: unit,
+                    selected: unit === preselect,
+                }));
+            });
+        }
+
+        $department.on('change', function () {
+            fillUnits($(this).val(), null);
+        });
+
+        if ($department.val()) {
+            fillUnits($department.val(), $unit.data('selected'));
         }
     })
 </script>

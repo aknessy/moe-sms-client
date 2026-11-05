@@ -130,11 +130,13 @@
                                     <div class="w-full max-w-sm min-w-[200px]">
                                         <label class="font-semibold font-sans text-sm text-base-content">Department</label>
                                         <div class="relative">
-                                            <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="department">
-                                                <option value="brazil">Brazil</option>
-                                                <option value="bucharest">Bucharest</option>
-                                                <option value="london">London</option>
-                                                <option value="washington">Washington</option>
+                                            {{-- The directorates, from the list
+                                                 they are kept on. --}}
+                                            <select id="profile-department" class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="department">
+                                                <option value="">Select Option</option>
+                                                @foreach (\App\Models\Department::options() as $value => $label)
+                                                    <option value="{{ $value }}" @selected(auth()->user()?->staff?->department === $value)>{{ $label }}</option>
+                                                @endforeach
                                             </select>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M9 18l3 3l3 -3"></path>
@@ -147,11 +149,11 @@
                                     <div class="w-full max-w-sm min-w-[200px]">
                                         <label class="font-semibold font-sans text-sm text-base-content">Unit</label>
                                         <div class="relative">
-                                            <select class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer" name="unit">
-                                                <option value="brazil">Brazil</option>
-                                                <option value="bucharest">Bucharest</option>
-                                                <option value="london">London</option>
-                                                <option value="washington">Washington</option>
+                                            {{-- A unit belongs to a department, so
+                                                 only that department's are offered. --}}
+                                            <select id="profile-unit" name="unit" data-selected="{{ auth()->user()?->staff?->unit }}" disabled
+                                                    class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 shadow-sm focus:shadow-md appearance-none cursor-pointer disabled:bg-base-200 disabled:cursor-not-allowed">
+                                                <option value="">Select a department first</option>
                                             </select>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2" class="absolute w-5 h-5 top-1/2 -translate-y-1/2 right-3 text-base-content/40">
                                                 <path d="M9 18l3 3l3 -3"></path>
@@ -221,5 +223,40 @@
             </div>
         </div>
         <x-footer appVersion="{{ $app_version }}"/>
+
+        <script>
+            // A unit belongs to a department, so the second select is filled
+            // from the first.
+            (function () {
+                const unitsByDepartment = @json(\App\Models\Department::unitsByDepartment());
+
+                const department = document.getElementById('profile-department');
+                const unit = document.getElementById('profile-unit');
+
+                function fillUnits(preselect) {
+                    const units = unitsByDepartment[department.value] || [];
+
+                    unit.innerHTML = '';
+                    unit.disabled = units.length === 0;
+
+                    if (units.length === 0) {
+                        unit.add(new Option(department.value
+                            ? 'That department has no units yet'
+                            : 'Select a department first', ''));
+                        return;
+                    }
+
+                    unit.add(new Option('Select Option', ''));
+
+                    units.forEach(function (name) {
+                        unit.add(new Option(name, name, false, name === preselect));
+                    });
+                }
+
+                department.addEventListener('change', () => fillUnits(null));
+
+                fillUnits(unit.dataset.selected);
+            })();
+        </script>
     </x-slot>
 </x-dashboard>

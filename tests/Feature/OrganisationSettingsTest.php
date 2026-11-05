@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\BasicInformation;
-use App\Models\DepartmentHead;
+use App\Models\Department;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
@@ -12,8 +12,11 @@ use Tests\TestCase;
 
 /**
  * Things about this command that belong to the installation rather than the
- * code, recorded by an administrator: the letterhead, and who heads which
- * department.
+ * code, recorded by an administrator: the letterhead above every letter the
+ * system raises.
+ *
+ * Who heads which department moved to its own page; see
+ * {@see DepartmentReferenceTest}.
  */
 class OrganisationSettingsTest extends TestCase
 {
@@ -108,89 +111,5 @@ class OrganisationSettingsTest extends TestCase
 
         $this->actingAs($officer)->post(route('config.organisation'), $this->details())
             ->assertForbidden();
-    }
-
-    /* ------------------------------------------------ heads of department */
-
-    public function test_the_settings_page_lists_every_department_in_use(): void
-    {
-        BasicInformation::factory()->create(['department' => 'Legal & Litigation']);
-
-        $this->actingAs($this->admin())->get(route('config'))
-            ->assertSee('Legal &amp; Litigation', false);
-
-        $this->assertTrue(DepartmentHead::where('department', 'Legal & Litigation')->exists());
-    }
-
-    public function test_an_administrator_names_who_heads_a_department(): void
-    {
-        $head = DepartmentHead::create(['department' => 'Legal & Litigation']);
-
-        $this->actingAs($this->admin())->post(route('config.department-heads'), [
-            'heads' => [$head->id => 'HOD GAP'],
-        ])->assertRedirect(route('config'));
-
-        $this->assertSame('HOD GAP', $head->fresh()->role);
-    }
-
-    public function test_a_department_can_be_left_with_nobody_named(): void
-    {
-        $head = DepartmentHead::create(['department' => 'Operations', 'role' => 'HOD EOPs']);
-
-        $this->actingAs($this->admin())->post(route('config.department-heads'), [
-            'heads' => [$head->id => ''],
-        ]);
-
-        $this->assertNull($head->fresh()->role);
-    }
-
-    public function test_a_role_that_is_not_on_the_system_is_refused(): void
-    {
-        $head = DepartmentHead::create(['department' => 'Operations']);
-
-        $this->actingAs($this->admin())->post(route('config.department-heads'), [
-            'heads' => [$head->id => 'HOD Everything'],
-        ])->assertSessionHasErrors('heads.' . $head->id);
-
-        $this->assertNull($head->fresh()->role);
-    }
-
-    public function test_only_the_heads_of_department_roles_are_offered(): void
-    {
-        $offered = $this->actingAs($this->admin())->get(route('config'))->viewData('hodRoles');
-
-        $this->assertArrayHasKey('HOD ICT', $offered);
-        $this->assertArrayHasKey('HOD Finance & Account', $offered);
-        // Not a head of anything.
-        $this->assertArrayNotHasKey('Registry Officer', $offered);
-        $this->assertArrayNotHasKey('Commissioner', $offered);
-    }
-
-    public function test_finance_and_account_is_a_role_of_its_own(): void
-    {
-        $this->assertTrue(Role::where('role', 'HOD Finance & Account')->exists());
-        $this->assertTrue(Role::where('role', 'HOD GAP')->exists());
-    }
-
-    public function test_the_obvious_departments_are_seeded_with_their_heads(): void
-    {
-        // Seeded by the migration, from the departments already on record.
-        foreach (['ICT & Voter Registry' => 'HOD ICT',
-                  'Voter Education & Publicity' => 'HOD VEP',
-                  'Operations' => 'HOD EOPs'] as $department => $role) {
-
-            DepartmentHead::updateOrCreate(['department' => $department], ['role' => $role]);
-
-            $this->assertSame($role, DepartmentHead::roleFor($department));
-        }
-    }
-
-    public function test_a_department_nobody_heads_reads_as_null(): void
-    {
-        DepartmentHead::create(['department' => 'Legal & Litigation']);
-
-        $this->assertNull(DepartmentHead::roleFor('Legal & Litigation'));
-        $this->assertNull(DepartmentHead::roleFor('A department that does not exist'));
-        $this->assertNull(DepartmentHead::roleFor(null));
     }
 }

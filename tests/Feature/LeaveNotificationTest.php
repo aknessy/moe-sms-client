@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\BasicInformation;
-use App\Models\DepartmentHead;
+use App\Models\Department;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Notification;
@@ -92,7 +92,7 @@ class LeaveNotificationTest extends TestCase
             'HOD ICT',
         );
 
-        DepartmentHead::updateOrCreate(['department' => 'ICT & Voter Registry'],
+        Department::updateOrCreate(['department' => 'ICT & Voter Registry'],
                                        ['role' => 'HOD ICT']);
 
         $applicant = $this->officer(['department' => 'ICT & Voter Registry']);
@@ -109,8 +109,8 @@ class LeaveNotificationTest extends TestCase
             'HOD EOPs',
         );
 
-        DepartmentHead::updateOrCreate(['department' => 'Operations'], ['role' => 'HOD EOPs']);
-        DepartmentHead::updateOrCreate(['department' => 'ICT & Voter Registry'],
+        Department::updateOrCreate(['department' => 'Operations'], ['role' => 'HOD EOPs']);
+        Department::updateOrCreate(['department' => 'ICT & Voter Registry'],
                                        ['role' => 'HOD ICT']);
 
         $this->apply($this->officer(['department' => 'ICT & Voter Registry']));
@@ -168,7 +168,7 @@ class LeaveNotificationTest extends TestCase
     {
         $admin = $this->accountFor($this->officer(['surname' => 'Admin']), 'Administrator');
 
-        DepartmentHead::updateOrCreate(['department' => 'Legal & Litigation'], ['role' => null]);
+        Department::updateOrCreate(['department' => 'Legal & Litigation'], ['role' => null]);
 
         $this->apply($this->officer(['department' => 'Legal & Litigation']));
 
@@ -183,7 +183,7 @@ class LeaveNotificationTest extends TestCase
             'Administrator',
         );
 
-        DepartmentHead::updateOrCreate(['department' => 'Operations'],
+        Department::updateOrCreate(['department' => 'Operations'],
                                        ['role' => 'Administrator']);
 
         $this->apply($this->officer(['department' => 'Operations']));

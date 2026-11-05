@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\BasicInformation;
+use App\Models\Department;
 use App\Models\Lga;
 use App\Models\Posting;
 use App\Models\State;
+use App\Models\Unit;
 use App\Models\User;
 use App\Support\Appraisal;
 use App\Support\PostingContext;
@@ -32,14 +34,33 @@ class AppraisalBioDataTest extends TestCase
     {
         $crossRiver = State::where('name', 'Cross River')->firstOrFail();
 
+        $this->unitsOfOperations();
+
         return BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey', 'othernames' => 'Eno',
             'date_of_birth' => '1985-04-12',
             'state_of_origin' => $crossRiver->id,
             'grade_level' => 9, 'step' => 4,
             'department' => 'Department of Electoral Operations',
-            'division' => 'Voter Registration Unit',
+            'division' => 'Calabar HQ',
+            'unit' => 'Voter Registration Unit',
         ]);
+    }
+
+    /**
+     * Two desks in Electoral Operations. A unit is only offered beside the
+     * department it belongs to, so there has to be one to pick.
+     */
+    private function unitsOfOperations(): Department
+    {
+        $department = Department::where('department', 'Department of Electoral Operations')
+            ->firstOrFail();
+
+        foreach (['Voter Registration Unit', 'Field Operations Unit'] as $name) {
+            Unit::firstOrCreate(['department_id' => $department->id, 'name' => $name]);
+        }
+
+        return $department;
     }
 
     private function section(BasicInformation $staff, string $section = 'bio-data')
@@ -115,17 +136,50 @@ class AppraisalBioDataTest extends TestCase
         $response->assertSee('value="4"', false);
     }
 
-    public function test_the_unit_is_the_officers_division(): void
+    public function test_the_unit_is_the_one_the_officer_holds(): void
     {
-        $this->section($this->officer())->assertSee('value="Voter Registration Unit"', false);
+        // Filled in by the script that narrows the units to the department's,
+        // so the record's answer travels as the selected one.
+        $this->section($this->officer())
+            ->assertSee('data-selected="Voter Registration Unit"', false);
     }
 
     public function test_the_unit_and_department_are_editable(): void
     {
         $response = $this->section($this->officer());
 
-        $response->assertSee('name="division"', false);
+        $response->assertSee('name="unit"', false);
         $response->assertSee('name="department"', false);
+    }
+
+    public function test_the_units_offered_are_the_departments_own(): void
+    {
+        // Another department's desk is not one this officer can be put at.
+        $this->unitsOfOperations();
+
+        $elsewhere = Department::where('department', 'Department of Finance and Account')
+            ->firstOrFail();
+        Unit::create(['department_id' => $elsewhere->id, 'name' => 'Treasury Unit']);
+
+        $byDepartment = Department::unitsByDepartment();
+
+        $this->assertSame(['Field Operations Unit', 'Voter Registration Unit'],
+                          $byDepartment['Department of Electoral Operations']);
+        $this->assertSame(['Treasury Unit'],
+                          $byDepartment['Department of Finance and Account']);
+    }
+
+    public function test_a_unit_of_another_department_is_refused(): void
+    {
+        $staff = $this->officer();
+
+        $elsewhere = Department::where('department', 'Department of Finance and Account')
+            ->firstOrFail();
+        Unit::create(['department_id' => $elsewhere->id, 'name' => 'Treasury Unit']);
+
+        $this->save($staff, ['unit' => 'Treasury Unit'])->assertSessionHasErrors('unit');
+
+        $this->assertSame('Voter Registration Unit', $staff->fresh()->unit);
     }
 
     /* ------------------------------------------- putting it right here */
@@ -142,7 +196,7 @@ class AppraisalBioDataTest extends TestCase
             'state_of_origin' => $crossRiver->id,
             'grade_level' => 9, 'step' => 4,
             'department' => 'Department of Electoral Operations',
-            'division' => 'Voter Registration Unit',
+            'unit' => 'Voter Registration Unit',
         ], $overrides);
     }
 
@@ -156,7 +210,7 @@ class AppraisalBioDataTest extends TestCase
     {
         $staff = $this->officer();
 
-        $this->save($staff, ['surname' => 'Asuquo-Eno', 'division' => 'Field Operations Unit'])
+        $this->save($staff, ['surname' => 'Asuquo-Eno', 'unit' => 'Field Operations Unit'])
             ->assertRedirect(route('hr-appraisal', [
                 'section' => 'career-history', 'staff' => $staff->ulid,
             ]));
@@ -164,7 +218,7 @@ class AppraisalBioDataTest extends TestCase
         $staff->refresh();
 
         $this->assertSame('Asuquo-Eno', $staff->surname);
-        $this->assertSame('Field Operations Unit', $staff->division);
+        $this->assertSame('Field Operations Unit', $staff->unit);
     }
 
     public function test_saving_carries_on_to_the_next_section(): void
@@ -214,12 +268,22 @@ class AppraisalBioDataTest extends TestCase
         $this->assertSame('', $staff->fresh()->othernames);
     }
 
-    public function test_the_surname_and_unit_are_required(): void
+    public function test_the_surname_is_required(): void
     {
         $staff = $this->officer();
 
-        $this->save($staff, ['surname' => '', 'division' => ''])
-            ->assertSessionHasErrors(['surname', 'division']);
+        $this->save($staff, ['surname' => ''])->assertSessionHasErrors('surname');
+    }
+
+    public function test_a_unit_may_be_left_unanswered(): void
+    {
+        // A department with no desks on it yet has none to offer, so the
+        // section cannot insist on one.
+        $staff = $this->officer();
+
+        $this->save($staff, ['unit' => ''])->assertSessionHasNoErrors();
+
+        $this->assertNull($staff->fresh()->unit);
     }
 
     public function test_an_officer_posted_out_needs_no_department(): void

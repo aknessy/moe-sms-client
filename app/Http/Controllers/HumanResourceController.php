@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
-use App\Models\DepartmentHead;
+use App\Models\Department;
 use App\Models\EduProgress;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
@@ -184,7 +184,7 @@ class HumanResourceController extends Controller
             // A section with a form of its own carries its own way onward.
             'sectionHasForm' => Appraisal::hasForm($section),
             'states' => State::orderBy('name')->pluck('name', 'id')->all(),
-            'departments' => DepartmentHead::options(),
+            'departments' => Department::options(),
             'qualifications' => $staff?->qualifications() ?? collect(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
@@ -225,12 +225,27 @@ class HumanResourceController extends Controller
                               'between:' . implode(',', BasicInformation::GRADE_LEVELS)],
             'step' => ['required', 'integer', 'between:1,15'],
             'department' => [Rule::requiredIf($atHeadquarters), 'nullable',
-                             Rule::in(DepartmentHead::names())],
-            'division' => ['required', 'string', 'max:120'],
+                             Rule::in(Department::names())],
+            // And one of that department's units. For an officer posted out
+            // the department is not on the form, so their own stands in. Left
+            // blank where the department has no units yet.
+            'unit' => ['nullable', 'string', 'max:120',
+                       function ($attribute, $value, $fail) use ($request, $atHeadquarters, $staff) {
+                           if (blank($value)) {
+                               return;
+                           }
+
+                           $department = $atHeadquarters
+                               ? $request->input('department')
+                               : $staff->department;
+
+                           if (! Department::hasUnit($department, $value)) {
+                               $fail('That is not a unit of the chosen department.');
+                           }
+                       }],
         ], [
             'state_of_origin.required' => 'Choose the state the officer hails from.',
             'department.required' => 'Choose the department the officer belongs to.',
-            'division.required' => 'Give the unit the officer serves in.',
         ]);
 
         // The column holds a blank rather than a null for an officer with no
@@ -243,7 +258,7 @@ class HumanResourceController extends Controller
             'state_of_origin' => $data['state_of_origin'],
             'grade_level' => $data['grade_level'],
             'step' => $data['step'],
-            'division' => $data['division'],
+            'unit' => $data['unit'] ?? null,
         ];
 
         if ($atHeadquarters) {

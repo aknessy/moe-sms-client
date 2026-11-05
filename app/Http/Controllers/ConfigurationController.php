@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
-use App\Models\DepartmentHead;
+use App\Models\Department;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Setting;
+use App\Models\Unit;
 use App\Models\User;
 use App\Support\PromotionDue;
 use Illuminate\Http\Request;
@@ -38,21 +39,71 @@ class ConfigurationController extends Controller
 
     public function index()
     {
-        // A department that has appeared on a staff record since this was last
-        // opened still needs a head naming.
-        DepartmentHead::syncWithStaffRecords();
-
         return $this->page('config/config', 'Settings', 'config', [
             'organisation' => Setting::organisation(),
             'lowestGradeLevel' => PromotionDue::lowestGradeLevel(),
             'topGradeLevel' => BasicInformation::GRADE_LEVELS[1],
-            'departmentHeads' => DepartmentHead::ordered(),
+        ]);
+    }
+
+    /**
+     * The directorates and the desks inside them.
+     *
+     * Both are reference lists rather than free text: a department nobody
+     * heads is one an officer's applications reach nobody from, and a unit
+     * written in by hand belongs to no department at all.
+     */
+    public function departments()
+    {
+        // A department that has appeared on a staff record since this was
+        // last opened still needs a head naming.
+        Department::syncWithStaffRecords();
+
+        return $this->page('config/departments', 'Departments & Units', 'departments', [
+            'departments' => Department::ordered(),
             // Only the roles that head something; the rest are not offered.
             'hodRoles' => Role::ordered()
                 ->filter(fn ($role) => str_starts_with($role->role, 'HOD '))
                 ->pluck('role', 'role')
                 ->all(),
         ]);
+    }
+
+    /** Add a unit to a department. */
+    public function storeUnit(Request $request)
+    {
+        $data = $request->validate([
+            'department_id' => ['required', 'exists:departments,id'],
+            'name' => ['required', 'string', 'max:120',
+                       // The same name may serve two departments; within one
+                       // it is named once.
+                       Rule::unique('units', 'name')
+                           ->where('department_id', $request->input('department_id'))],
+        ], [
+            'department_id.required' => 'Choose the department the unit belongs to.',
+            'name.required' => 'Give the unit a name.',
+            'name.unique' => 'That department already has a unit by that name.',
+        ]);
+
+        Unit::create($data);
+
+        return redirect()->route('departments')
+            ->with('status', "{$data['name']} added.");
+    }
+
+    /**
+     * Take a unit off. Officers are recorded against the unit's name rather
+     * than against the row, so removing it leaves their record as it was and
+     * only stops the unit being chosen again.
+     */
+    public function removeUnit(Unit $unit)
+    {
+        $name = $unit->name;
+
+        $unit->delete();
+
+        return redirect()->route('departments')
+            ->with('status', "{$name} removed. Officers already recorded in it are unchanged.");
     }
 
     /**
@@ -115,19 +166,19 @@ class ConfigurationController extends Controller
     public function storeDepartment(Request $request)
     {
         $data = $request->validate([
-            'department' => ['required', 'string', 'max:120', 'unique:department_heads,department'],
+            'department' => ['required', 'string', 'max:120', 'unique:departments,department'],
             'role' => ['nullable', Rule::in(Role::pluck('role')->all())],
         ], [
             'department.required' => 'Give the department a name.',
             'department.unique' => 'That department is already on the list.',
         ]);
 
-        DepartmentHead::create([
+        Department::create([
             'department' => $data['department'],
             'role' => $data['role'] ?: null,
         ]);
 
-        return redirect()->route('config')->with('status', "{$data['department']} added.");
+        return redirect()->route('departments')->with('status', "{$data['department']} added.");
     }
 
     /**
@@ -146,10 +197,10 @@ class ConfigurationController extends Controller
         ]);
 
         foreach ($data['heads'] ?? [] as $id => $role) {
-            DepartmentHead::where('id', $id)->update(['role' => $role ?: null]);
+            Department::where('id', $id)->update(['role' => $role ?: null]);
         }
 
-        return redirect()->route('config')->with('status', 'Department heads saved.');
+        return redirect()->route('departments')->with('status', 'Department heads saved.');
     }
 
     public function usersRoles()

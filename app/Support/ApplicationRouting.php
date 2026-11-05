@@ -3,7 +3,7 @@
 namespace App\Support;
 
 use App\Models\BasicInformation;
-use App\Models\DepartmentHead;
+use App\Models\Department;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -81,7 +81,7 @@ class ApplicationRouting
     /** The head of this officer's department, where one has been named. */
     public static function headOfDepartment(BasicInformation $staff): array
     {
-        $role = DepartmentHead::roleFor($staff->department);
+        $role = Department::roleFor($staff->department);
 
         $title = self::headTitleFor($staff->department);
 

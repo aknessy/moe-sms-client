@@ -1,9 +1,8 @@
 <?php
 
-use App\Models\BasicInformation;
-use App\Models\DepartmentHead;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -41,15 +40,20 @@ return new class extends Migration
 
         // A row per department actually in use, so Settings has something to
         // show without an administrator having to type the names in.
-        $departments = BasicInformation::query()
+        //
+        // Through the query builder rather than a model: a migration has to
+        // go on doing what it did, and the models above it move on.
+        $departments = DB::table('basic_informations')
             ->whereNotNull('department')
             ->distinct()
             ->pluck('department');
 
         foreach ($departments as $department) {
-            DepartmentHead::create([
+            DB::table('department_heads')->insert([
                 'department' => $department,
                 'role' => self::OBVIOUS[$department] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }

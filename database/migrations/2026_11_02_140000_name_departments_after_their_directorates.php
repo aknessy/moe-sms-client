@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\DepartmentHead;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
@@ -42,6 +41,8 @@ return new class extends Migration
 
     private const FINANCE = 'Department of Finance and Account';
 
+    // Renamed to "... and Procurement" by a later migration; left as it was
+    // so that this one goes on doing what it did.
     private const ADMINISTRATION = 'Department of General Administration and Personnel';
 
     /** Each directorate and the role that heads it. */
@@ -71,15 +72,20 @@ return new class extends Migration
 
         // Every directorate has a row, whether or not anyone is posted to it
         // yet, so the Settings page offers them all.
+        // Through the query builder rather than a model: a migration has to
+        // go on doing what it did, and the models above it move on.
         foreach (self::HEADS as $department => $role) {
-            DepartmentHead::updateOrCreate(['department' => $department], ['role' => $role]);
+            DB::table('department_heads')->updateOrInsert(
+                ['department' => $department],
+                ['role' => $role, 'updated_at' => now(), 'created_at' => now()],
+            );
         }
     }
 
     public function down(): void
     {
         foreach (self::HEADS as $department => $role) {
-            DepartmentHead::where('department', $department)->delete();
+            DB::table('department_heads')->where('department', $department)->delete();
         }
 
         // Finance folds back into the department it came out of.

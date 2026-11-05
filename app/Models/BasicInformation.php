@@ -28,7 +28,10 @@ class BasicInformation extends Model
       'othernames',
       'gender',
       'department',
+      // The office they sit in — "Calabar HQ" — which belongs to no
+      // department; and the desk they hold, which belongs to one of its own.
       'division',
+      'unit',
       // Rank and designation are the same thing; the nominal roll calls it rank.
       'designation',
       'grade_level',

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BasicInformation;
 use App\Models\Career;
 use App\Models\Confirmation;
-use App\Models\DepartmentHead;
+use App\Models\Department;
 use App\Models\EduProgress;
 use App\Models\Leave;
 use App\Models\Lga;
@@ -269,8 +269,22 @@ class StaffController extends Controller
             'gender' => ['required', Rule::in(BasicInformation::GENDERS)],
             // One of the directorates, not whatever was typed: a department
             // nobody heads is one an officer's applications reach nobody from.
-            'department' => ['required', Rule::in(DepartmentHead::names())],
+            'department' => ['required', Rule::in(Department::names())],
+            // The office they sit in — a place, and no department's.
             'division' => ['required', 'string', 'max:120'],
+            // The desk they hold, which is one of their department's: the same
+            // name can serve two departments, so a unit only means anything
+            // beside its own. Left blank where the department has none yet.
+            'unit' => ['nullable', 'string', 'max:120',
+                       function ($attribute, $value, $fail) use ($request) {
+                           if (blank($value)) {
+                               return;
+                           }
+
+                           if (! Department::hasUnit($request->input('department'), $value)) {
+                               $fail('That is not a unit of the chosen department.');
+                           }
+                       }],
             // Rank and designation are the same thing, chosen from a fixed list.
             'designation' => ['required', Rule::in(BasicInformation::RANKS)],
             // Numbers, not "GL 09": leave entitlement follows the grade level,
@@ -308,6 +322,7 @@ class StaffController extends Controller
             'gender' => $data['gender'],
             'department' => $data['department'] ?? null,
             'division' => $data['division'] ?? null,
+            'unit' => $data['unit'] ?? null,
             'designation' => $data['designation'] ?? null,
             'grade_level' => $data['grade-level'] ?? null,
             'step' => $data['step'] ?? null,

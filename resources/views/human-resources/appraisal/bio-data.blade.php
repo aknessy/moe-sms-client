@@ -57,8 +57,28 @@
                               :value="$staff->department" :options="$departments" />
         @endif
 
-        <x-registry.field name="division" label="Unit" required :value="$staff->division"
-                          placeholder="e.g. Voter Registration Unit" />
+        {{-- A unit belongs to a department, so only that department's are
+             offered. An officer posted out keeps the department on file, and
+             their units come from it. --}}
+        <div class="w-full">
+            <label for="unit" class="font-sans text-sm font-medium text-base-content">Unit</label>
+            <div class="relative mt-1">
+                {{-- `data-department` is the department the units hang off
+                     where it is not on the form — an officer posted out of
+                     the state office. It still decides them. --}}
+                <select id="unit" name="unit" data-selected="{{ old('unit', $staff->unit) }}"
+                        data-department="{{ $staff->department }}"
+                        class="w-full cursor-pointer rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50 disabled:cursor-not-allowed disabled:bg-base-200">
+                    <option value="">Select a department first</option>
+                </select>
+            </div>
+            <p class="mt-1 mb-0 text-xs text-base-content/50">
+                The desk the officer holds. Set under Administration &rarr; Departments &amp; Units.
+            </p>
+            @error('unit')
+                <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+            @enderror
+        </div>
     </div>
 
     <div class="flex flex-wrap items-center justify-end gap-2 border-t border-base-200 py-3">
@@ -69,3 +89,45 @@
         @endif
     </div>
 </form>
+
+<script>
+    // A unit belongs to a department, so the select is filled from the
+    // department beside it — or, for an officer posted out and so not asked
+    // for one, from the department their record already holds.
+    (function () {
+        const unitsByDepartment = @json(\App\Models\Department::unitsByDepartment());
+
+        const department = document.getElementById('department');
+        const unit = document.getElementById('unit');
+
+        if (! unit) {
+            return;
+        }
+
+        const chosen = () => department ? department.value : unit.dataset.department;
+
+        function fillUnits(preselect) {
+            const units = unitsByDepartment[chosen()] || [];
+
+            unit.innerHTML = '';
+            unit.disabled = units.length === 0;
+
+            if (units.length === 0) {
+                unit.add(new Option(chosen()
+                    ? 'That department has no units yet'
+                    : 'Select a department first', ''));
+                return;
+            }
+
+            unit.add(new Option('Select Option', ''));
+
+            units.forEach(function (name) {
+                unit.add(new Option(name, name, false, name === preselect));
+            });
+        }
+
+        department?.addEventListener('change', () => fillUnits(null));
+
+        fillUnits(unit.dataset.selected);
+    })();
+</script>

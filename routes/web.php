@@ -184,8 +184,13 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::get('/', [ConfigurationController::class, 'index'])->name('config');
         Route::post('/organisation', [ConfigurationController::class, 'storeSettings'])->name('config.organisation');
         Route::post('/rules', [ConfigurationController::class, 'storeRules'])->name('config.rules');
+        Route::get('/departments', [ConfigurationController::class, 'departments'])->name('departments');
         Route::post('/departments', [ConfigurationController::class, 'storeDepartment'])->name('config.departments');
         Route::post('/department-heads', [ConfigurationController::class, 'storeDepartmentHeads'])->name('config.department-heads');
+        Route::post('/units', [ConfigurationController::class, 'storeUnit'])->name('config.units');
+        // POST rather than DELETE: the button sits inside the form that
+        // saves the heads, and a nested form cannot carry a spoofed method.
+        Route::post('/units/{unit}/remove', [ConfigurationController::class, 'removeUnit'])->name('config.units.remove');
         Route::get('/users-roles', [ConfigurationController::class, 'usersRoles'])->name('users-roles');
         Route::post('/users-roles', [ConfigurationController::class, 'storeUser'])->name('users-roles.store');
         Route::post('/users-roles/{user}/toggle', [ConfigurationController::class, 'toggleUser'])->name('users-roles.toggle');

@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\BasicInformation;
-use App\Models\DepartmentHead;
+use App\Models\Department;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Posting;
@@ -146,7 +146,7 @@ class LeaveLetterTest extends TestCase
 
     public function test_at_headquarters_it_goes_through_the_head_of_department(): void
     {
-        DepartmentHead::updateOrCreate(['department' => 'Operations'], ['role' => 'HOD EOPs']);
+        Department::updateOrCreate(['department' => 'Operations'], ['role' => 'HOD EOPs']);
 
         $staff = $this->applicant();
         $application = $this->apply($staff);

@@ -290,8 +290,10 @@ class Menu
                 'icon' => 'settings',
                 'children' => [
                     ['label' => 'Settings', 'route' => 'config',
-                     'also' => ['config.organisation', 'config.rules',
-                                'config.departments', 'config.department-heads']],
+                     'also' => ['config.organisation', 'config.rules']],
+                    ['label' => 'Departments & Units', 'route' => 'departments',
+                     'also' => ['config.departments', 'config.department-heads',
+                                'config.units', 'config.units.remove']],
                     ['label' => 'Users, Roles & Permissions', 'route' => 'users-roles',
                      'also' => ['users-roles.store', 'users-roles.toggle', 'users-roles.permissions']],
                     ['label' => 'Audit Trail', 'route' => 'audit-trail'],
