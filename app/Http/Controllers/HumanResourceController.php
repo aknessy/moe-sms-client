@@ -8,6 +8,7 @@ use App\Models\EduProgress;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Notification;
+use App\Models\SelfReportActivity;
 use App\Models\State;
 use App\Support\Appraisal;
 use App\Support\LeaveLetter;
@@ -186,6 +187,11 @@ class HumanResourceController extends Controller
             'states' => State::orderBy('name')->pluck('name', 'id')->all(),
             'departments' => Department::options(),
             'qualifications' => $staff?->qualifications() ?? collect(),
+            // Self Reporting runs over three years of three quarters, so the
+            // section needs both the periods to ask after and what is held
+            // against each of them.
+            'reportingYears' => SelfReportActivity::yearsFor($staff),
+            'selfReport' => SelfReportActivity::forStaff($staff),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -335,6 +341,110 @@ class HumanResourceController extends Controller
         $this->storeQualifications($request, $staff);
 
         return $this->onwardFrom($request, $staff, 'Qualifications saved.');
+    }
+
+    /**
+     * What the officer did and what was made of it, from Self Reporting.
+     *
+     * The section asks after three years of three quarters each, and the
+     * whole of it is on the one form, so one save carries the lot. A quarter
+     * the officer has not reached yet is left blank and nothing is said about
+     * it; a quarter they have started is answered properly or not at all.
+     */
+    public function store_appraisal_self_reporting(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+
+        $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'activity' => ['nullable', 'array'],
+            'activity.*.*.*' => ['nullable', 'string', 'max:1000'],
+            'comment.*.*.*' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $quarters = $this->selfReportQuarters($request);
+
+        // An officer is to describe at least four activities in a quarter.
+        // Said of a quarter they have not reached yet it would be nonsense,
+        // so it is only said of the ones they have written in.
+        $errors = [];
+
+        foreach ($quarters as $key => $activities) {
+            if (count($activities) < SelfReportActivity::LEAST_ACTIVITIES) {
+                [$year, $quarter] = explode('.', $key);
+
+                $errors["activity.{$key}"] = sprintf(
+                    'Describe at least %d activities for %s %s, or leave the quarter empty.',
+                    SelfReportActivity::LEAST_ACTIVITIES,
+                    SelfReportActivity::QUARTERS[(int) $quarter] ?? "Quarter {$quarter}",
+                    $year,
+                );
+            }
+        }
+
+        if ($errors !== []) {
+            return back()->withInput()->withErrors($errors);
+        }
+
+        $this->storeSelfReport($staff, $quarters);
+
+        return $this->onwardFrom($request, $staff, 'Self reporting saved.');
+    }
+
+    /**
+     * The activities the form sent back, gathered under the quarter they
+     * belong to and keyed "year.quarter".
+     *
+     * The rows arrive as `activity[year][quarter][]` with the comments
+     * alongside them, lining up by position — which is what lets a row be
+     * cloned without renumbering anything. An activity nobody described is
+     * not an activity, and a quarter with none of them is not reported on.
+     */
+    private function selfReportQuarters(Request $request): array
+    {
+        $gathered = [];
+
+        foreach ((array) $request->input('activity', []) as $year => $quarters) {
+            foreach ((array) $quarters as $quarter => $activities) {
+                foreach ((array) $activities as $row => $activity) {
+                    if (blank($activity)) {
+                        continue;
+                    }
+
+                    $gathered["{$year}.{$quarter}"][] = [
+                        'activity' => trim($activity),
+                        'comment' => $request->input("comment.{$year}.{$quarter}.{$row}") ?: null,
+                    ];
+                }
+            }
+        }
+
+        return $gathered;
+    }
+
+    /**
+     * Write back the quarters the section was showing.
+     *
+     * What the form showed is the whole of it, so what it sends back replaces
+     * what was there — including a quarter emptied out, which is how an
+     * activity is taken off.
+     */
+    private function storeSelfReport(BasicInformation $staff, array $quarters): void
+    {
+        SelfReportActivity::where('basic_information_ulid', $staff->ulid)->delete();
+
+        foreach ($quarters as $key => $activities) {
+            [$year, $quarter] = explode('.', $key);
+
+            foreach (array_values($activities) as $position => $activity) {
+                SelfReportActivity::create($activity + [
+                    'basic_information_ulid' => $staff->ulid,
+                    'year' => (int) $year,
+                    'quarter' => (int) $quarter,
+                    'position' => $position,
+                ]);
+            }
+        }
     }
 
     /** Back to the report, at the section after the one just saved. */

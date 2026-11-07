@@ -77,7 +77,8 @@ class Appraisal
      * Sections that take a form of their own, and so carry their own save
      * and their own way on to the next. The rest are still to be built.
      */
-    public const WITH_FORMS = ['bio-data', 'career-history', 'qualifications'];
+    public const WITH_FORMS = ['bio-data', 'career-history', 'qualifications',
+                               'self-reporting'];
 
     public static function hasForm(?string $section): bool
     {
