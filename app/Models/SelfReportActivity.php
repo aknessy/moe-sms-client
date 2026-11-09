@@ -31,35 +31,12 @@ class SelfReportActivity extends Model
     /** The quarters an appraisal asks after. Not the fourth: it does not. */
     public const QUARTERS = [1 => '1st Quarter', 2 => '2nd Quarter', 3 => '3rd Quarter'];
 
-    /** How many years of them a report covers. */
-    public const YEARS = 3;
-
     /** How few activities a quarter can be answered with. */
     public const LEAST_ACTIVITIES = 4;
 
     public function staff(): BelongsTo
     {
         return $this->belongsTo(BasicInformation::class, 'basic_information_ulid', 'ulid');
-    }
-
-    /**
-     * The years the section asks after: the three ending with this one.
-     *
-     * Anything already recorded outside them is carried along, so a report
-     * opened in a later year still shows what was written in an earlier one
-     * rather than quietly dropping it off the end.
-     */
-    public static function yearsFor(?BasicInformation $staff): array
-    {
-        $recent = range(now()->year - (self::YEARS - 1), now()->year);
-
-        if ($staff === null) {
-            return $recent;
-        }
-
-        return collect($recent)
-            ->merge(static::where('basic_information_ulid', $staff->ulid)->pluck('year'))
-            ->unique()->sort()->values()->all();
     }
 
     /**

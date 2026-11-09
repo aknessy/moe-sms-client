@@ -1,24 +1,26 @@
 {{-- What the officer did, quarter by quarter, and what the reporting officer
      made of each of it.
 
-     Three years of three quarters is nine blocks, which is too many to scroll
-     through, so the years are tabs and the whole of it is one form: moving
-     between years must not lose what has been written in another. --}}
+     The years are the ones the promotion brief counts before calling this
+     officer due — two for a junior officer, three from GL 7 — and each runs
+     over its first three quarters. That is six or nine blocks, too many to
+     scroll through, so the years are tabs and the whole of it is one form:
+     moving between years must not lose what has been written in another. --}}
 
 @php
     use App\Models\SelfReportActivity;
 
     $quarters = SelfReportActivity::QUARTERS;
     $least = SelfReportActivity::LEAST_ACTIVITIES;
+    $reportingYears = $reportingWindow->years;
 
     // The year the form opens on: the first one anything was rejected for,
-    // or failing that the present one, so the officer lands where the work is.
+    // or failing that the last in the window — the present one, which is the
+    // one most likely still to be being written.
     $faulted = collect($errors->keys())
         ->first(fn ($key) => str_starts_with($key, 'activity.'));
 
-    $openYear = $faulted
-        ? (int) explode('.', $faulted)[1]
-        : (in_array(now()->year, $reportingYears, true) ? now()->year : end($reportingYears));
+    $openYear = $faulted ? (int) explode('.', $faulted)[1] : end($reportingYears);
 @endphp
 
 <form method="POST" action="{{ route('hr-appraisal.self-reporting') }}" class="py-3"
@@ -31,10 +33,16 @@
         <p class="m-0 font-sans text-sm font-medium text-base-content">
             Activities Taken Part In
         </p>
+        {{-- Which years, and why those: the window follows the promotion the
+             officer is due for, so the section says so rather than leaving
+             the reporting officer to work it out. --}}
         <p class="mt-0.5 mb-0 text-xs text-base-content/50">
-            Three years, each over its first three quarters. A quarter written in
-            needs at least {{ $least }} activities; one not reached yet is left
-            empty. The comment beside each is the reporting officer's.
+            {{ $reportingWindow->explanation }}
+        </p>
+        <p class="mt-0.5 mb-0 text-xs text-base-content/50">
+            Each year runs over its first three quarters. A quarter written in needs
+            at least {{ $least }} activities; one not reached yet is left empty. The
+            comment beside each is the reporting officer's.
         </p>
     </div>
 

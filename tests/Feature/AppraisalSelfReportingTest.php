@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BasicInformation;
 use App\Models\SelfReportActivity;
 use App\Models\User;
+use App\Support\SelfReportWindow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,12 +13,26 @@ use Tests\TestCase;
  * The Self Reporting section of the appraisal: what the officer took part in,
  * quarter by quarter, and what the reporting officer made of each of it.
  *
- * The section runs over three years, each over its first three quarters, and
- * a quarter written in is answered with at least four activities.
+ * The years are the ones the promotion brief counts before calling the
+ * officer due — two for a junior officer, three from GL 7 — each over its
+ * first three quarters, and a quarter written in is answered with at least
+ * four activities.
  */
 class AppraisalSelfReportingTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * The window is counted back from the present year, so the present year
+     * is held still: a test that passes this November and fails next is no
+     * test at all.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->travelTo('2026-11-07');
+    }
 
     private function actor(): User
     {
@@ -27,11 +42,30 @@ class AppraisalSelfReportingTest extends TestCase
         ]);
     }
 
-    private function officer(): BasicInformation
+    /**
+     * A senior officer, who moves up in three years. Confirmed on a known
+     * day, so the day they fall due is known and the window ends with it.
+     */
+    private function officer(array $attributes = []): BasicInformation
     {
-        return BasicInformation::factory()->create([
+        return BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey',
+            'grade_level' => 9, 'step' => 4,
+            'date_of_employment' => '2015-01-05',
+            'date_of_confirmation' => '2023-06-01',
         ]);
+    }
+
+    /** A junior officer, who moves up in two and so reports over two. */
+    private function juniorOfficer(array $attributes = []): BasicInformation
+    {
+        return $this->officer($attributes + ['grade_level' => 4]);
+    }
+
+    /** The years the section covers for this officer, earliest first. */
+    private function windowOf(BasicInformation $staff): array
+    {
+        return SelfReportWindow::for($staff)->years;
     }
 
     private function section(BasicInformation $staff)
@@ -76,22 +110,85 @@ class AppraisalSelfReportingTest extends TestCase
             ->assertSee(route('hr-appraisal.self-reporting'));
     }
 
-    public function test_it_asks_after_three_years(): void
+    public function test_a_senior_officer_reports_over_the_last_three_years(): void
     {
-        $response = $this->section($this->officer());
+        // GL 9 moves up after three years, so the report covers the last
+        // three — 2024 to 2026.
+        $staff = $this->officer();
 
-        foreach (range(now()->year - 2, now()->year) as $year) {
+        $this->assertSame([2024, 2025, 2026], $this->windowOf($staff));
+
+        $response = $this->section($staff);
+
+        foreach ([2024, 2025, 2026] as $year) {
             $response->assertSee('data-year-pane="' . $year . '"', false);
         }
+    }
 
-        $this->assertSame(3, SelfReportActivity::YEARS);
+    public function test_a_junior_officer_reports_over_the_last_two(): void
+    {
+        $staff = $this->juniorOfficer();
+
+        $this->assertSame([2025, 2026], $this->windowOf($staff));
+
+        $this->section($staff)
+            ->assertSee('data-year-pane="2025"', false)
+            ->assertSee('data-year-pane="2026"', false)
+            ->assertDontSee('data-year-pane="2024"', false);
+    }
+
+    public function test_the_window_is_the_last_of_them_not_the_ones_before_the_due_date(): void
+    {
+        // An officer overdue since 2011 is promoted on what they have been
+        // doing since, so the report is on the last three years and not on
+        // the three that ran up to the day they fell due.
+        $staff = $this->officer([
+            'date_of_employment' => '2005-07-07',
+            'date_of_confirmation' => '2008-07-07',
+        ]);
+
+        $this->assertSame([2024, 2025, 2026], $this->windowOf($staff));
+
+        $this->section($staff)
+            ->assertSee('Promotion fell due on 7 July 2011')
+            ->assertDontSee('data-year-pane="2011"', false);
+    }
+
+    public function test_an_officer_not_yet_due_reads_as_falling_due(): void
+    {
+        $staff = $this->officer(['date_of_confirmation' => '2025-06-01']);
+
+        $this->section($staff)->assertSee('Promotion falls due on 1 June 2028');
+    }
+
+    public function test_the_window_is_the_span_the_promotion_brief_counts(): void
+    {
+        // The same rule decides both: whatever the brief waits before calling
+        // an officer due is what the appraisal reports over.
+        foreach ([4 => 2, 6 => 2, 7 => 3, 9 => 3, 16 => 3] as $grade => $years) {
+            $staff = $this->officer(['grade_level' => $grade]);
+
+            $this->assertCount($years, $this->windowOf($staff),
+                "GL {$grade} should report over {$years} years");
+            $this->assertSame($years, SelfReportWindow::for($staff)->length);
+        }
+    }
+
+    public function test_the_section_says_which_years_and_why(): void
+    {
+        $this->section($this->officer())
+            ->assertSee('GL 09 moves up after 3 years, so this covers the last 3, 2024 to 2026.');
+
+        $this->section($this->juniorOfficer())
+            ->assertSee('GL 04 moves up after 2 years, so this covers the last 2, 2025 to 2026.');
     }
 
     public function test_each_year_is_broken_into_its_first_three_quarters(): void
     {
-        $response = $this->section($this->officer());
+        $staff = $this->officer();
+        $response = $this->section($staff);
 
-        foreach (range(now()->year - 2, now()->year) as $year) {
+        foreach ($this->windowOf($staff) as $year) {
             foreach ([1, 2, 3] as $quarter) {
                 $response->assertSee('data-quarter="' . $year . '.' . $quarter . '"', false);
             }
@@ -105,11 +202,18 @@ class AppraisalSelfReportingTest extends TestCase
     {
         $html = $this->section($this->officer())->getContent();
 
-        // Nine quarters, four rows apiece, each row an activity and the
-        // reporting officer's comment on it.
+        // Three years of three quarters, four rows apiece, each row an
+        // activity and the reporting officer's comment on it.
         $this->assertSame(36, substr_count($html, 'data-activity-row>'));
         $this->assertSame(36, substr_count($html, 'name="activity['));
         $this->assertSame(36, substr_count($html, 'name="comment['));
+    }
+
+    public function test_a_junior_officer_is_asked_for_six_quarters_not_nine(): void
+    {
+        $html = $this->section($this->juniorOfficer())->getContent();
+
+        $this->assertSame(24, substr_count($html, 'data-activity-row>'));
     }
 
     public function test_each_activity_carries_a_reporting_officers_comment(): void
@@ -295,10 +399,10 @@ class AppraisalSelfReportingTest extends TestCase
     {
         $staff = $this->officer();
 
-        $this->save($staff, $this->quarter(now()->year, 1, 4, ['Handled it well']));
+        $this->save($staff, $this->quarter(2025, 1, 4, ['Handled it well']));
 
         $this->section($staff)
-            ->assertSee('Activity 1 of Q1 ' . now()->year)
+            ->assertSee('Activity 1 of Q1 2025')
             ->assertSee('Handled it well');
     }
 
@@ -317,7 +421,7 @@ class AppraisalSelfReportingTest extends TestCase
     public function test_one_officers_report_is_not_anothers(): void
     {
         $staff = $this->officer();
-        $other = BasicInformation::factory()->create(['surname' => 'Edem']);
+        $other = $this->officer(['surname' => 'Edem']);
 
         $this->save($staff, $this->quarter(2025, 1));
         $this->save($other, $this->quarter(2025, 2));
@@ -331,42 +435,104 @@ class AppraisalSelfReportingTest extends TestCase
 
     public function test_a_year_already_written_in_is_still_offered(): void
     {
-        // Otherwise a report opened later would quietly drop what was
-        // recorded before the three years it now covers.
+        // A promotion recorded late moves the window; what was reported on
+        // before it must not quietly drop off the end.
         $staff = $this->officer();
 
-        SelfReportActivity::create([
-            'basic_information_ulid' => $staff->ulid,
-            'year' => 2019, 'quarter' => 1, 'position' => 0,
-            'activity' => 'Something long ago',
-        ]);
+        $this->writeIn($staff, 2019, 'Something long ago');
 
-        $this->assertContains(2019, SelfReportActivity::yearsFor($staff));
+        $this->assertContains(2019, $this->windowOf($staff));
 
         $this->section($staff)
             ->assertSee('data-year-pane="2019"', false)
-            ->assertSee('Something long ago');
+            ->assertSee('Something long ago')
+            ->assertSee('1 earlier year is kept alongside it');
     }
 
     public function test_the_years_read_in_order(): void
     {
         $staff = $this->officer();
 
-        SelfReportActivity::create([
-            'basic_information_ulid' => $staff->ulid,
-            'year' => 2019, 'quarter' => 1, 'position' => 0, 'activity' => 'Long ago',
-        ]);
+        $this->writeIn($staff, 2019, 'Long ago');
 
-        $years = SelfReportActivity::yearsFor($staff);
+        $years = $this->windowOf($staff);
 
-        $this->assertSame($years, collect($years)->sort()->values()->all());
-        $this->assertSame(2019, $years[0]);
+        $this->assertSame([2019, 2024, 2025, 2026], $years);
     }
 
-    public function test_an_officer_with_nothing_on_file_is_offered_the_three_years(): void
+    public function test_a_carried_year_may_be_reported_on(): void
     {
-        $this->assertSame(range(now()->year - 2, now()->year),
-                          SelfReportActivity::yearsFor($this->officer()));
+        // It is on the form, so it has to be one the form will take back.
+        $staff = $this->officer();
+
+        $this->writeIn($staff, 2019, 'Something long ago');
+
+        $this->save($staff, $this->quarter(2019, 2))->assertSessionHasNoErrors();
+
+        $this->assertSame(4, SelfReportActivity::where('year', 2019)->count());
+    }
+
+    public function test_a_year_the_report_does_not_cover_is_refused(): void
+    {
+        // The section only ever offered the window, so anything else came
+        // from somewhere other than the form.
+        $staff = $this->officer();
+
+        $this->save($staff, $this->quarter(2008, 1))
+            ->assertSessionHasErrors('activity.2008.1');
+
+        $this->assertSame(0, SelfReportActivity::count());
+    }
+
+    public function test_a_fourth_quarter_is_refused(): void
+    {
+        $staff = $this->officer();
+
+        $this->save($staff, $this->quarter(2025, 4))
+            ->assertSessionHasErrors('activity.2025.4');
+    }
+
+    private function writeIn(BasicInformation $staff, int $year, string $activity): void
+    {
+        SelfReportActivity::create([
+            'basic_information_ulid' => $staff->ulid,
+            'year' => $year, 'quarter' => 1, 'position' => 0, 'activity' => $activity,
+        ]);
+    }
+
+    /* ----------------------------------- where the record says nothing */
+
+    public function test_an_officer_who_has_never_moved_reports_to_the_present_year(): void
+    {
+        // Nothing on record says when they last stood still, so there is no
+        // promotion date to end the window with.
+        $staff = BasicInformation::factory()->create([
+            'grade_level' => 9,
+            'date_of_employment' => null, 'date_of_confirmation' => null,
+        ]);
+
+        $this->assertSame(range(now()->year - 2, now()->year), $this->windowOf($staff));
+
+        $this->section($staff)->assertSee('Nothing on record says when this officer last moved');
+    }
+
+    public function test_an_officer_at_the_top_of_the_scale_reports_to_the_present_year(): void
+    {
+        // GL 17 has nowhere to rise to, so no promotion anchors the window.
+        $staff = $this->officer(['grade_level' => 17]);
+
+        $this->assertSame(range(now()->year - 2, now()->year), $this->windowOf($staff));
+
+        $this->section($staff)->assertSee('GL 17 has nowhere to rise to');
+    }
+
+    public function test_an_officer_with_no_grade_level_reports_to_the_present_year(): void
+    {
+        $staff = $this->officer(['grade_level' => null]);
+
+        $this->assertSame(range(now()->year - 2, now()->year), $this->windowOf($staff));
+
+        $this->section($staff)->assertSee('No grade level is on record');
     }
 
     /* ------------------------------------------------ nothing without one */

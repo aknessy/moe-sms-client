@@ -14,6 +14,7 @@ use App\Support\Appraisal;
 use App\Support\LeaveLetter;
 use App\Support\PostingContext;
 use App\Support\PromotionDue;
+use App\Support\SelfReportWindow;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -187,10 +188,10 @@ class HumanResourceController extends Controller
             'states' => State::orderBy('name')->pluck('name', 'id')->all(),
             'departments' => Department::options(),
             'qualifications' => $staff?->qualifications() ?? collect(),
-            // Self Reporting runs over three years of three quarters, so the
-            // section needs both the periods to ask after and what is held
-            // against each of them.
-            'reportingYears' => SelfReportActivity::yearsFor($staff),
+            // Self Reporting runs over the years the promotion brief counts
+            // before calling this officer due, so the section needs both the
+            // window and what is held against each quarter of it.
+            'reportingWindow' => SelfReportWindow::for($staff),
             'selfReport' => SelfReportActivity::forStaff($staff),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
@@ -363,6 +364,7 @@ class HumanResourceController extends Controller
         ]);
 
         $quarters = $this->selfReportQuarters($request);
+        $window = SelfReportWindow::for($staff);
 
         // An officer is to describe at least four activities in a quarter.
         // Said of a quarter they have not reached yet it would be nonsense,
@@ -370,13 +372,22 @@ class HumanResourceController extends Controller
         $errors = [];
 
         foreach ($quarters as $key => $activities) {
-            if (count($activities) < SelfReportActivity::LEAST_ACTIVITIES) {
-                [$year, $quarter] = explode('.', $key);
+            [$year, $quarter] = explode('.', $key);
 
+            // The section only ever offered the years the window covers, so
+            // anything else came from somewhere other than the form.
+            if (! $window->covers((int) $year)
+                || ! array_key_exists((int) $quarter, SelfReportActivity::QUARTERS)) {
+
+                $errors["activity.{$key}"] = 'That is not a quarter this report covers.';
+                continue;
+            }
+
+            if (count($activities) < SelfReportActivity::LEAST_ACTIVITIES) {
                 $errors["activity.{$key}"] = sprintf(
                     'Describe at least %d activities for %s %s, or leave the quarter empty.',
                     SelfReportActivity::LEAST_ACTIVITIES,
-                    SelfReportActivity::QUARTERS[(int) $quarter] ?? "Quarter {$quarter}",
+                    SelfReportActivity::QUARTERS[(int) $quarter],
                     $year,
                 );
             }
