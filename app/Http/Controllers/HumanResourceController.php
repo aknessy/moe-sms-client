@@ -14,6 +14,7 @@ use App\Support\Appraisal;
 use App\Support\LeaveLetter;
 use App\Support\PostingContext;
 use App\Support\PromotionDue;
+use App\Support\ReportingAuthority;
 use App\Support\SelfReportWindow;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -193,6 +194,9 @@ class HumanResourceController extends Controller
             // window and what is held against each quarter of it.
             'reportingWindow' => SelfReportWindow::for($staff),
             'selfReport' => SelfReportActivity::forStaff($staff),
+            // The comment beside an activity is the reporting officer's, and
+            // the section holds to that rather than asking the form to.
+            'mayComment' => ReportingAuthority::mayCommentOn(auth()->user(), $staff),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -355,6 +359,16 @@ class HumanResourceController extends Controller
     public function store_appraisal_self_reporting(Request $request)
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+
+        // The comments are the reporting officer's, so an account that may
+        // not write them may not send them either — a disabled field on the
+        // form would be nothing more than a suggestion.
+        if (! ReportingAuthority::mayCommentOn(auth()->user(), $staff)
+            && collect((array) $request->input('comment', []))
+                ->flatten()->filter()->isNotEmpty()) {
+
+            abort(403, 'Only the reporting officer writes those comments.');
+        }
 
         $request->validate([
             'staff' => ['required', 'exists:basic_informations,ulid'],

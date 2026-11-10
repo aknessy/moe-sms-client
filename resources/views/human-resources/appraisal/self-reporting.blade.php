@@ -118,9 +118,20 @@
                                         <label class="font-sans text-xs font-medium text-base-content">
                                             Reporting Officer's Comments
                                         </label>
+                                        {{-- The comment is the reporting
+                                             officer's, and nobody else's: a
+                                             staff account reads on. --}}
                                         <textarea name="comment[{{ $year }}][{{ $quarter }}][]" rows="3"
                                                   placeholder="Left empty until the reporting officer has answered it"
-                                                  class="mt-1 w-full resize-none rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50">{{ $row['comment'] }}</textarea>
+                                                  class="mt-1 w-full resize-none rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50 {{ $mayComment ? '' : 'cursor-not-allowed disabled:bg-base-200 disabled:text-base-content/40' }}"
+                                                  @unless ($mayComment) disabled @endunless>{{ $row['comment'] }}</textarea>
+                                        @unless ($mayComment)
+                                            <p class="mt-1 mb-0 text-xs text-base-content/40">
+                                                The reporting officer writes here — the Electoral
+                                                Officer of the LGA, the head of the department, or an
+                                                administrator.
+                                            </p>
+                                        @endunless
                                     </div>
                                 </div>
 
@@ -222,7 +233,13 @@
 
                 // A clone carries whatever was typed into the row it came
                 // from; each one is a different activity, so it starts empty.
-                row.querySelectorAll('textarea').forEach(field => field.value = '');
+                // And nobody writes into a comment the reporting officer's —
+                // the clone keeps the locked state it was born with.
+                row.querySelectorAll('textarea').forEach(function (field) {
+                    if (! field.disabled) {
+                        field.value = '';
+                    }
+                });
 
                 block.appendChild(row);
                 refresh(block);

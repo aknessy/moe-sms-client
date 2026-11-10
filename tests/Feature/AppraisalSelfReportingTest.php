@@ -3,8 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\BasicInformation;
+use App\Models\Lga;
+use App\Models\Posting;
 use App\Models\SelfReportActivity;
+use App\Models\State;
 use App\Models\User;
+use App\Support\ReportingAuthority;
 use App\Support\SelfReportWindow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -51,6 +55,7 @@ class AppraisalSelfReportingTest extends TestCase
         return BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey',
             'grade_level' => 9, 'step' => 4,
+            'department' => 'Department of Electoral Operations',
             'date_of_employment' => '2015-01-05',
             'date_of_confirmation' => '2023-06-01',
         ]);
@@ -557,5 +562,217 @@ class AppraisalSelfReportingTest extends TestCase
             'staff' => $this->officer()->ulid,
             'section' => 'self-reporting',
         ])->assertForbidden();
+    }
+
+    /* -------------------------------------- who writes the officer's comments */
+
+    /**
+     * An account with no staff record behind it, for the comment authority.
+     *
+     * @param array<string, mixed> $staffAttributes
+     */
+    private function account(string $role, array $staffAttributes = []): User
+    {
+        return User::factory()->create([
+            'basic_information_ulid' => BasicInformation::factory()
+                ->create($staffAttributes)->ulid,
+            'role' => $role,
+        ]);
+    }
+
+    /** The comment fields of the rendered section, disabled or not. */
+    private function renderedComments(User $viewer, BasicInformation $staff): string
+    {
+        return $this->actingAs($viewer)
+            ->get(route('hr-appraisal', ['section' => 'self-reporting', 'staff' => $staff->ulid]))
+            ->getContent();
+    }
+
+    private const COMMENT_BOX = '/name="comment\[[0-9]+\]\[[0-9]+\]\[\]"[^>]*disabled/';
+
+    public function test_a_staff_account_may_not_write_the_comments(): void
+    {
+        // The section is held open to the whole menu for every other role;
+        // for the `User` role it is not open at all, and where it ever is,
+        // the authority below is what keeps the comments out of their hands.
+        $staff = $this->officer();
+
+        $this->assertFalse(
+            ReportingAuthority::mayCommentOn($this->account('User'), $staff));
+    }
+
+    /** Post an officer out to a local government, away from the state office. */
+    private function postAway(BasicInformation $staff): Lga
+    {
+        $state = State::where('name', config('posting.default_state'))->firstOrFail();
+        $lga = Lga::where('state_id', $state->id)
+            ->where('lga_name', '!=', config('posting.default_lga'))
+            ->firstOrFail();
+
+        Posting::create([
+            'basic_information_ulid' => $staff->ulid,
+            'posting_type' => 'deployment',
+            'to_lga' => $lga->id,
+            'effective_date' => '2025-01-06',
+            'deployed_as' => 'Registration Officer',
+        ]);
+
+        return $lga;
+    }
+
+    public function test_an_administrator_writes_the_comments(): void
+    {
+        $staff = $this->officer();
+        $administrator = $this->actor();
+
+        $this->assertTrue(ReportingAuthority::mayCommentOn($administrator, $staff));
+
+        // Their boxes are open, and the officer is not told to keep out.
+        $html = $this->renderedComments($administrator, $staff);
+
+        $this->assertDoesNotMatchRegularExpression(self::COMMENT_BOX, $html);
+        $this->assertStringNotContainsString('The reporting officer writes here', $html);
+    }
+
+    public function test_the_electoral_officer_of_the_officers_lga_writes_the_comments(): void
+    {
+        $staff = $this->officer();
+        $lga = $this->postAway($staff);
+
+        // Accounted on an ordinary role — it is the desk they are posted to
+        // that put the comments within reach, not the account's own role.
+        $electoralOfficer = $this->account('Registry Officer',
+            ['designation' => 'Electoral Officer']);
+
+        Posting::create([
+            'basic_information_ulid' => $electoralOfficer->staff->ulid,
+            'posting_type' => 'deployment',
+            'to_lga' => $lga->id,
+            'effective_date' => '2025-01-06',
+            'deployed_as' => 'Electoral Officer',
+        ]);
+
+        $this->assertTrue(ReportingAuthority::mayCommentOn($electoralOfficer, $staff));
+
+        $this->assertDoesNotMatchRegularExpression(
+            self::COMMENT_BOX,
+            $this->renderedComments($electoralOfficer, $staff),
+        );
+    }
+
+    public function test_the_electoral_officer_of_another_lga_reads_on(): void
+    {
+        $staff = $this->officer();
+        $lga = $this->postAway($staff);
+
+        $elsewhere = State::where('name', config('posting.default_state'))->firstOrFail()
+            ->lgas()
+            ->where('lga_name', '!=', config('posting.default_lga'))
+            ->where('lga_name', '!=', $lga->lga_name)
+            ->firstOrFail();
+
+        $officerDownTheRoad = $this->account('Registry Officer',
+            ['designation' => 'Electoral Officer']);
+
+        Posting::create([
+            'basic_information_ulid' => $officerDownTheRoad->staff->ulid,
+            'posting_type' => 'deployment',
+            'to_lga' => $elsewhere->id,
+            'effective_date' => '2025-01-06',
+            'deployed_as' => 'Electoral Officer',
+        ]);
+
+        $this->assertFalse(ReportingAuthority::mayCommentOn($officerDownTheRoad, $staff));
+
+        $this->assertMatchesRegularExpression(
+            self::COMMENT_BOX,
+            $this->renderedComments($officerDownTheRoad, $staff),
+        );
+    }
+
+    public function test_the_head_of_the_officers_department_writes_the_comments(): void
+    {
+        // The officer sits in Electoral Operations, headed by the HOD EOPs
+        // role.
+        $staff = $this->officer();
+
+        $head = $this->account('HOD EOPs');
+
+        $this->assertTrue(ReportingAuthority::mayCommentOn($head, $staff));
+
+        $this->assertDoesNotMatchRegularExpression(
+            self::COMMENT_BOX,
+            $this->renderedComments($head, $staff),
+        );
+    }
+
+    public function test_the_head_of_another_department_reads_on(): void
+    {
+        $staff = $this->officer();
+
+        $head = $this->account('HOD ICT');
+
+        $this->assertFalse(ReportingAuthority::mayCommentOn($head, $staff));
+
+        $this->assertMatchesRegularExpression(
+            self::COMMENT_BOX,
+            $this->renderedComments($head, $staff),
+        );
+    }
+
+    public function test_an_officer_without_a_viewer_means_no_comments(): void
+    {
+        $this->assertFalse(ReportingAuthority::mayCommentOn(null, $this->officer()));
+        $this->assertFalse(ReportingAuthority::mayCommentOn($this->actor(), null));
+    }
+
+    /* ------------------------------- sending what one may not write */
+
+    public function test_an_account_may_not_send_the_comments_it_cannot_write(): void
+    {
+        // A disabled field on the form would be nothing more than a
+        // suggestion, so the post is held to the same authority the page is.
+        // A head of one department can reach the page and still may not comment
+        // on the report of an officer of another.
+        $staff = $this->officer();
+
+        $this->actingAs($this->account('HOD ICT'))
+            ->post(route('hr-appraisal.self-reporting'), [
+                'staff' => $staff->ulid,
+                'section' => 'self-reporting',
+                'activity' => [now()->year => [1 => $this->four('a')]],
+                'comment' => [now()->year => [1 => ['I did not head this', '', '', '']]],
+            ])->assertForbidden();
+
+        $this->assertSame(0, SelfReportActivity::count());
+    }
+
+    public function test_an_account_may_send_its_activities_without_comments(): void
+    {
+        // Describing what they did is the officer's own job; it is the
+        // commenting beside it that is bounded by who is reporting on them.
+        $staff = $this->officer();
+
+        $this->actingAs($this->account('HOD EOPs'))
+            ->post(route('hr-appraisal.self-reporting'), [
+                'staff' => $staff->ulid,
+                'section' => 'self-reporting',
+                'activity' => [now()->year => [1 => $this->four('a')]],
+            ])->assertSessionHasNoErrors();
+
+        $this->assertSame(4, SelfReportActivity::where(
+            'basic_information_ulid', $staff->ulid,
+        )->whereNull('comment')->count());
+    }
+
+    public function test_the_administrators_comments_arrive(): void
+    {
+        $staff = $this->officer();
+
+        $this->save($staff, $this->quarter(now()->year, 1, 4, ['Handled it well']));
+
+        $this->assertSame('Handled it well', SelfReportActivity::where(
+            'basic_information_ulid', $staff->ulid,
+        )->orderBy('position')->first()->comment);
     }
 }
