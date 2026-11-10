@@ -27,6 +27,10 @@ class BasicInformation extends Model
       'firstname',
       'othernames',
       'gender',
+      // How the officer is married, and the children the service should know
+      // about — held as up to two {name, date_of_birth} rows in one write.
+      'marital_status',
+      'children',
       'department',
       // The office they sit in — "Calabar HQ" — which belongs to no
       // department; and the desk they hold, which belongs to one of its own.
@@ -86,11 +90,21 @@ class BasicInformation extends Model
 
     public const GENDERS = ['Male', 'Female'];
 
+    /** The ways an officer's household may stand. */
+    public const MARITAL_STATUSES = [
+        'Single', 'Married', 'Widowed', 'Divorced', 'Separated',
+    ];
+
+    /** At most two children are recorded against an officer's service. */
+    public const MAX_CHILDREN = 2;
+
     protected $casts = [
         // Held as numbers so they can be sorted and reasoned about; how they
         // read on screen is presentation, below.
         'grade_level' => 'integer',
         'step' => 'integer',
+        // The children, each with the day they were born.
+        'children' => 'array',
     ];
 
     /** The grade levels an officer may be on. */

@@ -267,6 +267,8 @@ class StaffController extends Controller
             'first-name' => ['required', 'string', 'max:80'],
             'other-names' => ['nullable', 'string', 'max:80'],
             'gender' => ['required', Rule::in(BasicInformation::GENDERS)],
+            // How the officer's household stands, from the fixed list.
+            'marital-status' => ['nullable', Rule::in(BasicInformation::MARITAL_STATUSES)],
             // One of the directorates, not whatever was typed: a department
             // nobody heads is one an officer's applications reach nobody from.
             'department' => ['required', Rule::in(Department::names())],
@@ -310,6 +312,15 @@ class StaffController extends Controller
             'rsa' => ['required', 'string', 'max:60'],
             'nhis' => ['required', 'string', 'max:60'],
             'address' => ['required', 'string', 'max:500'],
+            // At most two children are carried on a record, each named with the
+            // day they were born: the four inputs are all the form can offer,
+            // and a dob is only held for a child who was actually named.
+            'child-one-name' => ['nullable', 'string', 'max:160'],
+            'child-one-date-of-birth' => ['nullable', 'date', 'required_with:child-one-name'],
+            'child-two-name' => ['nullable', 'string', 'max:160'],
+            'child-two-date-of-birth' => ['nullable', 'date', 'required_with:child-two-name'],
+        ], [
+            'gender.required' => 'Say the officer’s gender.',
         ]);
 
         $staff = BasicInformation::create([
@@ -337,6 +348,18 @@ class StaffController extends Controller
             'rsa' => $data['rsa'] ?? null,
             'nhis' => $data['nhis'] ?? null,
             'address' => $data['address'] ?? null,
+            'marital_status' => $data['marital-status'] ?? null,
+            // Only a named child is recorded: the day alone, with nobody it
+            // belongs to, is nothing the Registry could read.
+            'children' => collect([
+                ['name' => $data['child-one-name'] ?? null,
+                 'date_of_birth' => $data['child-one-date-of-birth'] ?? null],
+                ['name' => $data['child-two-name'] ?? null,
+                 'date_of_birth' => $data['child-two-date-of-birth'] ?? null],
+            ])
+            ->filter(fn ($child) => filled($child['name']))
+            ->values()
+            ->all(),
         ]);
 
         session([self::DRAFT_KEY => $staff->ulid]);

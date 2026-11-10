@@ -3,12 +3,16 @@
 namespace Tests\Feature;
 
 use App\Models\BasicInformation;
+use App\Models\Career;
 use App\Models\EduProgress;
+use App\Models\Leave;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\NextOfKin;
 use App\Models\Posting;
+use App\Models\Promotion;
 use App\Models\Referee;
+use App\Models\Setting;
 use App\Models\State;
 use App\Models\Training;
 use App\Models\TrainingInterest;
@@ -329,6 +333,110 @@ class SelfServicePagesTest extends TestCase
         $response->assertSee('Stanbic IBTC');
     }
 
+    public function test_the_bio_data_page_carries_marital_status_and_children(): void
+    {
+        $user = $this->officer([
+            'marital_status' => 'Married',
+            'children' => [
+                ['name' => 'Ini Bassey', 'date_of_birth' => '2014-03-02'],
+                ['name' => 'Eno Bassey', 'date_of_birth' => '2017-09-19'],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        $response->assertSee('Married');
+        $response->assertSee('Ini Bassey');
+        $response->assertSee('2014-03-02');
+        $response->assertSee('Eno Bassey');
+        $response->assertSee('2017-09-19');
+    }
+
+    public function test_the_bio_data_page_says_where_no_child_is_recorded(): void
+    {
+        $user = $this->officer();
+
+        $this->actingAs($user)->get(route('my-bio-data'))
+            ->assertSee('No child is recorded here yet');
+    }
+
+    public function test_the_bio_data_page_carries_their_career_history(): void
+    {
+        $user = $this->officer(['surname' => 'Bassey']);
+
+        Promotion::create([
+            'basic_information_ulid' => $this->staff->ulid,
+            'promotion_record' => [[
+                'designation' => 'Senior Electoral Officer',
+                'grade_level' => '10',
+                'step' => '3',
+                'effective_from' => '2022-01-01',
+            ]],
+        ]);
+
+        Career::create([
+            'basic_information_ulid' => $this->staff->ulid,
+            'no_previous_employment' => false,
+            'rank' => 'Clerical Officer',
+            'ministerial_dept' => 'Ministry of Finance',
+            'mode_of_employment' => 'Transfer of Service',
+            'address_of_ministerial_dept' => 'Calabar',
+            'date_of_employement' => '2010-01-04',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        $response->assertSee('Career History');
+        $response->assertSee('Senior Electoral Officer');
+        $response->assertSee('Ministry of Finance');
+    }
+
+    public function test_the_bio_data_page_says_where_no_career_history_is_recorded(): void
+    {
+        $user = $this->officer();
+
+        $this->actingAs($user)->get(route('my-bio-data'))
+            ->assertSee('No career history is recorded here yet');
+    }
+
+    public function test_the_bio_data_page_carries_their_leave_history(): void
+    {
+        $user = $this->officer(['surname' => 'Bassey']);
+
+        Leave::create([
+            'basic_information_ulid' => $this->staff->ulid,
+            'leave_record' => [[
+                'leave_type' => 'Annual Leave',
+                'effective_from' => '2024-07-01',
+                'expires_on' => '2024-07-21',
+                'duration' => '21 days',
+            ]],
+        ]);
+
+        LeaveApplication::create([
+            'basic_information_ulid' => $this->staff->ulid,
+            'leave_type' => 'Annual Leave',
+            'effective_date' => '2026-02-01',
+            'days' => 14,
+            'resumption_date' => '2026-02-15',
+            'reason' => 'Rest',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        $response->assertSee('Leave History');
+        $response->assertSee('21 days');
+        $response->assertSee('Annual Leave');
+    }
+
+    public function test_the_bio_data_page_says_where_no_leave_is_recorded(): void
+    {
+        $user = $this->officer();
+
+        $this->actingAs($user)->get(route('my-bio-data'))
+            ->assertSee('No leave is recorded here yet');
+    }
+
     /* ------------------------------------------- bio-data goes to paper */
 
     /**
@@ -431,6 +539,17 @@ class SelfServicePagesTest extends TestCase
             $response->assertSee($section);
         }
         $response->assertSee('Idara Bassey');
+    }
+
+    public function test_the_printable_copy_follows_the_sheet_an_administrator_has_set(): void
+    {
+        Setting::put('bio_data.print_size', 'A3');
+        Setting::put('bio_data.print_orientation', 'Landscape');
+
+        $user = $this->officer();
+
+        $this->actingAs($user)->get(route('my-bio-data'))
+            ->assertSee('@page { size: A3 landscape', false);
     }
 
     public function test_the_printable_copy_carries_the_photograph_inside_itself(): void

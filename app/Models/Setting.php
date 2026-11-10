@@ -44,10 +44,28 @@ class Setting extends Model
         'promotion.lowest_grade_level' => '3',
     ];
 
+    /**
+     * How the printable bio-data goes to paper. The default is the plainest
+     * sheet there is: A4, standing up.
+     */
+    public const PRINTING = [
+        'bio_data.print_size' => 'A4',
+        'bio_data.print_orientation' => 'Portrait',
+    ];
+
     /** Every setting's default, whichever group it belongs to. */
     public static function defaults(): array
     {
-        return self::ORGANISATION + self::RULES;
+        return self::ORGANISATION + self::RULES + self::PRINTING;
+    }
+
+    /** The print settings, filled in with their defaults. */
+    public static function printing(): array
+    {
+        return [
+            'size' => self::get('bio_data.print_size'),
+            'orientation' => self::get('bio_data.print_orientation'),
+        ];
     }
 
     protected static function booted(): void

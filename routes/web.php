@@ -185,6 +185,7 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::get('/', [ConfigurationController::class, 'index'])->name('config');
         Route::post('/organisation', [ConfigurationController::class, 'storeSettings'])->name('config.organisation');
         Route::post('/rules', [ConfigurationController::class, 'storeRules'])->name('config.rules');
+Route::post('/printing', [ConfigurationController::class, 'storePrinting'])->name('config.printing');
         Route::get('/departments', [ConfigurationController::class, 'departments'])->name('departments');
         Route::post('/departments', [ConfigurationController::class, 'storeDepartment'])->name('config.departments');
         Route::post('/department-heads', [ConfigurationController::class, 'storeDepartmentHeads'])->name('config.department-heads');

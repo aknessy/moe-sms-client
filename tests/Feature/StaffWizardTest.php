@@ -76,6 +76,38 @@ class StaffWizardTest extends TestCase
         $this->assertNotNull(session('staff_draft_ulid'));
     }
 
+    public function test_marital_status_and_children_are_recorded_with_the_rest(): void
+    {
+        $this->actingAs($this->actor())
+            ->post('/dashboard/staff/create', $this->basicInformation('TEST/0010') + [
+                'marital-status' => 'Married',
+                'child-one-name' => 'Ini Eyo', 'child-one-date-of-birth' => '2014-03-02',
+                'child-two-name' => 'Eno Eyo', 'child-two-date-of-birth' => '2017-09-19',
+            ])
+            ->assertRedirect(route('edu-progress'));
+
+        $staff = BasicInformation::where('computer_number', 'TEST/0010')->firstOrFail();
+
+        $this->assertSame('Married', $staff->marital_status);
+        $this->assertSame([
+            ['name' => 'Ini Eyo', 'date_of_birth' => '2014-03-02'],
+            ['name' => 'Eno Eyo', 'date_of_birth' => '2017-09-19'],
+        ], $staff->children);
+    }
+
+    public function test_a_child_without_a_name_is_not_recorded(): void
+    {
+        $this->actingAs($this->actor())
+            ->post('/dashboard/staff/create', $this->basicInformation('TEST/0011') + [
+                'child-one-date-of-birth' => '2014-03-02',
+            ])
+            ->assertRedirect(route('edu-progress'));
+
+        $staff = BasicInformation::where('computer_number', 'TEST/0011')->firstOrFail();
+
+        $this->assertSame([], $staff->children);
+    }
+
     public function test_a_recorded_category_is_closed_and_redirects_onward(): void
     {
         $this->actingAs($this->actor())

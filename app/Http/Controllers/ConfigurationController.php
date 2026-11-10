@@ -43,6 +43,7 @@ class ConfigurationController extends Controller
             'organisation' => Setting::organisation(),
             'lowestGradeLevel' => PromotionDue::lowestGradeLevel(),
             'topGradeLevel' => BasicInformation::GRADE_LEVELS[1],
+            'printing' => Setting::printing(),
         ]);
     }
 
@@ -157,6 +158,30 @@ class ConfigurationController extends Controller
         Setting::put('promotion.lowest_grade_level', (string) $data['promotion_lowest_grade_level']);
 
         return redirect()->route('config')->with('status', 'Promotion rules saved.');
+    }
+
+    /**
+     * How the printable bio-data goes to paper — the sheet it is laid out on
+     * and whether it stands or lies. The bio-data page reads these when it
+     * sets its own print rules.
+     */
+    public function storePrinting(Request $request)
+    {
+        $data = $request->validate([
+            'print_size' => ['required', Rule::in(['A3', 'A4'])],
+            'print_orientation' => ['required', Rule::in(['Landscape', 'Portrait'])],
+        ], [
+            'print_size.in' => 'Choose a paper size the sheet is set to.',
+            'print_orientation.in' => 'Choose an orientation the sheet is set to.',
+        ]);
+
+        Setting::putMany([
+            'bio_data.print_size' => $data['print_size'],
+            'bio_data.print_orientation' => $data['print_orientation'],
+        ]);
+
+        return redirect()->route('config')
+            ->with('status', "Bio-data now prints on {$data['print_size']} paper, {$data['print_orientation']}.");
     }
 
     /**

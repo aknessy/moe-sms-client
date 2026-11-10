@@ -10,9 +10,10 @@
         <style>
             /* A4 paper, one page after another: the CV is set to the sheet,
                 and the dashboard's fixed screen furniture — the sidebar, the
-                title strips, the cards — does not go to paper with it. */
+                title strips, the cards — does not go to paper with it.
+                The sheet itself is what the command's settings hold. */
             @media print {
-                @page { size: A4; margin: 14mm 12mm 12mm; }
+                @page { size: {{ $printSize }} {{ strtolower($printOrientation) }}; margin: 14mm 12mm 12mm; }
 
                 html, body {
                     height: auto !important;
@@ -135,6 +136,7 @@
                             'Other Names' => $staff->othernames,
                             'Gender' => $staff->gender,
                             'Date of Birth' => $staff->date_of_birth,
+                            'Marital Status' => $staff->marital_status,
                         ],
                         'Service' => [
                             'File Number' => $staff->file_number,
@@ -168,6 +170,20 @@
                             'NHIS' => $staff->nhis,
                         ],
                     ];
+
+                    // The working life: how they rose through the service, and
+                    // what they left behind to join it. Promotion entries are
+                    // held in the wizard's sheets, one run of rows apiece.
+                    $promotions = $staff->promotion
+                        ->flatMap(fn ($sheet) => $sheet->promotion_record ?? [])
+                        ->sortBy('effective_from')
+                        ->values();
+                    $career = $staff->career;
+                    // The leave they have taken, as the service history holds
+                    // it and as they have applied for it through the dashboard.
+                    $leaveRecorded = $staff->leave?->leave_record ?? [];
+                    $leaveApplications = $staff->leaveApplications()->newestFirst()->get();
+                    $children = $staff->children ?? [];
                 @endphp
 
                 @foreach ($sections as $heading => $fields)
@@ -194,6 +210,142 @@
                     $referees = $staff->referee->flatMap(fn ($sheet) => $sheet->referees_record ?? []);
                     $qualifications = $staff->qualifications();
                 @endphp
+
+                <x-registry.card title="Children"
+                                 description="Those the service should know about — at most two, with the day each was born.">
+                    @if (collect($children)->isEmpty())
+                        <p class="text-sm text-base-content/60">
+                            No child is recorded here yet.
+                        </p>
+                    @else
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            @foreach ($children as $child)
+                                <div class="rounded-md border border-base-300 px-3 py-2">
+                                    <p class="mb-0 text-sm font-medium text-base-content">{{ $child['name'] ?? '—' }}</p>
+                                    <p class="mb-0 mt-0.5 text-xs text-base-content/60">
+                                        Born {{ $child['date_of_birth'] ?? 'on a day not recorded' }}
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </x-registry.card>
+
+                <x-registry.card title="Career History"
+                                 description="How you rose through the service, and what you left behind to join it.">
+                    @if ($promotions->isEmpty() && $career === null)
+                        <p class="text-sm text-base-content/60">
+                            No career history is recorded here yet.
+                        </p>
+                    @else
+                        @if ($promotions->isNotEmpty())
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-base-300 text-left text-xs text-base-content/50">
+                                        <th class="py-1 pr-2 font-medium">Promoted to</th>
+                                        <th class="py-1 pr-2 font-medium">Grade Level</th>
+                                        <th class="py-1 pr-2 font-medium">Step</th>
+                                        <th class="py-1 font-medium">Effective From</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($promotions as $promotion)
+                                        <tr class="border-b border-base-200 last:border-0">
+                                            <td class="py-1.5 pr-2 text-base-content">
+                                                {{ $promotion['designation'] ?? '—' }}</td>
+                                            <td class="py-1.5 pr-2 text-base-content">
+                                                GL {{ str_pad($promotion['grade_level'] ?? '', 2, '0', STR_PAD_LEFT) ?: '—' }}</td>
+                                            <td class="py-1.5 pr-2 text-base-content">
+                                                {{ $promotion['step'] ?? '—' }}</td>
+                                            <td class="py-1.5 text-base-content">
+                                                {{ $promotion['effective_from'] ?? '—' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+
+                        @if ($career !== null)
+                            <div class="rounded-md border border-base-300 px-3 py-2 {{ $promotions->isNotEmpty() ? 'mt-3' : '' }}">
+                                @if ($career->no_previous_employment)
+                                    <p class="mb-0 text-sm font-medium text-base-content">
+                                        Joined the service straight from school.
+                                    </p>
+                                @else
+                                    <p class="mb-0 text-sm font-medium text-base-content">
+                                        Previous employment — {{ $career->rank ?: 'a rank not recorded' }},
+                                        {{ $career->ministerial_dept ?: 'a ministry not recorded' }}
+                                        ({{ $career->mode_of_employment ?: 'mode of employment not recorded' }}).
+                                    </p>
+                                    <p class="mb-0 mt-0.5 text-xs text-base-content/60">
+                                        {{ $career->address_of_ministerial_dept ?: 'Address not recorded' }}
+                                    </p>
+                                @endif
+                            </div>
+                        @endif
+                    @endif
+                </x-registry.card>
+
+                <x-registry.card title="Leave History"
+                                 description="The leave you have taken and the applications they answer to.">
+                    @if ($leaveRecorded === [] && $leaveApplications->isEmpty())
+                        <p class="text-sm text-base-content/60">
+                            No leave is recorded here yet.
+                        </p>
+                    @else
+                        @if ($leaveApplications->isNotEmpty())
+                            <p class="mb-1 text-xs font-medium text-base-content/50">Applications on record</p>
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-base-300 text-left text-xs text-base-content/50">
+                                        <th class="py-1 pr-2 font-medium">Leave</th>
+                                        <th class="py-1 pr-2 font-medium">From</th>
+                                        <th class="py-1 pr-2 font-medium">Days</th>
+                                        <th class="py-1 font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($leaveApplications as $application)
+                                        <tr class="border-b border-base-200 last:border-0">
+                                            <td class="py-1.5 pr-2 text-base-content">{{ $application->leave_type }}</td>
+                                            <td class="py-1.5 pr-2 text-base-content">{{ $application->effective_date }}</td>
+                                            <td class="py-1.5 pr-2 text-base-content">{{ $application->days }}</td>
+                                            <td class="py-1.5 text-base-content">
+                                                {{ \App\Models\LeaveApplication::STATUSES[$application->status] ?? $application->status }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+
+                        @if ($leaveRecorded !== [])
+                            <p class="{{ $leaveApplications->isNotEmpty() ? 'mt-3' : '' }} mb-1 text-xs font-medium text-base-content/50">
+                                Held in your service history
+                            </p>
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-base-300 text-left text-xs text-base-content/50">
+                                        <th class="py-1 pr-2 font-medium">Leave</th>
+                                        <th class="py-1 pr-2 font-medium">From</th>
+                                        <th class="py-1 pr-2 font-medium">Until</th>
+                                        <th class="py-1 font-medium">Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($leaveRecorded as $leave)
+                                        <tr class="border-b border-base-200 last:border-0">
+                                            <td class="py-1.5 pr-2 text-base-content">{{ $leave['leave_type'] ?? '—' }}</td>
+                                            <td class="py-1.5 pr-2 text-base-content">{{ $leave['effective_from'] ?? '—' }}</td>
+                                            <td class="py-1.5 pr-2 text-base-content">{{ $leave['expires_on'] ?? '—' }}</td>
+                                            <td class="py-1.5 text-base-content">{{ $leave['duration'] ?? '—' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+                    @endif
+                </x-registry.card>
 
                 <x-registry.card title="Next of Kin"
                                  description="Who the Registry turns to when you cannot be reached.">
@@ -336,6 +488,7 @@
                     <div><dt>Full Name</dt><dd>{{ $fullname ?: '—' }}</dd></div>
                     <div><dt>Gender</dt><dd>{{ $staff->gender ?: '—' }}</dd></div>
                     <div><dt>Date of Birth</dt><dd>{{ $staff->date_of_birth ?: '—' }}</dd></div>
+                    <div><dt>Marital Status</dt><dd>{{ $staff->marital_status ?: '—' }}</dd></div>
                     <div>
                         <dt>Address</dt>
                         <dd>{{ $staff->address ?: '—' }}</dd>
@@ -349,6 +502,30 @@
                     <div><dt>State of Origin</dt><dd>{{ $staff->state?->name ?: '—' }}</dd></div>
                     <div><dt>LGA of Origin</dt><dd>{{ $staff->lga?->lga_name ?: '—' }}</dd></div>
                 </dl>
+            </section>
+
+            <section>
+                <h2>Children</h2>
+                @if (collect($children)->isEmpty())
+                    <p class="cv-empty">None recorded.</p>
+                @else
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th style="width: 22%">Date of Birth</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($children as $child)
+                                <tr>
+                                    <td>{{ $child['name'] ?? '—' }}</td>
+                                    <td>{{ $child['date_of_birth'] ?? '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
             </section>
 
             <section>
@@ -369,6 +546,59 @@
                     <div><dt>LGA of Deployment</dt><dd>{{ $posting['lga'] ?: '—' }}</dd></div>
                     <div><dt>Duty Station</dt><dd>{{ $posting['station'] ?: '—' }}</dd></div>
                 </dl>
+            </section>
+
+            <section>
+                <h2>Career History</h2>
+                @if ($promotions->isEmpty() && $career === null)
+                    <p class="cv-empty">None recorded.</p>
+                @else
+                    @if ($promotions->isNotEmpty())
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Promoted to</th>
+                                    <th>Grade Level</th>
+                                    <th>Step</th>
+                                    <th>Effective From</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($promotions as $promotion)
+                                    <tr>
+                                        <td>{{ $promotion['designation'] ?? '—' }}</td>
+                                        <td>{{ $promotion['grade_level'] ?? '—' }}</td>
+                                        <td>{{ $promotion['step'] ?? '—' }}</td>
+                                        <td>{{ $promotion['effective_from'] ?? '—' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+
+                    @if ($career !== null)
+                        <dl class="grid grid-cols-2 gap-x-8 {{ $promotions->isNotEmpty() ? 'mt-2' : '' }}">
+                            @if ($career->no_previous_employment)
+                                <div style="grid-column: span 2">
+                                    <dt>Previous Employment</dt>
+                                    <dd>Joined the service straight from school — no previous employment on record.</dd>
+                                </div>
+                            @else
+                                <div><dt>Previous Employment</dt>
+                                    <dd>{{ $career->rank ?: '—' }},
+                                        {{ $career->ministerial_dept ?: '—' }}
+                                        ({{ $career->mode_of_employment ?: '—' }})</dd></div>
+                                <div><dt>Address of Ministry</dt>
+                                    <dd>{{ $career->address_of_ministerial_dept ?: '—' }}</dd></div>
+                            @endif
+                        </dl>
+                        @if (filled($career->date_of_employement))
+                            <dl class="grid grid-cols-2 gap-x-8">
+                                <div><dt>Date of Employment</dt><dd>{{ $career->date_of_employement }}</dd></div>
+                            </dl>
+                        @endif
+                    @endif
+                @endif
             </section>
 
             <section>
@@ -396,6 +626,59 @@
                             @endforeach
                         </tbody>
                     </table>
+                @endif
+            </section>
+
+            <section>
+                <h2>Leave History</h2>
+                @if ($leaveRecorded === [] && $leaveApplications->isEmpty())
+                    <p class="cv-empty">None recorded.</p>
+                @else
+                    @if ($leaveApplications->isNotEmpty())
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Leave Applied For</th>
+                                    <th>From</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($leaveApplications as $application)
+                                    <tr>
+                                        <td>{{ $application->leave_type }}</td>
+                                        <td>{{ $application->effective_date }}</td>
+                                        <td>{{ $application->days }}</td>
+                                        <td>{{ \App\Models\LeaveApplication::STATUSES[$application->status] ?? $application->status }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+
+                    @if ($leaveRecorded !== [])
+                        <table class="{{ $leaveApplications->isNotEmpty() ? 'mt-2' : '' }}">
+                            <thead>
+                                <tr>
+                                    <th>Leave Taken</th>
+                                    <th>From</th>
+                                    <th>Until</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($leaveRecorded as $leave)
+                                    <tr>
+                                        <td>{{ $leave['leave_type'] ?? '—' }}</td>
+                                        <td>{{ $leave['effective_from'] ?? '—' }}</td>
+                                        <td>{{ $leave['expires_on'] ?? '—' }}</td>
+                                        <td>{{ $leave['duration'] ?? '—' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
                 @endif
             </section>
 

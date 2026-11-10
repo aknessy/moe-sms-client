@@ -112,4 +112,44 @@ class OrganisationSettingsTest extends TestCase
         $this->actingAs($officer)->post(route('config.organisation'), $this->details())
             ->assertForbidden();
     }
+
+    /* --------------------------------------------- printable bio-data */
+
+    public function test_the_sheet_is_a4_and_portrait_before_anything_is_saved(): void
+    {
+        $this->assertSame('A4', Setting::get('bio_data.print_size'));
+        $this->assertSame('Portrait', Setting::get('bio_data.print_orientation'));
+    }
+
+    public function test_an_administrator_sets_the_bio_data_to_a3_landscape(): void
+    {
+        $this->actingAs($this->admin())->post(route('config.printing'), [
+            'print_size' => 'A3',
+            'print_orientation' => 'Landscape',
+        ])->assertRedirect(route('config'));
+
+        $this->assertSame('A3', Setting::get('bio_data.print_size'));
+        $this->assertSame('Landscape', Setting::get('bio_data.print_orientation'));
+    }
+
+    public function test_the_sheet_only_accepts_the_sizes_and_orientations_offered(): void
+    {
+        $this->actingAs($this->admin())->post(route('config.printing'), [
+            'print_size' => 'Letter',
+            'print_orientation' => 'Sideways',
+        ])->assertSessionHasErrors(['print_size', 'print_orientation']);
+    }
+
+    public function test_an_officer_cannot_change_how_bio_data_prints(): void
+    {
+        $officer = User::factory()->create([
+            'basic_information_ulid' => BasicInformation::factory()->create()->ulid,
+            'role' => 'User',
+        ]);
+
+        $this->actingAs($officer)->post(route('config.printing'), [
+            'print_size' => 'A3',
+            'print_orientation' => 'Landscape',
+        ])->assertForbidden();
+    }
 }

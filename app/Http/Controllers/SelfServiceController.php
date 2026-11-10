@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
 use App\Models\LeaveApplication;
+use App\Models\Setting;
 use App\Models\Training;
 use App\Models\TrainingInterest;
 use App\Models\VoluntaryRetirementRequest;
@@ -243,6 +244,10 @@ class SelfServiceController extends Controller
                 ? 'data:' . Storage::mimeType($staff->photo_path) . ';base64,'
                     . base64_encode(Storage::get($staff->photo_path))
                 : null,
+            // The sheet it is set to, as the command's settings hold. The
+            // defaults are the plainest paper there is — A4, standing up.
+            'printSize' => Setting::get('bio_data.print_size'),
+            'printOrientation' => Setting::get('bio_data.print_orientation'),
         ]);
     }
 
