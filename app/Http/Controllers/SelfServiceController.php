@@ -236,6 +236,13 @@ class SelfServiceController extends Controller
 
         return $this->page('self-service/bio-data', 'Bio-data', 'my-bio-data', [
             'posting' => PostingContext::for($staff),
+            // The printable copy carries the photograph inside itself, as
+            // data rather than as a second request: the printer re-fetches
+            // nothing, so the face travels with the letterhead.
+            'photoDataUri' => $staff->has_photo
+                ? 'data:' . Storage::mimeType($staff->photo_path) . ';base64,'
+                    . base64_encode(Storage::get($staff->photo_path))
+                : null,
         ]);
     }
 

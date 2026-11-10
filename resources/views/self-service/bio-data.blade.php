@@ -324,7 +324,9 @@
                     </p>
                 </div>
                 @if ($staff->has_photo)
-                    <img class="cv-photo" src="{{ route('my-photo.show') }}" alt="Passport photograph">
+                    {{-- Carried in the page itself, so the printed sheet
+                         never has to ask the disk again. --}}
+                    <img class="cv-photo" src="{{ $photoDataUri }}" alt="Passport photograph">
                 @endif
             </header>
 

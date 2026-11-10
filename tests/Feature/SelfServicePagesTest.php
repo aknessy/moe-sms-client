@@ -433,6 +433,23 @@ class SelfServicePagesTest extends TestCase
         $response->assertSee('Idara Bassey');
     }
 
+    public function test_the_printable_copy_carries_the_photograph_inside_itself(): void
+    {
+        Storage::fake();
+
+        $user = $this->officer();
+
+        $this->actingAs($user)->post(route('my-photo.store'), [
+            'photo' => UploadedFile::fake()->image('passport.jpg'),
+        ]);
+        $this->staff = $this->staff->fresh();
+
+        // A printed sheet re-fetches nothing: the photograph rides in the
+        // document as data, not as a link the printer must call back for.
+        $this->actingAs($user)->get(route('my-bio-data'))
+            ->assertSee('src="data:image/', false);
+    }
+
     /* ------------------------------------------------------- photo */
 
     public function test_an_officer_uploads_their_photograph(): void
