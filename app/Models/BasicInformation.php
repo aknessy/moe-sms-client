@@ -332,6 +332,15 @@ class BasicInformation extends Model
         return $this->hasMany(Referee::class, 'basic_information_ulid', 'ulid');
     }
 
+    /**
+     * Get a staff's next of kins — the people the Registry turns to when the
+     * officer's own house cannot be reached.
+     */
+    public function nextOfKins(): HasMany
+    {
+        return $this->hasMany(NextOfKin::class, 'basic_information_ulid', 'ulid');
+    }
+
     /** The leave this officer has applied for, newest first. */
     public function leaveApplications(): HasMany
     {

@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\BasicInformation;
+use App\Models\EduProgress;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
+use App\Models\NextOfKin;
 use App\Models\Posting;
+use App\Models\Referee;
 use App\Models\State;
 use App\Models\Training;
 use App\Models\TrainingInterest;
@@ -270,6 +273,164 @@ class SelfServicePagesTest extends TestCase
         BasicInformation::factory()->create(['surname' => 'Theirs']);
 
         $this->actingAs($user)->get(route('my-bio-data'))->assertDontSee('Theirs');
+    }
+
+    public function test_the_bio_data_page_opens_with_the_photograph(): void
+    {
+        Storage::fake();
+
+        $user = $this->officer();
+
+        $this->actingAs($user)->post(route('my-photo.store'), [
+            'photo' => UploadedFile::fake()->image('passport.jpg'),
+        ]);
+        $this->staff = $this->staff->fresh();
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        // The photograph itself comes from behind the session, not a public
+        // link to the disk.
+        $response->assertSee('Photograph');
+        $response->assertSee('<img src="' . route('my-photo.show'), false);
+        $response->assertSee('passport.jpg');
+        $response->assertSee('Update Photo');
+        $response->assertDontSee('Upload Photograph');
+        $response->assertDontSee('No photograph on file yet');
+    }
+
+    public function test_the_bio_data_page_asks_for_a_photograph_where_there_is_none(): void
+    {
+        Storage::fake();
+
+        $user = $this->officer();
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        $response->assertSee('No photograph on file yet');
+        $response->assertSee('Upload Photograph');
+        $response->assertDontSee('<img src="' . route('my-photo.show'), false);
+    }
+
+    public function test_the_bio_data_page_reads_a_section_at_a_time(): void
+    {
+        $user = $this->officer([
+            'surname' => 'Asuquo', 'firstname' => 'Bassey',
+            'phone_number' => '08030000001', 'pfa' => 'Stanbic IBTC',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        foreach (['Identity', 'Service', 'Posting', 'Origin', 'Contact', 'Pension'] as $heading) {
+            $response->assertSee($heading);
+        }
+
+        $response->assertSee('Asuquo');
+        $response->assertSee('08030000001');
+        $response->assertSee('Stanbic IBTC');
+    }
+
+    /* ------------------------------------------- bio-data goes to paper */
+
+    /**
+     * A next of kin behind the officer signed in, for the bio-data page.
+     */
+    private function kin(string $name, string $relationship = 'Sister'): void
+    {
+        NextOfKin::create([
+            'basic_information_ulid' => $this->staff->ulid,
+            'nok_name' => $name,
+            'nok_relationship' => $relationship,
+            'nok_address' => '12 Ndidem Usang Iso Road, Calabar',
+            'nok_phone_number' => '08030000007',
+        ]);
+    }
+
+    public function test_the_bio_data_page_carries_their_next_of_kin(): void
+    {
+        $user = $this->officer(['surname' => 'Bassey']);
+        $this->kin('Ada Bassey', 'Sister');
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        $response->assertSee('Next of Kin');
+        $response->assertSee('Ada Bassey');
+        $response->assertSee('08030000007');
+    }
+
+    public function test_the_bio_data_page_says_where_no_next_of_kin_is_recorded(): void
+    {
+        $user = $this->officer();
+
+        $this->actingAs($user)->get(route('my-bio-data'))
+            ->assertSee('Nobody is recorded here yet');
+    }
+
+    public function test_the_bio_data_page_carries_their_qualifications(): void
+    {
+        $user = $this->officer(['surname' => 'Bassey']);
+
+        EduProgress::create([
+            'basic_information_ulid' => $this->staff->ulid,
+            'educational_record' => [[
+                'institution_type' => 'University',
+                'institution_name' => 'University of Calabar',
+                'start_date' => '2012-10-01',
+                'end_date' => '2016-07-30',
+                'qualification' => 'B.Sc. Economics',
+            ]],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        $response->assertSee('Educational Qualifications');
+        $response->assertSee('B.Sc. Economics');
+        $response->assertSee('University of Calabar');
+        // The year read off the certificate, falling back to the day they left.
+        $response->assertSee('2016');
+    }
+
+    public function test_the_bio_data_page_carries_their_referees(): void
+    {
+        $user = $this->officer(['surname' => 'Bassey']);
+
+        Referee::create([
+            'basic_information_ulid' => $this->staff->ulid,
+            'referees_record' => [[
+                'name' => 'Dr. Grace Okon',
+                'address' => '12 Ndidem Usang Iso Road',
+                'phone' => '08030000002',
+                'email' => 'grace.okon@example.com',
+            ]],
+        ]);
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        $response->assertSee('Referees');
+        $response->assertSee('Dr. Grace Okon');
+        $response->assertSee('grace.okon@example.com');
+    }
+
+    public function test_the_bio_data_page_prints_as_a_curriculum_vitae(): void
+    {
+        $user = $this->officer([
+            'surname' => 'Bassey', 'firstname' => 'Ada', 'gender' => 'Female',
+        ]);
+        $this->kin('Idara Bassey', 'Mother');
+
+        $response = $this->actingAs($user)->get(route('my-bio-data'));
+
+        // The sheet rules: A4, and the print control that hands the document
+        // to the printer.
+        $response->assertSee('@page { size: A4', false);
+        $response->assertSee('Print Bio-data');
+
+        // The document is set as a curriculum vitae — its own sections, not
+        // the cards on the screen. The next of kin reads there too.
+        foreach (['Personal Data', 'Place of Origin', 'Service Record',
+                  'Educational Qualifications', 'Next of Kin', 'Referees'] as $section) {
+            $response->assertSee($section);
+        }
+        $response->assertSee('Idara Bassey');
     }
 
     /* ------------------------------------------------------- photo */
