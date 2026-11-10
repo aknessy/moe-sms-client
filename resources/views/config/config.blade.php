@@ -53,7 +53,7 @@
                 <form method="POST" action="{{ route('config.rules') }}">
                     @csrf
 
-                    <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
+                    <div class="mb-3 w-full">
                         <div class="w-full lg:max-w-xs">
                             <label for="promotion_lowest_grade_level"
                                    class="font-sans text-sm font-medium text-base-content">
@@ -70,13 +70,11 @@
                             @enderror
                         </div>
 
-                        <div class="w-full lg:flex-1">
-                            <p class="mt-6 mb-0 text-xs text-base-content/50">
-                                An officer below this grade level is left off the promotion brief.
-                                GL {{ $topGradeLevel }} cannot be promoted at all, so setting this
-                                to {{ $topGradeLevel }} would leave nobody to consider.
-                            </p>
-                        </div>
+                        <p class="mt-2 mb-0 text-xs text-base-content/50">
+                            An officer below this grade level is left off the promotion brief.
+                            GL {{ $topGradeLevel }} cannot be promoted at all, so setting this
+                            to {{ $topGradeLevel }} would leave nobody to consider.
+                        </p>
                     </div>
 
                     <div class="py-3 flex flex-wrap items-center justify-end gap-2">
@@ -90,52 +88,52 @@
                 <form method="POST" action="{{ route('config.printing') }}">
                     @csrf
 
-                    <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                        <div class="w-full lg:max-w-xs">
-                            <label for="print_size"
-                                   class="font-sans text-sm font-medium text-base-content">
-                                Print Bio-data in<span class="text-error">*</span>
-                            </label>
-                            <div class="relative mt-1">
-                                <select id="print_size" name="print_size" required
-                                        class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md pl-3 pr-8 py-2 appearance-none cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50">
-                                    @foreach (['A4', 'A3'] as $size)
-                                        <option value="{{ $size }}"
-                                                @selected(old('print_size', $printing['size']) === $size)>{{ $size }}</option>
-                                    @endforeach
-                                </select>
+                    <div class="mb-3 w-full">
+                        <div class="w-full flex flex-col gap-4 lg:flex-row">
+                            <div class="w-full lg:max-w-xs">
+                                <label for="print_size"
+                                       class="font-sans text-sm font-medium text-base-content">
+                                    Print Bio-data in<span class="text-error">*</span>
+                                </label>
+                                <div class="relative mt-1">
+                                    <select id="print_size" name="print_size" required
+                                            class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md pl-3 pr-8 py-2 appearance-none cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50">
+                                        @foreach (['A4', 'A3'] as $size)
+                                            <option value="{{ $size }}"
+                                                    @selected(old('print_size', $printing['size']) === $size)>{{ $size }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('print_size')
+                                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                                @enderror
                             </div>
-                            @error('print_size')
-                                <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
-                            @enderror
+
+                            <div class="w-full lg:max-w-xs">
+                                <label for="print_orientation"
+                                       class="font-sans text-sm font-medium text-base-content">
+                                    Printable Bio-data Orientation<span class="text-error">*</span>
+                                </label>
+                                <div class="relative mt-1">
+                                    <select id="print_orientation" name="print_orientation" required
+                                            class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md pl-3 pr-8 py-2 appearance-none cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50">
+                                        @foreach (['Portrait' => 'Portrait (default)', 'Landscape' => 'Landscape'] as $value => $label)
+                                            <option value="{{ $value }}"
+                                                    @selected(old('print_orientation', $printing['orientation']) === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('print_orientation')
+                                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
-                        <div class="w-full lg:max-w-xs">
-                            <label for="print_orientation"
-                                   class="font-sans text-sm font-medium text-base-content">
-                                Printable Bio-data Orientation<span class="text-error">*</span>
-                            </label>
-                            <div class="relative mt-1">
-                                <select id="print_orientation" name="print_orientation" required
-                                        class="w-full bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md pl-3 pr-8 py-2 appearance-none cursor-pointer transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50">
-                                    @foreach (['Portrait' => 'Portrait (default)', 'Landscape' => 'Landscape'] as $value => $label)
-                                        <option value="{{ $value }}"
-                                                @selected(old('print_orientation', $printing['orientation']) === $value)>{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @error('print_orientation')
-                                <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="w-full lg:flex-1">
-                            <p class="mt-6 mb-0 text-xs text-base-content/50">
-                                The bio-data print document is cut to the paper
-                                named here; the sheet the whole record lays out
-                                on, at the moment this page opens.
-                            </p>
-                        </div>
+                        <p class="mt-2 mb-0 text-xs text-base-content/50">
+                            The bio-data print document is cut to the paper
+                            named here; the sheet the whole record lays out
+                            on, at the moment this page opens.
+                        </p>
                     </div>
 
                     <div class="py-3 flex flex-wrap items-center justify-end gap-2">
