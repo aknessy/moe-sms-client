@@ -318,6 +318,44 @@
                                         </div>
                                     </div>
                                 </div>
+                                <fieldset class="mb-3 w-full rounded-md border border-base-300 px-4 py-3">
+                                    <legend class="px-1 font-normal font-sans text-sm text-base-content">Children</legend>
+
+                                    <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
+                                        <div class="w-full max-w-sm">
+                                            <label class="font-normal font-sans text-sm text-base-content">First Child's Name</label>
+                                            <div class="relative">
+                                                <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-one-name" placeholder="First child's name" value="{{ old('child-one-name') }}" />
+                                            </div>
+                                        </div>
+                                        <div class="w-full max-w-sm">
+                                            <label class="font-normal font-sans text-sm text-base-content">First Child's Date of Birth</label>
+                                            <div class="relative">
+                                                <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-one-date-of-birth" placeholder="YYYY-MM-DD" value="{{ old('child-one-date-of-birth') }}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
+                                        <div class="w-full max-w-sm">
+                                            <label class="font-normal font-sans text-sm text-base-content">Second Child's Name</label>
+                                            <div class="relative">
+                                                <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-two-name" placeholder="Second child's name" value="{{ old('child-two-name') }}" />
+                                            </div>
+                                        </div>
+                                        <div class="w-full max-w-sm">
+                                            <label class="font-normal font-sans text-sm text-base-content">Second Child's Date of Birth</label>
+                                            <div class="relative">
+                                                <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-two-date-of-birth" placeholder="YYYY-MM-DD" value="{{ old('child-two-date-of-birth') }}" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 text-xs text-base-content/50">
+                                        At most two children are carried on a
+                                        staff record, each with the day they were
+                                        born. The dates are not asked for when no
+                                        child is named.
+                                    </p>
+                                </fieldset>
                                 <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                                     <div class="w-full">
                                         <label class="font-normal font-sans text-sm text-base-content">Permanent Home Address<span class="text-error">*</span></label>
@@ -325,40 +363,6 @@
                                             <textarea name="address" class="h-full min-h-[100px] w-full resize-none rounded-[7px] border border-base-300 bg-white px-3 py-2.5 font-sans text-xs font-normal text-base-content outline outline-0 transition-all focus:border-primary focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-base-200" placeholder="Permanent Address" required>{{ old('address') }}</textarea>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">First Child's Name</label>
-                                        <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-one-name" placeholder="First child's name" value="{{ old('child-one-name') }}" />
-                                        </div>
-                                    </div>
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">First Child's Date of Birth</label>
-                                        <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-one-date-of-birth" placeholder="YYYY-MM-DD" value="{{ old('child-one-date-of-birth') }}" />
-                                        </div>
-                                    </div>
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Second Child's Name</label>
-                                        <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-two-name" placeholder="Second child's name" value="{{ old('child-two-name') }}" />
-                                        </div>
-                                    </div>
-                                    <div class="w-full max-w-sm">
-                                        <label class="font-normal font-sans text-sm text-base-content">Second Child's Date of Birth</label>
-                                        <div class="relative">
-                                            <input type="text" class="w-full pl-3 pr-10 py-2 bg-white placeholder:text-base-content/40 text-base-content/80 text-xs border border-base-300 rounded-md transition duration-300 ease focus:outline-none focus:border-primary hover:border-primary/50 focus:shadow" name="child-two-date-of-birth" placeholder="YYYY-MM-DD" value="{{ old('child-two-date-of-birth') }}" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-0 flex">
-                                    <p class="text-xs text-base-content/50">
-                                        At most two children are carried on a
-                                        staff record, each with the day they were
-                                        born. The dates are not asked for when no
-                                        child is named.
-                                    </p>
                                 </div>
                                 <div class="py-3 px-4 flex flex-wrap items-center justify-end gap-2">
                                     <button type="submit" class="btn btn-sm btn-cta px-4 shadow-md">
