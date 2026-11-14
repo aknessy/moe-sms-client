@@ -10,6 +10,7 @@ use App\Models\EduProgress;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Notification;
+use App\Models\LeadershipTraitAssessment;
 use App\Models\PromotionBrief;
 use App\Models\Sanction;
 use App\Models\SelfReportActivity;
@@ -252,6 +253,9 @@ class HumanResourceController extends Controller
                     ->orderBy('query_date')->get(),
             'sanction' => $staff === null ? null
                 : Sanction::where('basic_information_ulid', $staff->ulid)->first(),
+            // The Leadership Traits grades, where they have been given already.
+            'leadershipTraits' => $staff === null ? null
+                : LeadershipTraitAssessment::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -585,6 +589,43 @@ class HumanResourceController extends Controller
         );
 
         return $this->onwardFrom($request, $staff, 'Sanctions saved.');
+    }
+
+    /**
+     * The Leadership Traits section: a letter grade for each of five
+     * questions on how the officer leads, and one more for the overall
+     * assessment the five of them add up to.
+     */
+    public function store_appraisal_leadership_traits(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
+
+        // The grades are the reporting officer's to give, the same desks
+        // that answer for Character Traits and Self Reporting.
+        if (! ReportingAuthority::mayCommentOn(auth()->user(), $staff)) {
+            abort(403, "Leadership Traits is graded by the officer's reporting officer.");
+        }
+
+        $rules = ['staff' => ['required', 'exists:basic_informations,ulid']];
+        $messages = [];
+
+        foreach (LeadershipTraitAssessment::TRAITS as $column => $trait) {
+            $rules[$column] = ['required', Rule::in(LeadershipTraitAssessment::GRADES)];
+            $messages["{$column}.required"] = "Choose a grade for {$trait['label']}.";
+        }
+
+        $rules['overall_grade'] = ['required', Rule::in(LeadershipTraitAssessment::GRADES)];
+        $messages['overall_grade.required'] = 'Choose the overall assessment.';
+
+        $data = $request->validate($rules, $messages);
+
+        LeadershipTraitAssessment::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            collect($data)->except('staff')->all(),
+        );
+
+        return $this->onwardFrom($request, $staff, 'Leadership traits saved.');
     }
 
     /**
