@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
+use App\Models\CharacterTraitAssessment;
 use App\Models\Department;
 use App\Models\EduProgress;
 use App\Models\LeaveApplication;
@@ -197,6 +198,9 @@ class HumanResourceController extends Controller
             // The comment beside an activity is the reporting officer's, and
             // the section holds to that rather than asking the form to.
             'mayComment' => ReportingAuthority::mayCommentOn(auth()->user(), $staff),
+            // The Character Traits grade, where one has been given already.
+            'characterTraits' => $staff === null ? null
+                : CharacterTraitAssessment::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -414,6 +418,36 @@ class HumanResourceController extends Controller
         $this->storeSelfReport($staff, $quarters);
 
         return $this->onwardFrom($request, $staff, 'Self reporting saved.');
+    }
+
+    /**
+     * The Character Traits section: a grade for each of dependability,
+     * appearance, attendance and resource utilization, and one justification
+     * covering all four together.
+     */
+    public function store_appraisal_character_traits(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+
+        $rules = ['staff' => ['required', 'exists:basic_informations,ulid']];
+        $messages = [];
+
+        foreach (CharacterTraitAssessment::TRAITS as $column => $trait) {
+            $rules[$column] = ['required', Rule::in(CharacterTraitAssessment::GRADES)];
+            $messages["{$column}.required"] = "Choose a grade for {$trait['label']}.";
+        }
+
+        $rules['justification'] = ['required', 'string', 'max:1000'];
+        $messages['justification.required'] = 'Say why these grades were given.';
+
+        $data = $request->validate($rules, $messages);
+
+        CharacterTraitAssessment::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            collect($data)->except('staff')->all(),
+        );
+
+        return $this->onwardFrom($request, $staff, 'Character traits saved.');
     }
 
     /**

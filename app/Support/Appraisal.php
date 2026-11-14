@@ -78,7 +78,7 @@ class Appraisal
      * and their own way on to the next. The rest are still to be built.
      */
     public const WITH_FORMS = ['bio-data', 'career-history', 'qualifications',
-                               'self-reporting'];
+                               'self-reporting', 'character-traits'];
 
     public static function hasForm(?string $section): bool
     {

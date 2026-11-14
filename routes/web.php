@@ -85,6 +85,7 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::post('/performance-appraisal/career-history', [HumanResourceController::class, 'store_appraisal_career_history'])->name('hr-appraisal.career-history');
         Route::post('/performance-appraisal/qualifications', [HumanResourceController::class, 'store_appraisal_qualifications'])->name('hr-appraisal.qualifications');
         Route::post('/performance-appraisal/self-reporting', [HumanResourceController::class, 'store_appraisal_self_reporting'])->name('hr-appraisal.self-reporting');
+        Route::post('/performance-appraisal/character-traits', [HumanResourceController::class, 'store_appraisal_character_traits'])->name('hr-appraisal.character-traits');
         Route::get('/recruitment', [HumanResourceController::class, 'recruitment'])->name('hr-recruitment');
         Route::get('/training', [HumanResourceController::class, 'training'])->name('hr-training');
         Route::get('/establishment-strength', [HumanResourceController::class, 'establishment'])->name('hr-establishment');
