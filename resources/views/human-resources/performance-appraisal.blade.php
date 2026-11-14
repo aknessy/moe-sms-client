@@ -59,14 +59,13 @@
                     @if ($staff)
                         <x-registry.card title="Select Year"
                                          description="The year of Self Reporting activity this report is being read against.">
-                            <form method="GET" action="{{ route('hr-appraisal') }}"
-                                  class="flex w-full flex-wrap items-center gap-3 py-3">
+                            <form method="GET" action="{{ route('hr-appraisal') }}" class="w-full py-3">
                                 <input type="hidden" name="staff" value="{{ $staff->ulid }}" />
                                 <input type="hidden" name="section" value="{{ $section }}" />
 
-                                <label for="appraisal-year" class="text-xs text-base-content/60">Year under review</label>
+                                <label for="appraisal-year" class="font-sans text-xs font-medium text-base-content">Year under review</label>
                                 <select id="appraisal-year" name="year" onchange="this.form.submit()"
-                                        class="min-w-[9rem] cursor-pointer rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 focus:border-primary focus:outline-none hover:border-primary/50">
+                                        class="mt-1 w-full cursor-pointer rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 focus:border-primary focus:outline-none hover:border-primary/50">
                                     @foreach ($reportingWindow->years as $year)
                                         <option value="{{ $year }}" @selected($year === $selectedYear)>{{ $year }}</option>
                                     @endforeach
