@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
 use App\Models\CharacterTraitAssessment;
+use App\Models\Commendation;
 use App\Models\Department;
 use App\Models\EduProgress;
 use App\Models\LeaveApplication;
@@ -237,6 +238,10 @@ class HumanResourceController extends Controller
             // The Character Traits grade, where one has been given already.
             'characterTraits' => $staff === null ? null
                 : CharacterTraitAssessment::where('basic_information_ulid', $staff->ulid)->first(),
+            // Whether the officer has been commended in writing this year,
+            // where that has been answered already.
+            'commendation' => $staff === null ? null
+                : Commendation::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -496,6 +501,39 @@ class HumanResourceController extends Controller
         );
 
         return $this->onwardFrom($request, $staff, 'Character traits saved.');
+    }
+
+    /**
+     * The Commendations section: whether the officer received a written
+     * commendation this year for outstanding performance, and what it was
+     * for where they did.
+     */
+    public function store_appraisal_commendations(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'received' => ['required', Rule::in(['yes', 'no'])],
+            // Only worth asking once the answer is yes.
+            'details' => [Rule::requiredIf($request->input('received') === 'yes'),
+                          'nullable', 'string', 'max:1000'],
+        ], [
+            'received.required' => 'Say whether the officer received a commendation.',
+            'details.required' => 'Give the detail of the commendation.',
+        ]);
+
+        Commendation::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            [
+                'received' => $data['received'] === 'yes',
+                // Not asked for once the answer is no, so nothing is kept.
+                'details' => $data['received'] === 'yes' ? $data['details'] : null,
+            ],
+        );
+
+        return $this->onwardFrom($request, $staff, 'Commendations saved.');
     }
 
     /**

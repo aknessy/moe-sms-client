@@ -458,7 +458,7 @@ class AppraisalBioDataTest extends TestCase
 
     public function test_a_section_with_nothing_built_says_so(): void
     {
-        $this->section($this->officer(), 'commendations')
+        $this->section($this->officer(), 'sanctions')
             ->assertSee('This section has not been built yet.');
     }
 }
