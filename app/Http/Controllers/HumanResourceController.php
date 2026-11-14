@@ -429,6 +429,14 @@ class HumanResourceController extends Controller
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
 
+        // The grades are the reporting officer's to give: the Electoral
+        // Officer of the LGA the officer is deployed to, the head of the
+        // department they belong to, or an administrator — the same desks
+        // that answer for the comments in Self Reporting.
+        if (! ReportingAuthority::mayCommentOn(auth()->user(), $staff)) {
+            abort(403, "Character Traits is graded by the officer's reporting officer.");
+        }
+
         $rules = ['staff' => ['required', 'exists:basic_informations,ulid']];
         $messages = [];
 
