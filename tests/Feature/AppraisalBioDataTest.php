@@ -324,6 +324,17 @@ class AppraisalBioDataTest extends TestCase
         $this->assertSame('Department of Electoral Operations', $staff->fresh()->department);
     }
 
+    public function test_an_officer_posted_out_keeps_the_unit_on_file_too(): void
+    {
+        $staff = $this->officer();
+        $this->postAway($staff);
+
+        $this->actingAs($this->actor())->post(route('hr-appraisal.bio-data'),
+            collect($this->payload($staff))->except(['department', 'unit'])->all());
+
+        $this->assertSame('Voter Registration Unit', $staff->fresh()->unit);
+    }
+
     public function test_moving_an_officer_to_another_state_drops_an_lga_that_is_not_in_it(): void
     {
         $crossRiver = State::where('name', 'Cross River')->firstOrFail();
@@ -387,6 +398,16 @@ class AppraisalBioDataTest extends TestCase
         // Out in a local government there is no department to name.
         $this->assertFalse($response->viewData('atHeadquarters'));
         $response->assertDontSee('value="Department of Electoral Operations"', false);
+    }
+
+    public function test_an_officer_posted_out_is_not_asked_for_a_unit_either(): void
+    {
+        $staff = $this->officer();
+        $this->postAway($staff);
+
+        // A unit belongs to a department, and out in a local government
+        // there is neither to name.
+        $this->section($staff)->assertDontSee('name="unit"', false);
     }
 
     /* ------------------------------------------- moving to the next one */

@@ -50,35 +50,32 @@
                            hint="Follows from the officer's postings. Change it under Registry → Posting & Deployment." />
 
         {{-- A department is a thing an officer at the state office belongs
-             to; out in a local government there is none to name, and the
-             deployment beside it has already said where they are. --}}
+             to, and a unit a desk within it; out in a local government there
+             is neither to name, and the deployment beside it has already
+             said where they are. --}}
         @if ($atHeadquarters)
             <x-registry.field name="department" label="Department" required
                               :value="$staff->department" :options="$departments" />
-        @endif
 
-        {{-- A unit belongs to a department, so only that department's are
-             offered. An officer posted out keeps the department on file, and
-             their units come from it. --}}
-        <div class="w-full">
-            <label for="unit" class="font-sans text-sm font-medium text-base-content">Unit</label>
-            <div class="relative mt-1">
-                {{-- `data-department` is the department the units hang off
-                     where it is not on the form — an officer posted out of
-                     the state office. It still decides them. --}}
-                <select id="unit" name="unit" data-selected="{{ old('unit', $staff->unit) }}"
-                        data-department="{{ $staff->department }}"
-                        class="w-full cursor-pointer rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50 disabled:cursor-not-allowed disabled:bg-base-200">
-                    <option value="">Select a department first</option>
-                </select>
+            {{-- A unit belongs to a department, so only that department's
+                 are offered. --}}
+            <div class="w-full">
+                <label for="unit" class="font-sans text-sm font-medium text-base-content">Unit</label>
+                <div class="relative mt-1">
+                    <select id="unit" name="unit" data-selected="{{ old('unit', $staff->unit) }}"
+                            data-department="{{ $staff->department }}"
+                            class="w-full cursor-pointer rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50 disabled:cursor-not-allowed disabled:bg-base-200">
+                        <option value="">Select a department first</option>
+                    </select>
+                </div>
+                <p class="mt-1 mb-0 text-xs text-base-content/50">
+                    The desk the officer holds. Set under Administration &rarr; Departments &amp; Units.
+                </p>
+                @error('unit')
+                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                @enderror
             </div>
-            <p class="mt-1 mb-0 text-xs text-base-content/50">
-                The desk the officer holds. Set under Administration &rarr; Departments &amp; Units.
-            </p>
-            @error('unit')
-                <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
-            @enderror
-        </div>
+        @endif
     </div>
 
     <div class="flex flex-wrap items-center justify-end gap-2 border-t border-base-200 py-3">

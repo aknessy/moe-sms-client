@@ -278,20 +278,17 @@ class HumanResourceController extends Controller
             'step' => ['required', 'integer', 'between:1,15'],
             'department' => [Rule::requiredIf($atHeadquarters), 'nullable',
                              Rule::in(Department::names())],
-            // And one of that department's units. For an officer posted out
-            // the department is not on the form, so their own stands in. Left
-            // blank where the department has no units yet.
+            // A unit belongs to a department, so only one of the chosen
+            // department's own is accepted. Neither is on the form for an
+            // officer posted out, so there is nothing here to validate for
+            // them. Left blank where the department has no units yet.
             'unit' => ['nullable', 'string', 'max:120',
-                       function ($attribute, $value, $fail) use ($request, $atHeadquarters, $staff) {
-                           if (blank($value)) {
+                       function ($attribute, $value, $fail) use ($request, $atHeadquarters) {
+                           if (! $atHeadquarters || blank($value)) {
                                return;
                            }
 
-                           $department = $atHeadquarters
-                               ? $request->input('department')
-                               : $staff->department;
-
-                           if (! Department::hasUnit($department, $value)) {
+                           if (! Department::hasUnit($request->input('department'), $value)) {
                                $fail('That is not a unit of the chosen department.');
                            }
                        }],
@@ -310,11 +307,13 @@ class HumanResourceController extends Controller
             'state_of_origin' => $data['state_of_origin'],
             'grade_level' => $data['grade_level'],
             'step' => $data['step'],
-            'unit' => $data['unit'] ?? null,
         ];
 
+        // Neither is asked of an officer posted out, so neither is written
+        // for them — not asked for means not written, rather than wiped.
         if ($atHeadquarters) {
             $changes['department'] = $data['department'];
+            $changes['unit'] = $data['unit'] ?? null;
         }
 
         // The LGA of origin belongs to a state. Moving the officer to another
