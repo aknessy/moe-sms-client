@@ -1,8 +1,10 @@
 {{-- How the officer carries themselves in the work: whether they can be left
      to get on with it, how they present themselves, whether they are there
      to begin with, and what they make of what the service gives them. Each
-     is graded on its own, and the reporting officer's own words beneath them
-     say why — covering all four together rather than one apiece.
+     is graded A to F on its own, as a matrix — the same shape the paper form
+     uses, and the same shape Leadership Traits reads in — and the reporting
+     officer's own words beneath them say why, covering all four together
+     rather than one apiece.
 
      The grading is the reporting officer's to give — the Electoral Officer
      of the LGA the officer is deployed to, or the head of the department
@@ -16,36 +18,49 @@
         <input type="hidden" name="staff" value="{{ $staff->ulid }}" />
         <input type="hidden" name="section" value="{{ $section }}" />
 
-        {{-- The four traits and their grades sit on a background of their own,
-             set apart from the justification below it. --}}
-        <div class="mb-3 w-full rounded-md border border-base-300 bg-base-200/40 px-4 py-3">
-            @foreach (\App\Models\CharacterTraitAssessment::TRAITS as $column => $trait)
-                @php $chosen = old($column, $characterTraits?->{$column}); @endphp
-
-                <div class="{{ $loop->last ? '' : 'mb-3' }} w-full">
-                    <span class="font-sans text-sm font-medium text-base-content">
-                        {{ $trait['label'] }}<span class="text-error">*</span>
-                    </span>
-                    <p class="mt-0.5 mb-1 text-xs text-base-content/50">
-                        {{ $trait['description'] }}
-                    </p>
-
-                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2" data-grade-group>
+        <div class="mb-4 w-full overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-[#1B5E20]">
+                        <th class="px-3 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-white">
+                            Character Trait / Work Habit
+                        </th>
                         @foreach (\App\Models\CharacterTraitAssessment::GRADES as $option)
-                            <label class="flex cursor-pointer items-center gap-2 text-sm text-base-content/80">
-                                <input type="checkbox" name="{{ $column }}" value="{{ $option }}"
-                                       @checked($chosen === $option)
-                                       class="h-4 w-4 rounded border-base-300 text-[#2E7D32] focus:ring-[#2E7D32]" />
+                            <th class="px-3 py-2 text-center font-sans text-xs font-semibold uppercase tracking-wide text-white">
                                 {{ $option }}
-                            </label>
+                            </th>
                         @endforeach
-                    </div>
-
-                    @error($column)
-                        <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
-                    @enderror
-                </div>
-            @endforeach
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-base-300/70">
+                    @foreach (\App\Models\CharacterTraitAssessment::TRAITS as $column => $trait)
+                        @php $chosen = old($column, $characterTraits?->{$column}); @endphp
+                        <tr>
+                            <td class="px-3 py-2 align-top text-base-content/80">
+                                <span class="font-medium text-base-content">{{ $trait['label'] }}</span>
+                                {{ $trait['description'] }}
+                            </td>
+                            <td colspan="{{ count(\App\Models\CharacterTraitAssessment::GRADES) }}" class="p-0">
+                                <div class="flex h-full" data-grade-group>
+                                    @foreach (\App\Models\CharacterTraitAssessment::GRADES as $option)
+                                        <label class="flex flex-1 cursor-pointer items-center justify-center border-l border-base-300/70 py-2">
+                                            <input type="checkbox" name="{{ $column }}" value="{{ $option }}"
+                                                   @checked($chosen === $option)
+                                                   class="h-4 w-4 rounded border-base-300 text-[#2E7D32] focus:ring-[#2E7D32]" />
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </td>
+                        </tr>
+                        @error($column)
+                            <tr>
+                                <td colspan="{{ count(\App\Models\CharacterTraitAssessment::GRADES) + 1 }}"
+                                    class="px-3 pb-2 text-xs text-error">{{ $message }}</td>
+                            </tr>
+                        @enderror
+                    @endforeach
+                </tbody>
+            </table>
         </div>
 
         <div class="mb-3 w-full">
@@ -100,20 +115,32 @@
     </script>
 @else
     <div class="py-3">
-        <div class="mb-3 w-full rounded-md border border-base-300 bg-base-200/40 px-4 py-3">
-            @foreach (\App\Models\CharacterTraitAssessment::TRAITS as $column => $trait)
-                <div class="{{ $loop->last ? '' : 'mb-3' }} w-full">
-                    <span class="font-sans text-sm font-medium text-base-content">
-                        {{ $trait['label'] }}
-                    </span>
-                    <p class="mt-0.5 mb-1 text-xs text-base-content/50">
-                        {{ $trait['description'] }}
-                    </p>
-                    <p class="m-0 font-sans text-sm text-base-content/80">
-                        {{ $characterTraits?->{$column} ?? 'Not yet graded' }}
-                    </p>
-                </div>
-            @endforeach
+        <div class="mb-4 w-full overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="bg-[#1B5E20]">
+                        <th class="px-3 py-2 font-sans text-xs font-semibold uppercase tracking-wide text-white">
+                            Character Trait / Work Habit
+                        </th>
+                        <th class="px-3 py-2 text-center font-sans text-xs font-semibold uppercase tracking-wide text-white">
+                            Grade
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-base-300/70">
+                    @foreach (\App\Models\CharacterTraitAssessment::TRAITS as $column => $trait)
+                        <tr>
+                            <td class="px-3 py-2 align-top text-base-content/80">
+                                <span class="font-medium text-base-content">{{ $trait['label'] }}</span>
+                                {{ $trait['description'] }}
+                            </td>
+                            <td class="px-3 py-2 text-center font-sans text-sm text-base-content/80">
+                                {{ $characterTraits?->{$column} ?? 'Not yet graded' }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
 
         <div class="mb-3 w-full">

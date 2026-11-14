@@ -20,7 +20,7 @@ class CharacterTraitAssessment extends Model
     ];
 
     /** The grades a reporting officer chooses between, for each trait. */
-    public const GRADES = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent', 'Outstanding'];
+    public const GRADES = ['A', 'B', 'C', 'D', 'E', 'F'];
 
     /** Column => how it reads, and what it asks the reporting officer to weigh. */
     public const TRAITS = [

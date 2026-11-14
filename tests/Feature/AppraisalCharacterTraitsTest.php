@@ -77,10 +77,10 @@ class AppraisalCharacterTraitsTest extends TestCase
             array_merge([
                 'staff' => $staff->ulid,
                 'section' => 'character-traits',
-                'dependability_grade' => 'Very Good',
-                'appearance_grade' => 'Excellent',
-                'attendance_grade' => 'Very Good',
-                'resource_utilization_grade' => 'Good',
+                'dependability_grade' => 'B',
+                'appearance_grade' => 'A',
+                'attendance_grade' => 'B',
+                'resource_utilization_grade' => 'C',
                 'justification' => 'Reliable, presentable, regular and makes good use of resources.',
             ], $overrides));
     }
@@ -117,10 +117,10 @@ class AppraisalCharacterTraitsTest extends TestCase
             array_merge([
                 'staff' => $staff->ulid,
                 'section' => 'character-traits',
-                'dependability_grade' => 'Very Good',
-                'appearance_grade' => 'Excellent',
-                'attendance_grade' => 'Very Good',
-                'resource_utilization_grade' => 'Good',
+                'dependability_grade' => 'B',
+                'appearance_grade' => 'A',
+                'attendance_grade' => 'B',
+                'resource_utilization_grade' => 'C',
                 'justification' => 'Reliable, presentable, regular and makes good use of resources.',
             ], $overrides));
     }
@@ -157,10 +157,10 @@ class AppraisalCharacterTraitsTest extends TestCase
 
         CharacterTraitAssessment::create([
             'basic_information_ulid' => $staff->ulid,
-            'dependability_grade' => 'Good',
-            'appearance_grade' => 'Very Good',
-            'attendance_grade' => 'Excellent',
-            'resource_utilization_grade' => 'Fair',
+            'dependability_grade' => 'C',
+            'appearance_grade' => 'B',
+            'attendance_grade' => 'A',
+            'resource_utilization_grade' => 'D',
             'justification' => 'Steady work, could present better.',
         ]);
 
@@ -179,10 +179,10 @@ class AppraisalCharacterTraitsTest extends TestCase
 
         $assessment = CharacterTraitAssessment::where('basic_information_ulid', $staff->ulid)->first();
 
-        $this->assertSame('Very Good', $assessment->dependability_grade);
-        $this->assertSame('Excellent', $assessment->appearance_grade);
-        $this->assertSame('Very Good', $assessment->attendance_grade);
-        $this->assertSame('Good', $assessment->resource_utilization_grade);
+        $this->assertSame('B', $assessment->dependability_grade);
+        $this->assertSame('A', $assessment->appearance_grade);
+        $this->assertSame('B', $assessment->attendance_grade);
+        $this->assertSame('C', $assessment->resource_utilization_grade);
         $this->assertSame('Reliable, presentable, regular and makes good use of resources.',
             $assessment->justification);
     }
@@ -193,12 +193,12 @@ class AppraisalCharacterTraitsTest extends TestCase
 
         $this->save($staff);
         $this->save($staff, [
-            'dependability_grade' => 'Outstanding',
+            'dependability_grade' => 'A',
             'justification' => 'Improved further since the last report.',
         ]);
 
         $this->assertSame(1, CharacterTraitAssessment::where('basic_information_ulid', $staff->ulid)->count());
-        $this->assertSame('Outstanding', CharacterTraitAssessment::where('basic_information_ulid', $staff->ulid)
+        $this->assertSame('A', CharacterTraitAssessment::where('basic_information_ulid', $staff->ulid)
             ->first()->dependability_grade);
     }
 
@@ -210,7 +210,7 @@ class AppraisalCharacterTraitsTest extends TestCase
 
     public function test_a_grade_must_be_one_of_the_six_offered(): void
     {
-        $this->save($this->officer(), ['attendance_grade' => 'Terrible'])
+        $this->save($this->officer(), ['attendance_grade' => 'Z'])
             ->assertSessionHasErrors('attendance_grade');
     }
 
@@ -319,10 +319,10 @@ class AppraisalCharacterTraitsTest extends TestCase
 
         CharacterTraitAssessment::create([
             'basic_information_ulid' => $staff->ulid,
-            'dependability_grade' => 'Good',
-            'appearance_grade' => 'Very Good',
-            'attendance_grade' => 'Excellent',
-            'resource_utilization_grade' => 'Fair',
+            'dependability_grade' => 'C',
+            'appearance_grade' => 'B',
+            'attendance_grade' => 'A',
+            'resource_utilization_grade' => 'D',
             'justification' => 'Steady work, could present better.',
         ]);
 
