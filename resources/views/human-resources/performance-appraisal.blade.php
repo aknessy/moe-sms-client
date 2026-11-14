@@ -51,6 +51,30 @@
                         </form>
                     </x-registry.card>
 
+                    {{-- Which year this report is being read against. Self
+                         Reporting is the only section that holds anything by
+                         year, but the officer stays the same across all of
+                         them, so the dropdown sits here rather than inside
+                         just that one section. --}}
+                    @if ($staff)
+                        <x-registry.card title="Select Year"
+                                         description="The year of Self Reporting activity this report is being read against.">
+                            <form method="GET" action="{{ route('hr-appraisal') }}"
+                                  class="flex w-full flex-wrap items-center gap-3 py-3">
+                                <input type="hidden" name="staff" value="{{ $staff->ulid }}" />
+                                <input type="hidden" name="section" value="{{ $section }}" />
+
+                                <label for="appraisal-year" class="text-xs text-base-content/60">Year under review</label>
+                                <select id="appraisal-year" name="year" onchange="this.form.submit()"
+                                        class="min-w-[9rem] cursor-pointer rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 focus:border-primary focus:outline-none hover:border-primary/50">
+                                    @foreach ($reportingWindow->years as $year)
+                                        <option value="{{ $year }}" @selected($year === $selectedYear)>{{ $year }}</option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        </x-registry.card>
+                    @endif
+
                     {{-- The sections of the report. Closed until there is an officer
                          to open them on. --}}
                     <div class="w-full mb-4 bg-white px-4 py-3 border border-base-300 rounded-md">

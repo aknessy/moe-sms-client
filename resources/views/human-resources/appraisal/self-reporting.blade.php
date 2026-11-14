@@ -2,25 +2,23 @@
      made of each of it.
 
      The years are the ones the promotion brief counts before calling this
-     officer due — two for a junior officer, three from GL 7 — and each runs
-     over its first three quarters. That is six or nine blocks, too many to
-     scroll through, so the years are tabs and the whole of it is one form:
-     moving between years must not lose what has been written in another. --}}
+     officer due — two for a junior officer, three from GL 7 — but only one
+     is read at a time, chosen from the Select Year card above. Within it,
+     the quarters are tabs and the whole of it is one form: moving between
+     quarters must not lose what has been written in another. --}}
 
 @php
     use App\Models\SelfReportActivity;
 
     $quarters = SelfReportActivity::QUARTERS;
     $least = SelfReportActivity::LEAST_ACTIVITIES;
-    $reportingYears = $reportingWindow->years;
 
-    // The year the form opens on: the first one anything was rejected for,
-    // or failing that the last in the window — the present one, which is the
-    // one most likely still to be being written.
+    // The quarter the form opens on: the first one anything was rejected
+    // for, or failing that the first quarter.
     $faulted = collect($errors->keys())
         ->first(fn ($key) => str_starts_with($key, 'activity.'));
 
-    $openYear = $faulted ? (int) explode('.', $faulted)[1] : end($reportingYears);
+    $openQuarter = $faulted ? (int) explode('.', $faulted)[1] : array_key_first($quarters);
 @endphp
 
 <form method="POST" action="{{ route('hr-appraisal.self-reporting') }}" class="py-3"
@@ -28,10 +26,11 @@
     @csrf
     <input type="hidden" name="staff" value="{{ $staff->ulid }}" />
     <input type="hidden" name="section" value="{{ $section }}" />
+    <input type="hidden" name="year" value="{{ $selectedYear }}" />
 
     <div class="mb-3">
         <p class="m-0 font-sans text-sm font-medium text-base-content">
-            Activities Taken Part In
+            Activities Taken Part In &middot; {{ $selectedYear }}
         </p>
         {{-- Which years, and why those: the window follows the promotion the
              officer is due for, so the section says so rather than leaving
@@ -40,115 +39,113 @@
             {{ $reportingWindow->explanation }}
         </p>
         <p class="mt-0.5 mb-0 text-xs text-base-content/50">
-            Each year runs over its first three quarters. A quarter written in needs
+            {{ $selectedYear }} runs over its first three quarters. A quarter written in needs
             at least {{ $least }} activities; one not reached yet is left empty. The
             comment beside each is the reporting officer's.
         </p>
     </div>
 
-    {{-- The years, as tabs. --}}
+    {{-- The quarters, as tabs. --}}
     <div class="mb-3 flex flex-wrap gap-1 border-b border-base-300" role="tablist">
-        @foreach ($reportingYears as $year)
-            <button type="button" data-year-tab="{{ $year }}" role="tab"
+        @foreach ($quarters as $quarter => $quarterLabel)
+            <button type="button" data-quarter-tab="{{ $quarter }}" role="tab"
                     class="-mb-px border-b-2 px-4 py-2 font-sans text-xs transition
-                           {{ $year === $openYear
+                           {{ $quarter === $openQuarter
                               ? 'border-primary font-semibold text-primary'
                               : 'border-transparent text-base-content/60 hover:text-base-content' }}">
-                {{ $year }}
+                {{ $quarterLabel }}
             </button>
         @endforeach
     </div>
 
-    @foreach ($reportingYears as $year)
-        <div data-year-pane="{{ $year }}" class="{{ $year === $openYear ? '' : 'hidden' }}">
-            @foreach ($quarters as $quarter => $quarterLabel)
-                @php
-                    // What to show: whatever was just typed if the form came
-                    // back with an error, and what is on file otherwise.
-                    $typed = old("activity.{$year}.{$quarter}");
+    @foreach ($quarters as $quarter => $quarterLabel)
+        <div data-quarter-pane="{{ $quarter }}" class="{{ $quarter === $openQuarter ? '' : 'hidden' }}">
+            @php
+                // What to show: whatever was just typed if the form came
+                // back with an error, and what is on file otherwise.
+                $typed = old("activity.{$quarter}");
 
-                    $held = $typed !== null
-                        ? collect($typed)->map(fn ($activity, $row) => [
-                              'activity' => $activity,
-                              'comment' => old("comment.{$year}.{$quarter}.{$row}"),
-                          ])->values()
-                        : SelfReportActivity::inQuarter($selfReport, $year, $quarter)
-                              ->map(fn ($entry) => [
-                                  'activity' => $entry->activity,
-                                  'comment' => $entry->comment,
-                              ])->values();
+                $held = $typed !== null
+                    ? collect($typed)->map(fn ($activity, $row) => [
+                          'activity' => $activity,
+                          'comment' => old("comment.{$quarter}.{$row}"),
+                      ])->values()
+                    : SelfReportActivity::inQuarter($selfReport, $selectedYear, $quarter)
+                          ->map(fn ($entry) => [
+                              'activity' => $entry->activity,
+                              'comment' => $entry->comment,
+                          ])->values();
 
-                    // Always the four rows the quarter is answered with, and
-                    // more where more were written.
-                    $rows = $held->pad(max($least, $held->count()), ['activity' => null, 'comment' => null]);
-                @endphp
+                // Always the four rows the quarter is answered with, and
+                // more where more were written.
+                $rows = $held->pad(max($least, $held->count()), ['activity' => null, 'comment' => null]);
+            @endphp
 
-                <div class="mb-3 rounded-md border border-base-300"
-                     data-quarter="{{ $year }}.{{ $quarter }}">
-                    <div class="flex items-center justify-between border-b border-base-200 px-4 py-2">
-                        <p class="m-0 font-sans text-xs font-semibold uppercase tracking-wide text-base-content/70">
-                            {{ $quarterLabel }} &middot; {{ $year }}
-                        </p>
-                        <span class="text-xs text-base-content/40" data-counted>
-                            {{ $held->filter(fn ($row) => filled($row['activity']))->count() }} described
-                        </span>
-                    </div>
+            <div class="mb-3 rounded-md border border-base-300"
+                 data-quarter="{{ $quarter }}">
+                <div class="flex items-center justify-between border-b border-base-200 px-4 py-2">
+                    <p class="m-0 font-sans text-xs font-semibold uppercase tracking-wide text-base-content/70">
+                        {{ $quarterLabel }} &middot; {{ $selectedYear }}
+                    </p>
+                    <span class="text-xs text-base-content/40" data-counted>
+                        {{ $held->filter(fn ($row) => filled($row['activity']))->count() }} described
+                    </span>
+                </div>
 
-                    @error("activity.{$year}.{$quarter}")
-                        <p class="mx-4 mt-3 mb-0 rounded border border-error/40 bg-error/5 px-3 py-2 text-xs text-error">
-                            {{ $message }}
-                        </p>
-                    @enderror
+                @error("activity.{$quarter}")
+                    <p class="mx-4 mt-3 mb-0 rounded border border-error/40 bg-error/5 px-3 py-2 text-xs text-error">
+                        {{ $message }}
+                    </p>
+                @enderror
 
-                    <div class="flex flex-col gap-3 px-4 py-3" data-activities>
-                        @foreach ($rows as $index => $row)
-                            <div class="relative rounded-md border border-base-200 bg-base-100/40 px-3 py-3"
-                                 data-activity-row>
-                                <div class="flex flex-col gap-4 lg:flex-row">
-                                    <div class="w-full">
-                                        <label class="font-sans text-xs font-medium text-base-content">
-                                            Activity <span data-activity-number>{{ $index + 1 }}</span>
-                                        </label>
-                                        <textarea name="activity[{{ $year }}][{{ $quarter }}][]" rows="3"
-                                                  placeholder="What the officer took part in, and what they did in it"
-                                                  class="mt-1 w-full resize-none rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50">{{ $row['activity'] }}</textarea>
-                                    </div>
-
-                                    <div class="w-full">
-                                        <label class="font-sans text-xs font-medium text-base-content">
-                                            Reporting Officer's Comments
-                                        </label>
-                                        {{-- The comment is the reporting
-                                             officer's, and nobody else's: a
-                                             staff account reads on. --}}
-                                        <textarea name="comment[{{ $year }}][{{ $quarter }}][]" rows="3"
-                                                  placeholder="Left empty until the reporting officer has answered it"
-                                                  class="mt-1 w-full resize-none rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50 {{ $mayComment ? '' : 'cursor-not-allowed disabled:bg-base-200 disabled:text-base-content/40' }}"
-                                                  @unless ($mayComment) disabled @endunless>{{ $row['comment'] }}</textarea>
-                                        @unless ($mayComment)
-                                            <p class="mt-1 mb-0 text-xs text-base-content/40">
-                                                The reporting officer writes here — the Electoral
-                                                Officer of the LGA, the head of the department, or an
-                                                administrator.
-                                            </p>
-                                        @endunless
-                                    </div>
+                <div class="flex flex-col gap-3 px-4 py-3" data-activities>
+                    @foreach ($rows as $index => $row)
+                        <div class="relative rounded-md border border-base-200 bg-base-100/40 px-3 py-3"
+                             data-activity-row>
+                            <div class="flex flex-col gap-4 lg:flex-row">
+                                <div class="w-full">
+                                    <label class="font-sans text-xs font-medium text-base-content">
+                                        Activity <span data-activity-number>{{ $index + 1 }}</span>
+                                    </label>
+                                    <textarea name="activity[{{ $quarter }}][]" rows="3"
+                                              placeholder="What the officer took part in, and what they did in it"
+                                              class="mt-1 w-full resize-none rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50">{{ $row['activity'] }}</textarea>
                                 </div>
 
-                                <button type="button" data-remove-activity
-                                        class="absolute -right-2 -top-2 hidden h-6 w-6 items-center justify-center rounded-full border border-error bg-error text-xs text-error-content shadow"
-                                        title="Remove this activity">&times;</button>
+                                <div class="w-full">
+                                    <label class="font-sans text-xs font-medium text-base-content">
+                                        Reporting Officer's Comments
+                                    </label>
+                                    {{-- The comment is the reporting
+                                         officer's, and nobody else's: a
+                                         staff account reads on. --}}
+                                    <textarea name="comment[{{ $quarter }}][]" rows="3"
+                                              placeholder="Left empty until the reporting officer has answered it"
+                                              class="mt-1 w-full resize-none rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50 {{ $mayComment ? '' : 'cursor-not-allowed disabled:bg-base-200 disabled:text-base-content/40' }}"
+                                              @unless ($mayComment) disabled @endunless>{{ $row['comment'] }}</textarea>
+                                    @unless ($mayComment)
+                                        <p class="mt-1 mb-0 text-xs text-base-content/40">
+                                            The reporting officer writes here — the Electoral
+                                            Officer of the LGA, the head of the department, or an
+                                            administrator.
+                                        </p>
+                                    @endunless
+                                </div>
                             </div>
-                        @endforeach
-                    </div>
 
-                    <div class="px-4 pb-3">
-                        <button type="button" data-add-activity class="btn btn-sm btn-cta-outline px-4">
-                            Add Activity
-                        </button>
-                    </div>
+                            <button type="button" data-remove-activity
+                                    class="absolute -right-2 -top-2 hidden h-6 w-6 items-center justify-center rounded-full border border-error bg-error text-xs text-error-content shadow"
+                                    title="Remove this activity">&times;</button>
+                        </div>
+                    @endforeach
                 </div>
-            @endforeach
+
+                <div class="px-4 pb-3">
+                    <button type="button" data-add-activity class="btn btn-sm btn-cta-outline px-4">
+                        Add Activity
+                    </button>
+                </div>
+            </div>
         </div>
     @endforeach
 
@@ -167,20 +164,20 @@
             return;
         }
 
-        /* ------------------------------------------------------ the years */
+        /* --------------------------------------------------- the quarters */
 
-        // Every year stays in the form; only one is on show. Switching must
-        // not lose what was written in another, so the panes are hidden
-        // rather than replaced.
-        form.querySelectorAll('[data-year-tab]').forEach(function (tab) {
+        // Every quarter stays in the form; only one is on show. Switching
+        // must not lose what was written in another, so the panes are
+        // hidden rather than replaced.
+        form.querySelectorAll('[data-quarter-tab]').forEach(function (tab) {
             tab.addEventListener('click', function () {
-                const year = tab.dataset.yearTab;
+                const quarter = tab.dataset.quarterTab;
 
-                form.querySelectorAll('[data-year-pane]').forEach(function (pane) {
-                    pane.classList.toggle('hidden', pane.dataset.yearPane !== year);
+                form.querySelectorAll('[data-quarter-pane]').forEach(function (pane) {
+                    pane.classList.toggle('hidden', pane.dataset.quarterPane !== quarter);
                 });
 
-                form.querySelectorAll('[data-year-tab]').forEach(function (other) {
+                form.querySelectorAll('[data-quarter-tab]').forEach(function (other) {
                     const on = other === tab;
 
                     other.classList.toggle('border-primary', on);

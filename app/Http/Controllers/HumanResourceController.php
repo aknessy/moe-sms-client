@@ -205,6 +205,24 @@ class HumanResourceController extends Controller
                 ->first()
             : null;
 
+        // Self Reporting is recorded one year at a time: whichever the form
+        // asked for, provided it is one this officer's window covers, or
+        // failing that the latest one — the year most likely still being
+        // written.
+        $reportingWindow = SelfReportWindow::for($staff);
+
+        // A quarter rejected for too few activities sends the officer back
+        // here with the year it was rejected for flashed alongside it, so
+        // that takes precedence over whatever the dropdown's own request
+        // carried.
+        $selectedYear = (int) old('year', $request->query('year')) ?: null;
+
+        if ($staff === null) {
+            $selectedYear = null;
+        } elseif ($selectedYear === null || ! $reportingWindow->covers($selectedYear)) {
+            $selectedYear = last($reportingWindow->years);
+        }
+
         return $this->page('human-resources/performance-appraisal', 'Performance Appraisal', 'performance-appraisal', [
             'section' => $section,
             'sectionLabel' => Appraisal::label($section),
@@ -233,7 +251,8 @@ class HumanResourceController extends Controller
             // Self Reporting runs over the years the promotion brief counts
             // before calling this officer due, so the section needs both the
             // window and what is held against each quarter of it.
-            'reportingWindow' => SelfReportWindow::for($staff),
+            'reportingWindow' => $reportingWindow,
+            'selectedYear' => $selectedYear,
             'selfReport' => SelfReportActivity::forStaff($staff),
             // The comment beside an activity is the reporting officer's, and
             // the section holds to that rather than asking the form to.
@@ -434,33 +453,39 @@ class HumanResourceController extends Controller
 
         $request->validate([
             'staff' => ['required', 'exists:basic_informations,ulid'],
+            'year' => ['required', 'integer'],
             'activity' => ['nullable', 'array'],
-            'activity.*.*.*' => ['nullable', 'string', 'max:1000'],
-            'comment.*.*.*' => ['nullable', 'string', 'max:1000'],
+            'activity.*.*' => ['nullable', 'string', 'max:1000'],
+            'comment.*.*' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $quarters = $this->selfReportQuarters($request);
         $window = SelfReportWindow::for($staff);
+        $year = (int) $request->input('year');
+        $errors = [];
+
+        // The year dropdown only ever offers the years the window covers, so
+        // anything else came from somewhere other than the form.
+        if (! $window->covers($year)) {
+            $errors['year'] = 'That is not a year this report covers.';
+        }
+
+        $quarters = $errors === [] ? $this->selfReportQuarters($request, $year) : [];
 
         // An officer is to describe at least four activities in a quarter.
         // Said of a quarter they have not reached yet it would be nonsense,
         // so it is only said of the ones they have written in.
-        $errors = [];
-
         foreach ($quarters as $key => $activities) {
-            [$year, $quarter] = explode('.', $key);
+            [, $quarter] = explode('.', $key);
 
-            // The section only ever offered the years the window covers, so
-            // anything else came from somewhere other than the form.
-            if (! $window->covers((int) $year)
-                || ! array_key_exists((int) $quarter, SelfReportActivity::QUARTERS)) {
-
-                $errors["activity.{$key}"] = 'That is not a quarter this report covers.';
+            // The section only ever offers the three quarters, so anything
+            // else came from somewhere other than the form.
+            if (! array_key_exists((int) $quarter, SelfReportActivity::QUARTERS)) {
+                $errors["activity.{$quarter}"] = 'That is not a quarter this report covers.';
                 continue;
             }
 
             if (count($activities) < SelfReportActivity::LEAST_ACTIVITIES) {
-                $errors["activity.{$key}"] = sprintf(
+                $errors["activity.{$quarter}"] = sprintf(
                     'Describe at least %d activities for %s %s, or leave the quarter empty.',
                     SelfReportActivity::LEAST_ACTIVITIES,
                     SelfReportActivity::QUARTERS[(int) $quarter],
@@ -473,7 +498,7 @@ class HumanResourceController extends Controller
             return back()->withInput()->withErrors($errors);
         }
 
-        $this->storeSelfReport($staff, $quarters);
+        $this->storeSelfReport($staff, $quarters, $year);
 
         return $this->onwardFrom($request, $staff, 'Self reporting saved.');
     }
@@ -637,22 +662,20 @@ class HumanResourceController extends Controller
      * cloned without renumbering anything. An activity nobody described is
      * not an activity, and a quarter with none of them is not reported on.
      */
-    private function selfReportQuarters(Request $request): array
+    private function selfReportQuarters(Request $request, int $year): array
     {
         $gathered = [];
 
-        foreach ((array) $request->input('activity', []) as $year => $quarters) {
-            foreach ((array) $quarters as $quarter => $activities) {
-                foreach ((array) $activities as $row => $activity) {
-                    if (blank($activity)) {
-                        continue;
-                    }
-
-                    $gathered["{$year}.{$quarter}"][] = [
-                        'activity' => trim($activity),
-                        'comment' => $request->input("comment.{$year}.{$quarter}.{$row}") ?: null,
-                    ];
+        foreach ((array) $request->input('activity', []) as $quarter => $activities) {
+            foreach ((array) $activities as $row => $activity) {
+                if (blank($activity)) {
+                    continue;
                 }
+
+                $gathered["{$year}.{$quarter}"][] = [
+                    'activity' => trim($activity),
+                    'comment' => $request->input("comment.{$quarter}.{$row}") ?: null,
+                ];
             }
         }
 
@@ -660,23 +683,27 @@ class HumanResourceController extends Controller
     }
 
     /**
-     * Write back the quarters the section was showing.
+     * Write back the quarters the section was showing, for the one year it
+     * was showing them for.
      *
-     * What the form showed is the whole of it, so what it sends back replaces
-     * what was there — including a quarter emptied out, which is how an
-     * activity is taken off.
+     * What the form showed is the whole of that year, so what it sends back
+     * replaces what was there for it — including a quarter emptied out,
+     * which is how an activity is taken off. Other years are left alone:
+     * the form never carried them.
      */
-    private function storeSelfReport(BasicInformation $staff, array $quarters): void
+    private function storeSelfReport(BasicInformation $staff, array $quarters, int $year): void
     {
-        SelfReportActivity::where('basic_information_ulid', $staff->ulid)->delete();
+        SelfReportActivity::where('basic_information_ulid', $staff->ulid)
+            ->where('year', $year)
+            ->delete();
 
         foreach ($quarters as $key => $activities) {
-            [$year, $quarter] = explode('.', $key);
+            [, $quarter] = explode('.', $key);
 
             foreach (array_values($activities) as $position => $activity) {
                 SelfReportActivity::create($activity + [
                     'basic_information_ulid' => $staff->ulid,
-                    'year' => (int) $year,
+                    'year' => $year,
                     'quarter' => (int) $quarter,
                     'position' => $position,
                 ]);
@@ -690,6 +717,10 @@ class HumanResourceController extends Controller
         return redirect()->route('hr-appraisal', array_filter([
             'section' => Appraisal::next($request->input('section')),
             'staff' => $staff->ulid,
+            // Only Self Reporting's form carries this; kept along so the
+            // year chosen there is still the one showing on the section
+            // that follows.
+            'year' => $request->input('year'),
         ]))->with('status', $message);
     }
 

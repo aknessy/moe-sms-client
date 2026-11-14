@@ -88,14 +88,18 @@ class AppraisalSelfReportingTest extends TestCase
         return SelfReportWindow::for($staff)->years;
     }
 
-    private function section(BasicInformation $staff)
+    private function section(BasicInformation $staff, ?int $year = null)
     {
-        return $this->actingAs($this->actor())->get(route('hr-appraisal', [
-            'section' => 'self-reporting', 'staff' => $staff->ulid,
-        ]));
+        return $this->actingAs($this->actor())->get(route('hr-appraisal', array_filter([
+            'section' => 'self-reporting', 'staff' => $staff->ulid, 'year' => $year,
+        ])));
     }
 
-    /** Four activities in one quarter, which is the fewest it takes. */
+    /**
+     * Four activities in one quarter of one year, which is the fewest it
+     * takes. The form only ever carries one year at a time, so the year
+     * rides along with the quarter rather than beside it.
+     */
     private function quarter(int $year, int $quarter, int $howMany = 4,
                              array $comments = []): array
     {
@@ -106,8 +110,9 @@ class AppraisalSelfReportingTest extends TestCase
         }
 
         return [
-            "activity" => [$year => [$quarter => $activities]],
-            "comment" => [$year => [$quarter => $comments]],
+            'year' => $year,
+            'activity' => [$quarter => $activities],
+            'comment' => [$quarter => $comments],
         ];
     }
 
@@ -133,7 +138,7 @@ class AppraisalSelfReportingTest extends TestCase
     public function test_a_senior_officer_reports_over_the_last_three_years(): void
     {
         // GL 9 moves up after three years, so the report covers the last
-        // three — 2024 to 2026.
+        // three — 2024 to 2026 — offered on the Select Year dropdown.
         $staff = $this->officer();
 
         $this->assertSame([2024, 2025, 2026], $this->windowOf($staff));
@@ -141,7 +146,7 @@ class AppraisalSelfReportingTest extends TestCase
         $response = $this->section($staff);
 
         foreach ([2024, 2025, 2026] as $year) {
-            $response->assertSee('data-year-pane="' . $year . '"', false);
+            $response->assertSee('<option value="' . $year . '"', false);
         }
     }
 
@@ -152,9 +157,9 @@ class AppraisalSelfReportingTest extends TestCase
         $this->assertSame([2025, 2026], $this->windowOf($staff));
 
         $this->section($staff)
-            ->assertSee('data-year-pane="2025"', false)
-            ->assertSee('data-year-pane="2026"', false)
-            ->assertDontSee('data-year-pane="2024"', false);
+            ->assertSee('<option value="2025"', false)
+            ->assertSee('<option value="2026"', false)
+            ->assertDontSee('<option value="2024"', false);
     }
 
     public function test_the_window_is_the_last_of_them_not_the_ones_before_the_due_date(): void
@@ -171,7 +176,7 @@ class AppraisalSelfReportingTest extends TestCase
 
         $this->section($staff)
             ->assertSee('Promotion fell due on 7 July 2011')
-            ->assertDontSee('data-year-pane="2011"', false);
+            ->assertDontSee('<option value="2011"', false);
     }
 
     public function test_an_officer_not_yet_due_reads_as_falling_due(): void
@@ -203,14 +208,15 @@ class AppraisalSelfReportingTest extends TestCase
             ->assertSee('GL 04 moves up after 2 years, so this covers the last 2, 2025 to 2026.');
     }
 
-    public function test_each_year_is_broken_into_its_first_three_quarters(): void
+    public function test_each_year_offered_is_broken_into_its_first_three_quarters(): void
     {
         $staff = $this->officer();
-        $response = $this->section($staff);
 
         foreach ($this->windowOf($staff) as $year) {
+            $response = $this->section($staff, $year);
+
             foreach ([1, 2, 3] as $quarter) {
-                $response->assertSee('data-quarter="' . $year . '.' . $quarter . '"', false);
+                $response->assertSee('data-quarter="' . $quarter . '"', false);
             }
         }
 
@@ -222,18 +228,11 @@ class AppraisalSelfReportingTest extends TestCase
     {
         $html = $this->section($this->officer())->getContent();
 
-        // Three years of three quarters, four rows apiece, each row an
-        // activity and the reporting officer's comment on it.
-        $this->assertSame(36, substr_count($html, 'data-activity-row>'));
-        $this->assertSame(36, substr_count($html, 'name="activity['));
-        $this->assertSame(36, substr_count($html, 'name="comment['));
-    }
-
-    public function test_a_junior_officer_is_asked_for_six_quarters_not_nine(): void
-    {
-        $html = $this->section($this->juniorOfficer())->getContent();
-
-        $this->assertSame(24, substr_count($html, 'data-activity-row>'));
+        // The three quarters of the one year shown, four rows apiece, each
+        // row an activity and the reporting officer's comment on it.
+        $this->assertSame(12, substr_count($html, 'data-activity-row>'));
+        $this->assertSame(12, substr_count($html, 'name="activity['));
+        $this->assertSame(12, substr_count($html, 'name="comment['));
     }
 
     public function test_each_activity_carries_a_reporting_officers_comment(): void
@@ -298,23 +297,38 @@ class AppraisalSelfReportingTest extends TestCase
         $this->assertSame(7, SelfReportActivity::where('basic_information_ulid', $staff->ulid)->count());
     }
 
-    public function test_several_quarters_are_saved_together(): void
+    public function test_several_quarters_of_the_same_year_are_saved_together(): void
     {
-        // The whole of the section is on the one form, so one save carries
-        // every quarter written in.
+        // The form covers one year at a time, over all three of its
+        // quarters, so one save carries every quarter of that year written
+        // in.
         $staff = $this->officer();
 
         $this->save($staff, [
-            'activity' => [
-                2024 => [1 => $this->four('a'), 3 => $this->four('b')],
-                2026 => [2 => $this->four('c')],
-            ],
+            'year' => 2024,
+            'activity' => [1 => $this->four('a'), 3 => $this->four('b')],
         ])->assertSessionHasNoErrors();
 
         $held = SelfReportActivity::where('basic_information_ulid', $staff->ulid)->get();
 
-        $this->assertCount(12, $held);
-        $this->assertSame([[2024, 1], [2024, 3], [2026, 2]],
+        $this->assertCount(8, $held);
+        $this->assertSame([[2024, 1], [2024, 3]],
+            $held->map(fn ($e) => [$e->year, $e->quarter])->unique()->values()
+                ->sortBy(fn ($pair) => $pair)->values()->all());
+    }
+
+    public function test_saving_a_different_year_does_not_clear_another(): void
+    {
+        // Each save only ever carries one year, so another year's
+        // activities must survive being left out of it.
+        $staff = $this->officer();
+
+        $this->save($staff, $this->quarter(2024, 1));
+        $this->save($staff, $this->quarter(2026, 2));
+
+        $held = SelfReportActivity::where('basic_information_ulid', $staff->ulid)->get();
+
+        $this->assertSame([[2024, 1], [2026, 2]],
             $held->map(fn ($e) => [$e->year, $e->quarter])->unique()->values()
                 ->sortBy(fn ($pair) => $pair)->values()->all());
     }
@@ -329,7 +343,7 @@ class AppraisalSelfReportingTest extends TestCase
         $staff = $this->officer();
 
         $this->save($staff, $this->quarter(2025, 1))->assertRedirect(route('hr-appraisal', [
-            'section' => 'character-traits', 'staff' => $staff->ulid,
+            'section' => 'character-traits', 'staff' => $staff->ulid, 'year' => 2025,
         ]));
     }
 
@@ -340,7 +354,7 @@ class AppraisalSelfReportingTest extends TestCase
         $staff = $this->officer();
 
         $this->save($staff, $this->quarter(2025, 1, 3))
-            ->assertSessionHasErrors('activity.2025.1');
+            ->assertSessionHasErrors('activity.1');
 
         // Nothing of a refused quarter is written.
         $this->assertSame(0, SelfReportActivity::count());
@@ -353,7 +367,7 @@ class AppraisalSelfReportingTest extends TestCase
         $this->save($staff, $this->quarter(2024, 3, 1));
 
         $this->assertStringContainsString('3rd Quarter 2024',
-            session('errors')->first('activity.2024.3'));
+            session('errors')->first('activity.3'));
     }
 
     public function test_the_refusal_is_shown_against_the_quarter_it_is_about(): void
@@ -387,9 +401,8 @@ class AppraisalSelfReportingTest extends TestCase
         $staff = $this->officer();
 
         $this->save($staff, [
-            'activity' => [
-                2025 => [1 => $this->four('a'), 2 => ['', '', '', ''], 3 => []],
-            ],
+            'year' => 2025,
+            'activity' => [1 => $this->four('a'), 2 => ['', '', '', ''], 3 => []],
         ])->assertSessionHasNoErrors();
 
         $this->assertSame(4, SelfReportActivity::count());
@@ -400,15 +413,16 @@ class AppraisalSelfReportingTest extends TestCase
         $staff = $this->officer();
 
         $this->save($staff, [
-            'activity' => [2025 => [1 => ['Something', '', 'Something else', '']]],
-        ])->assertSessionHasErrors('activity.2025.1');
+            'year' => 2025,
+            'activity' => [1 => ['Something', '', 'Something else', '']],
+        ])->assertSessionHasErrors('activity.1');
     }
 
     public function test_the_whole_section_may_be_left_alone(): void
     {
         $staff = $this->officer();
 
-        $this->save($staff, [])->assertSessionHasNoErrors();
+        $this->save($staff, ['year' => 2026])->assertSessionHasNoErrors();
 
         $this->assertSame(0, SelfReportActivity::count());
     }
@@ -421,7 +435,7 @@ class AppraisalSelfReportingTest extends TestCase
 
         $this->save($staff, $this->quarter(2025, 1, 4, ['Handled it well']));
 
-        $this->section($staff)
+        $this->section($staff, 2025)
             ->assertSee('Activity 1 of Q1 2025')
             ->assertSee('Handled it well');
     }
@@ -464,9 +478,10 @@ class AppraisalSelfReportingTest extends TestCase
         $this->assertContains(2019, $this->windowOf($staff));
 
         $this->section($staff)
-            ->assertSee('data-year-pane="2019"', false)
-            ->assertSee('Something long ago')
+            ->assertSee('<option value="2019"', false)
             ->assertSee('1 earlier year is kept alongside it');
+
+        $this->section($staff, 2019)->assertSee('Something long ago');
     }
 
     public function test_the_years_read_in_order(): void
@@ -494,12 +509,12 @@ class AppraisalSelfReportingTest extends TestCase
 
     public function test_a_year_the_report_does_not_cover_is_refused(): void
     {
-        // The section only ever offered the window, so anything else came
+        // The dropdown only ever offered the window, so anything else came
         // from somewhere other than the form.
         $staff = $this->officer();
 
         $this->save($staff, $this->quarter(2008, 1))
-            ->assertSessionHasErrors('activity.2008.1');
+            ->assertSessionHasErrors('year');
 
         $this->assertSame(0, SelfReportActivity::count());
     }
@@ -509,7 +524,7 @@ class AppraisalSelfReportingTest extends TestCase
         $staff = $this->officer();
 
         $this->save($staff, $this->quarter(2025, 4))
-            ->assertSessionHasErrors('activity.2025.4');
+            ->assertSessionHasErrors('activity.4');
     }
 
     private function writeIn(BasicInformation $staff, int $year, string $activity): void
@@ -604,7 +619,7 @@ class AppraisalSelfReportingTest extends TestCase
             ->getContent();
     }
 
-    private const COMMENT_BOX = '/name="comment\[[0-9]+\]\[[0-9]+\]\[\]"[^>]*disabled/';
+    private const COMMENT_BOX = '/name="comment\[[0-9]+\]\[\]"[^>]*disabled/';
 
     public function test_a_staff_account_may_not_write_the_comments(): void
     {
@@ -756,8 +771,9 @@ class AppraisalSelfReportingTest extends TestCase
             ->post(route('hr-appraisal.self-reporting'), [
                 'staff' => $staff->ulid,
                 'section' => 'self-reporting',
-                'activity' => [now()->year => [1 => $this->four('a')]],
-                'comment' => [now()->year => [1 => ['I did not head this', '', '', '']]],
+                'year' => now()->year,
+                'activity' => [1 => $this->four('a')],
+                'comment' => [1 => ['I did not head this', '', '', '']],
             ])->assertForbidden();
 
         $this->assertSame(0, SelfReportActivity::count());
@@ -773,7 +789,8 @@ class AppraisalSelfReportingTest extends TestCase
             ->post(route('hr-appraisal.self-reporting'), [
                 'staff' => $staff->ulid,
                 'section' => 'self-reporting',
-                'activity' => [now()->year => [1 => $this->four('a')]],
+                'year' => now()->year,
+                'activity' => [1 => $this->four('a')],
             ])->assertSessionHasNoErrors();
 
         $this->assertSame(4, SelfReportActivity::where(
