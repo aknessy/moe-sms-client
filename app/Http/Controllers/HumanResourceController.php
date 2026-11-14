@@ -11,7 +11,9 @@ use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Notification;
 use App\Models\PromotionBrief;
+use App\Models\Sanction;
 use App\Models\SelfReportActivity;
+use App\Models\StaffQuery;
 use App\Models\State;
 use App\Support\Appraisal;
 use App\Support\LeaveLetter;
@@ -242,6 +244,14 @@ class HumanResourceController extends Controller
             // where that has been answered already.
             'commendation' => $staff === null ? null
                 : Commendation::where('basic_information_ulid', $staff->ulid)->first(),
+            // A caution or query already on file is shown instead of asking
+            // the question again; the Yes/No form only appears where there
+            // is none.
+            'staffQueries' => $staff === null ? collect()
+                : StaffQuery::where('basic_information_ulid', $staff->ulid)
+                    ->orderBy('query_date')->get(),
+            'sanction' => $staff === null ? null
+                : Sanction::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -534,6 +544,47 @@ class HumanResourceController extends Controller
         );
 
         return $this->onwardFrom($request, $staff, 'Commendations saved.');
+    }
+
+    /**
+     * The Sanctions section, for an officer with no caution or query
+     * already on file: whether disciplinary action was taken against them
+     * during the period this report covers, and what it was where it was.
+     *
+     * An officer with a query on record is shown that instead — the form is
+     * not even offered them, so a save reaching here for one is not the
+     * section working as built.
+     */
+    public function store_appraisal_sanctions(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
+
+        if (StaffQuery::where('basic_information_ulid', $staff->ulid)->exists()) {
+            abort(403, 'This officer has a query on file; the Yes/No question does not apply.');
+        }
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'taken' => ['required', Rule::in(['yes', 'no'])],
+            // Only worth asking once the answer is yes.
+            'details' => [Rule::requiredIf($request->input('taken') === 'yes'),
+                          'nullable', 'string', 'max:1000'],
+        ], [
+            'taken.required' => 'Say whether disciplinary action was taken against the officer.',
+            'details.required' => 'Give the detail of the disciplinary action.',
+        ]);
+
+        Sanction::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            [
+                'taken' => $data['taken'] === 'yes',
+                // Not asked for once the answer is no, so nothing is kept.
+                'details' => $data['taken'] === 'yes' ? $data['details'] : null,
+            ],
+        );
+
+        return $this->onwardFrom($request, $staff, 'Sanctions saved.');
     }
 
     /**
