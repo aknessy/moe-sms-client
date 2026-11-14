@@ -10,33 +10,37 @@
     <input type="hidden" name="staff" value="{{ $staff->ulid }}" />
     <input type="hidden" name="section" value="{{ $section }}" />
 
-    @foreach (\App\Models\CharacterTraitAssessment::TRAITS as $column => $trait)
-        @php $chosen = old($column, $characterTraits?->{$column}); @endphp
+    {{-- The four traits and their grades sit on a background of their own,
+         set apart from the justification below it. --}}
+    <div class="mb-3 w-full rounded-md border border-base-300 bg-base-200/40 px-4 py-3">
+        @foreach (\App\Models\CharacterTraitAssessment::TRAITS as $column => $trait)
+            @php $chosen = old($column, $characterTraits?->{$column}); @endphp
 
-        <div class="mb-3 w-full">
-            <span class="font-sans text-sm font-medium text-base-content">
-                {{ $trait['label'] }}<span class="text-error">*</span>
-            </span>
-            <p class="mt-0.5 mb-1 text-xs text-base-content/50">
-                {{ $trait['description'] }}
-            </p>
+            <div class="{{ $loop->last ? '' : 'mb-3' }} w-full">
+                <span class="font-sans text-sm font-medium text-base-content">
+                    {{ $trait['label'] }}<span class="text-error">*</span>
+                </span>
+                <p class="mt-0.5 mb-1 text-xs text-base-content/50">
+                    {{ $trait['description'] }}
+                </p>
 
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-2" data-grade-group>
-                @foreach (\App\Models\CharacterTraitAssessment::GRADES as $option)
-                    <label class="flex cursor-pointer items-center gap-2 text-sm text-base-content/80">
-                        <input type="checkbox" name="{{ $column }}" value="{{ $option }}"
-                               @checked($chosen === $option)
-                               class="h-4 w-4 rounded border-base-300 text-[#2E7D32] focus:ring-[#2E7D32]" />
-                        {{ $option }}
-                    </label>
-                @endforeach
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-2" data-grade-group>
+                    @foreach (\App\Models\CharacterTraitAssessment::GRADES as $option)
+                        <label class="flex cursor-pointer items-center gap-2 text-sm text-base-content/80">
+                            <input type="checkbox" name="{{ $column }}" value="{{ $option }}"
+                                   @checked($chosen === $option)
+                                   class="h-4 w-4 rounded border-base-300 text-[#2E7D32] focus:ring-[#2E7D32]" />
+                            {{ $option }}
+                        </label>
+                    @endforeach
+                </div>
+
+                @error($column)
+                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                @enderror
             </div>
-
-            @error($column)
-                <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
-            @enderror
-        </div>
-    @endforeach
+        @endforeach
+    </div>
 
     <div class="mb-3 w-full">
         <label for="justification" class="font-sans text-sm font-medium text-base-content">
