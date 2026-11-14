@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BasicInformation;
 use App\Models\Lga;
 use App\Models\Posting;
+use App\Models\PromotionBrief;
 use App\Models\SelfReportActivity;
 use App\Models\State;
 use App\Models\User;
@@ -50,15 +51,29 @@ class AppraisalSelfReportingTest extends TestCase
      * A senior officer, who moves up in three years. Confirmed on a known
      * day, so the day they fall due is known and the window ends with it.
      */
+    /** Only an officer on the current year's promotion brief has a report open on them. */
+    private function putOnBrief(BasicInformation $staff): void
+    {
+        PromotionBrief::create([
+            'year' => now()->year,
+            'basic_information_ulid' => $staff->ulid,
+            'on_brief_at' => now(),
+        ]);
+    }
+
     private function officer(array $attributes = []): BasicInformation
     {
-        return BasicInformation::factory()->create($attributes + [
+        $staff = BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey',
             'grade_level' => 9, 'step' => 4,
             'department' => 'Department of Electoral Operations',
             'date_of_employment' => '2015-01-05',
             'date_of_confirmation' => '2023-06-01',
         ]);
+
+        $this->putOnBrief($staff);
+
+        return $staff;
     }
 
     /** A junior officer, who moves up in two and so reports over two. */
@@ -515,6 +530,7 @@ class AppraisalSelfReportingTest extends TestCase
             'grade_level' => 9,
             'date_of_employment' => null, 'date_of_confirmation' => null,
         ]);
+        $this->putOnBrief($staff);
 
         $this->assertSame(range(now()->year - 2, now()->year), $this->windowOf($staff));
 

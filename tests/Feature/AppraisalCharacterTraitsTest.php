@@ -6,6 +6,7 @@ use App\Models\BasicInformation;
 use App\Models\CharacterTraitAssessment;
 use App\Models\Lga;
 use App\Models\Posting;
+use App\Models\PromotionBrief;
 use App\Models\State;
 use App\Models\User;
 use App\Support\ReportingAuthority;
@@ -31,12 +32,26 @@ class AppraisalCharacterTraitsTest extends TestCase
         ]);
     }
 
+    /** Only an officer on the current year's promotion brief has a report open on them. */
+    private function putOnBrief(BasicInformation $staff): void
+    {
+        PromotionBrief::create([
+            'year' => now()->year,
+            'basic_information_ulid' => $staff->ulid,
+            'on_brief_at' => now(),
+        ]);
+    }
+
     private function officer(array $attributes = []): BasicInformation
     {
-        return BasicInformation::factory()->create($attributes + [
+        $staff = BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey',
             'department' => 'Department of Electoral Operations',
         ]);
+
+        $this->putOnBrief($staff);
+
+        return $staff;
     }
 
     /** An account with no staff record behind it, for the grading authority. */

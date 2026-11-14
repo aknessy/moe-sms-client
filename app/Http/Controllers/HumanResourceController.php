@@ -9,6 +9,7 @@ use App\Models\EduProgress;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Notification;
+use App\Models\PromotionBrief;
 use App\Models\SelfReportActivity;
 use App\Models\State;
 use App\Support\Appraisal;
@@ -42,6 +43,21 @@ class HumanResourceController extends Controller
             'uri_segments' => explode('/', $this->uri),
             'app_version' => config('app.app_version')
         ], $data));
+    }
+
+    /**
+     * Only an officer the Registry has put up for promotion this year has a
+     * report open on them — a brief fetched by hand would let anyone else's
+     * through regardless of what the picker on the page offers.
+     */
+    private function requireOnAppraisalBrief(BasicInformation $staff): void
+    {
+        $year = now()->year;
+
+        if (! PromotionBrief::forYear($year)->onBrief()
+                ->where('basic_information_ulid', $staff->ulid)->exists()) {
+            abort(403, "{$staff->surname} is not on the {$year} promotion brief.");
+        }
     }
 
     /** Officers an application may be raised for, as the picker lists them. */
@@ -171,9 +187,18 @@ class HumanResourceController extends Controller
         $section = Appraisal::resolve($request->query('section'));
         $selected = $request->query('staff');
 
-        $staff = $selected
+        // An appraisal is read against the officers the Registry has put up
+        // for promotion this year — there is nothing to report on until that
+        // brief has been prepared, and nobody outside it to report on after.
+        $year = now()->year;
+        $onBriefUlids = PromotionBrief::forYear($year)->onBrief()->pluck('basic_information_ulid');
+        $briefPrepared = $onBriefUlids->isNotEmpty();
+
+        $staff = ($briefPrepared && $selected)
             ? BasicInformation::with(['state', 'lga', 'eduProgress', 'promotion'])
-                ->where('ulid', $selected)->first()
+                ->where('ulid', $selected)
+                ->whereIn('ulid', $onBriefUlids)
+                ->first()
             : null;
 
         return $this->page('human-resources/performance-appraisal', 'Performance Appraisal', 'performance-appraisal', [
@@ -181,7 +206,18 @@ class HumanResourceController extends Controller
             'sectionLabel' => Appraisal::label($section),
             'selected' => $selected,
             'staff' => $staff,
-            'staffOptions' => $this->staffOptions(),
+            'briefPrepared' => $briefPrepared,
+            'briefYear' => $year,
+            'staffOptions' => $briefPrepared
+                ? BasicInformation::query()
+                    ->whereIn('ulid', $onBriefUlids)
+                    ->orderBy('surname')
+                    ->get()
+                    ->mapWithKeys(fn ($s) => [
+                        $s->ulid => trim("{$s->surname}, {$s->firstname} {$s->othernames}")
+                            . " ({$s->staff_number})",
+                    ])
+                : collect(),
             // Where the next section is, and what the button to it says.
             'nextSection' => Appraisal::next($section),
             'continueLabel' => Appraisal::continueLabel($section),
@@ -224,6 +260,7 @@ class HumanResourceController extends Controller
     public function store_appraisal_bio_data(Request $request)
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
 
         // A department is only asked of an officer at the state office, so
         // it is only required — and only written — when it was asked.
@@ -303,6 +340,7 @@ class HumanResourceController extends Controller
     public function store_appraisal_career_history(Request $request)
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
 
         $data = $request->validate([
             'staff' => ['required', 'exists:basic_informations,ulid'],
@@ -333,6 +371,7 @@ class HumanResourceController extends Controller
     public function store_appraisal_qualifications(Request $request)
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
 
         $request->validate([
             'staff' => ['required', 'exists:basic_informations,ulid'],
@@ -363,6 +402,7 @@ class HumanResourceController extends Controller
     public function store_appraisal_self_reporting(Request $request)
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
 
         // The comments are the reporting officer's, so an account that may
         // not write them may not send them either — a disabled field on the
@@ -428,6 +468,7 @@ class HumanResourceController extends Controller
     public function store_appraisal_character_traits(Request $request)
     {
         $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
 
         // The grades are the reporting officer's to give: the Electoral
         // Officer of the LGA the officer is deployed to, the head of the

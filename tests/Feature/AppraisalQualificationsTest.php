@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\BasicInformation;
 use App\Models\EduProgress;
+use App\Models\PromotionBrief;
 use App\Models\User;
 use App\Support\Appraisal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,11 +28,25 @@ class AppraisalQualificationsTest extends TestCase
         ]);
     }
 
+    /** Only an officer on the current year's promotion brief has a report open on them. */
+    private function putOnBrief(BasicInformation $staff): void
+    {
+        PromotionBrief::create([
+            'year' => now()->year,
+            'basic_information_ulid' => $staff->ulid,
+            'on_brief_at' => now(),
+        ]);
+    }
+
     private function officer(array $attributes = []): BasicInformation
     {
-        return BasicInformation::factory()->create($attributes + [
+        $staff = BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey',
         ]);
+
+        $this->putOnBrief($staff);
+
+        return $staff;
     }
 
     private function section(BasicInformation $staff)

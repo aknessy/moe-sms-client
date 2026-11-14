@@ -6,6 +6,7 @@ use App\Models\BasicInformation;
 use App\Models\Department;
 use App\Models\Lga;
 use App\Models\Posting;
+use App\Models\PromotionBrief;
 use App\Models\State;
 use App\Models\Unit;
 use App\Models\User;
@@ -30,13 +31,23 @@ class AppraisalBioDataTest extends TestCase
         ]);
     }
 
+    /** Only an officer on the current year's promotion brief has a report open on them. */
+    private function putOnBrief(BasicInformation $staff): void
+    {
+        PromotionBrief::create([
+            'year' => now()->year,
+            'basic_information_ulid' => $staff->ulid,
+            'on_brief_at' => now(),
+        ]);
+    }
+
     private function officer(array $attributes = []): BasicInformation
     {
         $crossRiver = State::where('name', 'Cross River')->firstOrFail();
 
         $this->unitsOfOperations();
 
-        return BasicInformation::factory()->create($attributes + [
+        $staff = BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey', 'othernames' => 'Eno',
             'date_of_birth' => '1985-04-12',
             'state_of_origin' => $crossRiver->id,
@@ -45,6 +56,10 @@ class AppraisalBioDataTest extends TestCase
             'division' => 'Calabar HQ',
             'unit' => 'Voter Registration Unit',
         ]);
+
+        $this->putOnBrief($staff);
+
+        return $staff;
     }
 
     /**

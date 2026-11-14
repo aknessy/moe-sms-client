@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\BasicInformation;
 use App\Models\Promotion;
+use App\Models\PromotionBrief;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,15 +27,29 @@ class AppraisalCareerHistoryTest extends TestCase
         ]);
     }
 
+    /** Only an officer on the current year's promotion brief has a report open on them. */
+    private function putOnBrief(BasicInformation $staff): void
+    {
+        PromotionBrief::create([
+            'year' => now()->year,
+            'basic_information_ulid' => $staff->ulid,
+            'on_brief_at' => now(),
+        ]);
+    }
+
     private function officer(array $attributes = []): BasicInformation
     {
-        return BasicInformation::factory()->create($attributes + [
+        $staff = BasicInformation::factory()->create($attributes + [
             'surname' => 'Asuquo', 'firstname' => 'Bassey',
             'date_of_employment' => '2010-01-04',
             'date_of_confirmation' => '2012-01-04',
             'date_of_present_appointment' => null,
             'date_of_acting_appointment' => null,
         ]);
+
+        $this->putOnBrief($staff);
+
+        return $staff;
     }
 
     private function section(BasicInformation $staff)
