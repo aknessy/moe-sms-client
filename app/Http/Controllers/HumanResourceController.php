@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\EduProgress;
 use App\Models\GeneralRemark;
 use App\Models\LeaveApplication;
+use App\Models\Suggestion;
 use App\Models\Lga;
 use App\Models\Notification;
 use App\Models\LeadershipTraitAssessment;
@@ -279,6 +280,9 @@ class HumanResourceController extends Controller
             // The General Remarks written on the officer, where there are any already.
             'generalRemark' => $staff === null ? null
                 : GeneralRemark::where('basic_information_ulid', $staff->ulid)->first(),
+            // The Suggestions made on the officer, where there are any already.
+            'suggestion' => $staff === null ? null
+                : Suggestion::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -685,6 +689,47 @@ class HumanResourceController extends Controller
         );
 
         return $this->onwardFrom($request, $staff, 'General remarks saved.');
+    }
+
+    /**
+     * The Suggestions (By Superior Officer) section: whether the officer is
+     * suggested for a different job in the same grade, and the kind of job
+     * and reasons where they are.
+     */
+    public function store_appraisal_suggestions(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
+
+        // The suggestion is the reporting officer's to make, the same desks
+        // that answer for Character Traits, Leadership Traits and General
+        // Remarks.
+        if (! ReportingAuthority::mayCommentOn(auth()->user(), $staff)) {
+            abort(403, "Suggestions is given by the officer's reporting officer.");
+        }
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'different_job_suggested' => ['required', Rule::in(['yes', 'no'])],
+            // Only worth asking once the answer is yes.
+            'different_job_details' => [Rule::requiredIf($request->input('different_job_suggested') === 'yes'),
+                                        'nullable', 'string', 'max:1000'],
+        ], [
+            'different_job_suggested.required' => 'Say whether the officer is suggested for a different job in the same grade.',
+            'different_job_details.required' => 'Indicate the kind of job and give reasons.',
+        ]);
+
+        Suggestion::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            [
+                'different_job_suggested' => $data['different_job_suggested'] === 'yes',
+                // Not asked for once the answer is no, so nothing is kept.
+                'different_job_details' => $data['different_job_suggested'] === 'yes'
+                    ? $data['different_job_details'] : null,
+            ],
+        );
+
+        return $this->onwardFrom($request, $staff, 'Suggestions saved.');
     }
 
     /**

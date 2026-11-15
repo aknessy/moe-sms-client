@@ -90,6 +90,7 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::post('/performance-appraisal/sanctions', [HumanResourceController::class, 'store_appraisal_sanctions'])->name('hr-appraisal.sanctions');
         Route::post('/performance-appraisal/leadership-traits', [HumanResourceController::class, 'store_appraisal_leadership_traits'])->name('hr-appraisal.leadership-traits');
         Route::post('/performance-appraisal/general-remarks', [HumanResourceController::class, 'store_appraisal_general_remarks'])->name('hr-appraisal.general-remarks');
+        Route::post('/performance-appraisal/suggestions', [HumanResourceController::class, 'store_appraisal_suggestions'])->name('hr-appraisal.suggestions');
         Route::get('/recruitment', [HumanResourceController::class, 'recruitment'])->name('hr-recruitment');
         Route::get('/training', [HumanResourceController::class, 'training'])->name('hr-training');
         Route::get('/establishment-strength', [HumanResourceController::class, 'establishment'])->name('hr-establishment');
