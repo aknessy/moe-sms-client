@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\EduProgress;
 use App\Models\GeneralRemark;
 use App\Models\LeaveApplication;
+use App\Models\StaffDeclaration;
 use App\Models\Suggestion;
 use App\Models\Lga;
 use App\Models\Notification;
@@ -20,6 +21,7 @@ use App\Models\StaffQuery;
 use App\Models\State;
 use App\Support\Appraisal;
 use App\Support\LeaveLetter;
+use App\Support\Menu;
 use App\Support\PostingContext;
 use App\Support\PromotionDue;
 use App\Support\ReportingAuthority;
@@ -64,6 +66,29 @@ class HumanResourceController extends Controller
                 ->where('basic_information_ulid', $staff->ulid)->exists()) {
             abort(403, "{$staff->surname} is not on the {$year} promotion brief.");
         }
+    }
+
+    /**
+     * The officer an appraisal section is read or written against.
+     *
+     * A self-service account reads this off the session and never off the
+     * request, the same way `SelfServiceController` does everywhere else:
+     * there is no picker to choose the wrong officer from, so whatever a
+     * `staff` field in the url or the form happens to carry is ignored
+     * rather than trusted.
+     */
+    private function appraisalStaff(Request $request): BasicInformation
+    {
+        if (Menu::isSelfService(auth()->user())) {
+            $staff = auth()->user()->staff;
+
+            abort_if($staff === null, 403,
+                'This account is not linked to a staff record, so there is nothing of yours to show.');
+
+            return $staff;
+        }
+
+        return BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
     }
 
     /** Officers an application may be raised for, as the picker lists them. */
@@ -191,7 +216,12 @@ class HumanResourceController extends Controller
     public function appraisal(Request $request)
     {
         $section = Appraisal::resolve($request->query('section'));
-        $selected = $request->query('staff');
+
+        // A self-service account reads its own report off the session and
+        // never off the url: there is no picker on their page, so there is
+        // no way for one to land on anyone else's by typing it.
+        $selfService = Menu::isSelfService(auth()->user());
+        $selected = $selfService ? auth()->user()->staff?->ulid : $request->query('staff');
 
         // An appraisal is read against the officers the Registry has put up
         // for promotion this year — there is nothing to report on until that
@@ -232,7 +262,10 @@ class HumanResourceController extends Controller
             'staff' => $staff,
             'briefPrepared' => $briefPrepared,
             'briefYear' => $year,
-            'staffOptions' => $briefPrepared
+            // A self-service account has nobody to pick from the list, so
+            // there is no reason to hand it the names on it.
+            'selfService' => $selfService,
+            'staffOptions' => ($briefPrepared && ! $selfService)
                 ? BasicInformation::query()
                     ->whereIn('ulid', $onBriefUlids)
                     ->orderBy('surname')
@@ -283,6 +316,11 @@ class HumanResourceController extends Controller
             // The Suggestions made on the officer, where there are any already.
             'suggestion' => $staff === null ? null
                 : Suggestion::where('basic_information_ulid', $staff->ulid)->first(),
+            // The Staff Declaration is the officer's own to make, not the
+            // reporting officer's, so it answers to a question of its own.
+            'mayDeclare' => ReportingAuthority::mayDeclare(auth()->user(), $staff),
+            'staffDeclaration' => $staff === null ? null
+                : StaffDeclaration::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -305,7 +343,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_bio_data(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         // A department is only asked of an officer at the state office, so
@@ -384,7 +422,7 @@ class HumanResourceController extends Controller
     /** The officer's service dates, from the Career History section. */
     public function store_appraisal_career_history(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         $data = $request->validate([
@@ -415,7 +453,7 @@ class HumanResourceController extends Controller
     /** What the officer has qualified in, from the Qualifications section. */
     public function store_appraisal_qualifications(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         $request->validate([
@@ -446,7 +484,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_self_reporting(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         // The comments are the reporting officer's, so an account that may
@@ -518,7 +556,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_character_traits(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         // The grades are the reporting officer's to give: the Electoral
@@ -557,7 +595,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_commendations(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         $data = $request->validate([
@@ -594,7 +632,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_sanctions(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         if (StaffQuery::where('basic_information_ulid', $staff->ulid)->exists()) {
@@ -631,7 +669,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_leadership_traits(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         // The grades are the reporting officer's to give, the same desks
@@ -667,7 +705,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_general_remarks(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         // The remarks are the reporting officer's to give, the same desks
@@ -698,7 +736,7 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_suggestions(Request $request)
     {
-        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = $this->appraisalStaff($request);
         $this->requireOnAppraisalBrief($staff);
 
         // The suggestion is the reporting officer's to make, the same desks
@@ -730,6 +768,38 @@ class HumanResourceController extends Controller
         );
 
         return $this->onwardFrom($request, $staff, 'Suggestions saved.');
+    }
+
+    /**
+     * The Staff Declaration section: the officer's own certification that
+     * they have seen the report and that the reporting officer has
+     * discussed it with them, with whatever comments they have to make.
+     */
+    public function store_appraisal_staff_declaration(Request $request)
+    {
+        $staff = $this->appraisalStaff($request);
+        $this->requireOnAppraisalBrief($staff);
+
+        // The declaration is the officer's own to make, not the reporting
+        // officer's — so even the desk that may comment on the sections
+        // before it has no say here unless it is also their own.
+        if (! ReportingAuthority::mayDeclare(auth()->user(), $staff)) {
+            abort(403, 'The Staff Declaration is made by the officer themselves.');
+        }
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'comments' => ['required', 'string', 'max:2000'],
+        ], [
+            'comments.required' => 'Say what comments you have to make, or that you have none.',
+        ]);
+
+        StaffDeclaration::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            ['comments' => $data['comments']],
+        );
+
+        return $this->onwardFrom($request, $staff, 'Staff declaration saved.');
     }
 
     /**

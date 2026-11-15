@@ -143,6 +143,17 @@ class Menu
                 'label' => 'Performance Appraisal',
                 'icon' => 'chart',
                 'route' => 'my-appraisal',
+                // The report itself, carried as `also` rather than shown: the
+                // same page the Registry works through, but scoped to their
+                // own record there — see `appraisalStaff()`, which reads it
+                // off the session and ignores whatever a `staff` field in the
+                // url or the form happens to carry.
+                'also' => ['hr-appraisal', 'hr-appraisal.bio-data', 'hr-appraisal.career-history',
+                           'hr-appraisal.qualifications', 'hr-appraisal.self-reporting',
+                           'hr-appraisal.character-traits', 'hr-appraisal.commendations',
+                           'hr-appraisal.sanctions', 'hr-appraisal.leadership-traits',
+                           'hr-appraisal.general-remarks', 'hr-appraisal.suggestions',
+                           'hr-appraisal.staff-declaration'],
             ],
             [
                 'label' => 'Leave Management',

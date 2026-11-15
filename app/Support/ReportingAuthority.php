@@ -72,4 +72,30 @@ final class ReportingAuthority
         return $viewer->role !== null
             && $viewer->role === Department::roleFor($staff->department);
     }
+
+    /**
+     * Whether this account may make the Staff Declaration on this officer's
+     * report.
+     *
+     * The declaration is the officer's own certification that they have
+     * seen the report, so it is theirs to make and nobody else's — not even
+     * the reporting officer who answered for the sections before it. An
+     * administrator may still make it on their behalf, the way one may act
+     * for an officer elsewhere in the system. Everyone else, including the
+     * Electoral Officer or head of department who may comment on the report,
+     * only reads what is on record.
+     */
+    public static function mayDeclare(?User $viewer, ?BasicInformation $staff): bool
+    {
+        if ($viewer === null || $staff === null) {
+            return false;
+        }
+
+        if ($viewer->role === ApplicationRouting::ADMIN_ROLE) {
+            return true;
+        }
+
+        return $viewer->role === self::STAFF_ROLE
+            && $viewer->basic_information_ulid === $staff->ulid;
+    }
 }
