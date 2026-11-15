@@ -7,6 +7,7 @@ use App\Models\CharacterTraitAssessment;
 use App\Models\Commendation;
 use App\Models\Department;
 use App\Models\EduProgress;
+use App\Models\GeneralRemark;
 use App\Models\LeaveApplication;
 use App\Models\Lga;
 use App\Models\Notification;
@@ -275,6 +276,9 @@ class HumanResourceController extends Controller
             // The Leadership Traits grades, where they have been given already.
             'leadershipTraits' => $staff === null ? null
                 : LeadershipTraitAssessment::where('basic_information_ulid', $staff->ulid)->first(),
+            // The General Remarks written on the officer, where there are any already.
+            'generalRemark' => $staff === null ? null
+                : GeneralRemark::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -651,6 +655,36 @@ class HumanResourceController extends Controller
         );
 
         return $this->onwardFrom($request, $staff, 'Leadership traits saved.');
+    }
+
+    /**
+     * The General Remarks section: the reporting officer's own words drawing
+     * attention to any particular strength or weakness.
+     */
+    public function store_appraisal_general_remarks(Request $request)
+    {
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $this->requireOnAppraisalBrief($staff);
+
+        // The remarks are the reporting officer's to give, the same desks
+        // that answer for Character Traits and Leadership Traits.
+        if (! ReportingAuthority::mayCommentOn(auth()->user(), $staff)) {
+            abort(403, "General Remarks is written by the officer's reporting officer.");
+        }
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'remarks' => ['required', 'string', 'max:2000'],
+        ], [
+            'remarks.required' => 'Say what strength or weakness this draws attention to.',
+        ]);
+
+        GeneralRemark::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            ['remarks' => $data['remarks']],
+        );
+
+        return $this->onwardFrom($request, $staff, 'General remarks saved.');
     }
 
     /**
