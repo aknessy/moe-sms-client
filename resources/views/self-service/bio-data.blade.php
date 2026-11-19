@@ -95,14 +95,14 @@
                      here repeats in full further down — this is the summary,
                      not a second source of it. --}}
                 <x-registry.card title="Profile" description="As the Registry holds it">
-                    <div class="flex flex-col gap-4 py-2 sm:flex-row sm:items-start">
+                    <div class="flex flex-col gap-4 rounded-lg border border-[#2E7D32]/10 bg-[#2E7D32]/5 px-4 py-4 sm:flex-row sm:items-start">
                         @if ($staff->has_photo)
                             {{-- Served from behind the dashboard's session rather
                                  than a public link to the disk. --}}
                             <img src="{{ route('my-photo.show') }}" alt="Your photograph"
-                                 class="h-28 w-24 shrink-0 rounded-md border border-base-300 bg-base-200 object-cover object-top" />
+                                 class="h-28 w-28 shrink-0 rounded-full border border-base-300 bg-base-200 object-cover object-top" />
                         @else
-                            <div class="flex h-28 w-24 shrink-0 flex-col items-center justify-center rounded-md border border-dashed border-base-300 bg-base-200/40 px-2 text-center">
+                            <div class="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-full border border-dashed border-base-300 bg-base-200/40 px-2 text-center">
                                 <p class="m-0 text-xs text-base-content/50">No photo on file</p>
                             </div>
                         @endif
@@ -145,7 +145,7 @@
                             </dl>
 
                             <a href="{{ route('my-photo') }}"
-                               class="mt-3 inline-block text-xs font-medium text-[#1B5E20] hover:underline">
+                               class="btn btn-sm btn-cta-outline mt-3 px-4">
                                 {{ $staff->has_photo ? 'Update your photograph' : 'Upload a photograph' }}
                             </a>
                         </div>
