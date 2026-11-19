@@ -150,6 +150,35 @@
                             </a>
                         </div>
                     </div>
+
+                    {{-- Service Summary: the same card, not a card of its own. --}}
+                    <div class="mt-4 border-t border-base-200 pt-3">
+                        <p class="m-0 mb-2 text-xs font-medium uppercase tracking-wide text-base-content/40">
+                            Service Summary
+                        </p>
+                        <dl class="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                            <div class="flex items-center justify-between gap-2 sm:block">
+                                <dt class="m-0 text-xs text-base-content/50">Grade Level &amp; Step</dt>
+                                <dd class="m-0 mt-0 sm:mt-0.5 font-medium text-base-content">
+                                    {{ $staff->grade_level_label ?: '—' }}, {{ $staff->step_label ?: '—' }}
+                                </dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 sm:block">
+                                <dt class="m-0 text-xs text-base-content/50">Department</dt>
+                                <dd class="m-0 mt-0 sm:mt-0.5 font-medium text-base-content">{{ $staff->department ?: '—' }}</dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 sm:block">
+                                <dt class="m-0 text-xs text-base-content/50">Unit</dt>
+                                <dd class="m-0 mt-0 sm:mt-0.5 font-medium text-base-content">{{ $staff->unit ?: '—' }}</dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 sm:block">
+                                <dt class="m-0 text-xs text-base-content/50">File Number</dt>
+                                <dd class="m-0 mt-0 sm:mt-0.5 font-medium text-base-content">
+                                    {{ $staff->file_number ?: ($staff->computer_number ?: '—') }}
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
                 </x-registry.card>
 
                 @php
@@ -283,39 +312,12 @@
                         </x-registry.card>
                     </div>
 
-                    <div class="flex flex-col gap-4">
-                        <x-registry.card title="Service Summary" description="At a glance">
-                            <dl class="m-0 flex flex-col gap-3 text-sm">
-                                <div class="flex items-center justify-between gap-2">
-                                    <dt class="m-0 text-base-content/50">Grade Level &amp; Step</dt>
-                                    <dd class="m-0 font-medium text-base-content">
-                                        {{ $staff->grade_level_label ?: '—' }}, {{ $staff->step_label ?: '—' }}
-                                    </dd>
-                                </div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <dt class="m-0 text-base-content/50">Department</dt>
-                                    <dd class="m-0 font-medium text-base-content">{{ $staff->department ?: '—' }}</dd>
-                                </div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <dt class="m-0 text-base-content/50">Unit</dt>
-                                    <dd class="m-0 font-medium text-base-content">{{ $staff->unit ?: '—' }}</dd>
-                                </div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <dt class="m-0 text-base-content/50">File Number</dt>
-                                    <dd class="m-0 font-medium text-base-content">
-                                        {{ $staff->file_number ?: ($staff->computer_number ?: '—') }}
-                                    </dd>
-                                </div>
-                            </dl>
-                        </x-registry.card>
-
-                        <div class="w-full rounded-lg bg-gradient-to-br from-[#1B5E20] to-[#2E7D32] px-4 py-4 text-white shadow-md">
-                            <p class="m-0 text-sm font-semibold">Salary</p>
-                            <p class="mt-2 mb-0 text-xs text-white/80">
-                                Awaits the Accounting module — nothing is held
-                                here yet.
-                            </p>
-                        </div>
+                    <div class="w-full rounded-lg bg-gradient-to-br from-[#1B5E20] to-[#2E7D32] px-4 py-4 text-white shadow-md">
+                        <p class="m-0 text-sm font-semibold">Salary</p>
+                        <p class="mt-2 mb-0 text-xs text-white/80">
+                            Awaits the Accounting module — nothing is held
+                            here yet.
+                        </p>
                     </div>
                 </div>
 
