@@ -41,7 +41,7 @@ class Menu
     ];
 
     /** Where a self-service officer lands, and is sent back to. */
-    public const SELF_SERVICE_HOME = 'my-appraisal';
+    public const SELF_SERVICE_HOME = 'my-bio-data';
 
     public static function isSelfService(?User $user): bool
     {
@@ -138,17 +138,14 @@ class Menu
     {
         return [
             [
-                // Their landing page, and the nearest thing they have to a
-                // dashboard: standing, posting and retirement all on it.
+                // The same report the Registry works through, but scoped to
+                // their own record there — see `appraisalStaff()`, which
+                // reads it off the session and ignores whatever a `staff`
+                // field in the url or the form happens to carry.
                 'label' => 'Performance Appraisal',
                 'icon' => 'chart',
-                'route' => 'my-appraisal',
-                // The report itself, carried as `also` rather than shown: the
-                // same page the Registry works through, but scoped to their
-                // own record there — see `appraisalStaff()`, which reads it
-                // off the session and ignores whatever a `staff` field in the
-                // url or the form happens to carry.
-                'also' => ['hr-appraisal', 'hr-appraisal.bio-data', 'hr-appraisal.career-history',
+                'route' => 'hr-appraisal',
+                'also' => ['hr-appraisal.bio-data', 'hr-appraisal.career-history',
                            'hr-appraisal.qualifications', 'hr-appraisal.self-reporting',
                            'hr-appraisal.character-traits', 'hr-appraisal.commendations',
                            'hr-appraisal.sanctions', 'hr-appraisal.leadership-traits',

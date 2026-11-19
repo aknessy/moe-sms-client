@@ -205,6 +205,6 @@ class UserStaffLinkTest extends TestCase
 
         // The factory makes a `User`, whose own page this is; the greeting
         // sits in the navbar, which every dashboard page carries.
-        $this->actingAs($user)->get(route('my-appraisal'))->assertSee('Welcome, Idongesit!');
+        $this->actingAs($user)->get(route('my-bio-data'))->assertSee('Welcome, Idongesit!');
     }
 }

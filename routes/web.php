@@ -47,8 +47,6 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
      * so none of them takes an officer as a parameter.
      */
     Route::prefix('me')->group(function(){
-        Route::get('/appraisal', [SelfServiceController::class, 'appraisal'])->name('my-appraisal');
-
         Route::get('/leave', [SelfServiceController::class, 'leave'])->name('my-leave');
         Route::post('/leave', [SelfServiceController::class, 'store_leave'])->name('my-leave.store');
         Route::get('/leave/{ulid}', [SelfServiceController::class, 'show_leave'])->name('my-leave.show');

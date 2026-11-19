@@ -61,25 +61,6 @@ class SelfServiceController extends Controller
         return $staff;
     }
 
-    /* ------------------------------------------------ performance appraisal */
-
-    /**
-     * Their landing page, and the nearest thing an officer has to a dashboard:
-     * where they stand, where they are posted, and when they fall due to go.
-     */
-    public function appraisal()
-    {
-        $staff = $this->staff();
-
-        return $this->page('self-service/appraisal', 'Performance Appraisal', 'my-appraisal', [
-            'posting' => PostingContext::for($staff),
-            'retiresOn' => $staff->retiresOn(),
-            // Still to be worked out: who assesses an officer, and against
-            // what, is not settled yet.
-            'appraisal' => null,
-        ]);
-    }
-
     /* ------------------------------------------------------ leave */
 
     public function leave()

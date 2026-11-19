@@ -32,7 +32,7 @@ class SelfServiceMenuTest extends TestCase
 
     public function test_an_officer_on_the_user_role_sees_only_their_own_corner(): void
     {
-        $response = $this->actingAs($this->officer('User'))->get(route('my-appraisal'));
+        $response = $this->actingAs($this->officer('User'))->get(route('my-bio-data'));
 
         foreach (['Performance Appraisal', 'Leave Management', 'Training',
                   'Accounts', 'Profile'] as $entry) {
@@ -98,7 +98,6 @@ class SelfServiceMenuTest extends TestCase
     public static function pagesAnOfficerHasThatAnAdministratorShouldToo(): array
     {
         return [
-            'their appraisal' => ['my-appraisal'],
             'their leave' => ['my-leave'],
             'training' => ['my-training'],
             'their payslip' => ['my-payslip'],
@@ -185,7 +184,7 @@ class SelfServiceMenuTest extends TestCase
     public function test_updating_a_photo_is_reached_from_the_navbar(): void
     {
         // One place rather than one per role's menu.
-        $response = $this->actingAs($this->officer('User'))->get(route('my-appraisal'));
+        $response = $this->actingAs($this->officer('User'))->get(route('my-bio-data'));
 
         $response->assertSee(route('my-photo'));
         $response->assertSee('Update photo');
@@ -239,7 +238,7 @@ class SelfServiceMenuTest extends TestCase
     public static function pagesOpenToAnOfficer(): array
     {
         return [
-            'their appraisal' => ['my-appraisal'],
+            'their appraisal' => ['hr-appraisal'],
             'their leave' => ['my-leave'],
             'training' => ['my-training'],
             'their payslip' => ['my-payslip'],
@@ -269,7 +268,7 @@ class SelfServiceMenuTest extends TestCase
         // Not a refusal: the dashboard is where signing in lands them, and
         // they never asked for it.
         $this->actingAs($this->officer('User'))->get(route('dashboard'))
-            ->assertRedirect(route('my-appraisal'));
+            ->assertRedirect(route('my-bio-data'));
     }
 
     public function test_signing_in_lands_an_officer_on_their_own_page(): void
@@ -279,7 +278,7 @@ class SelfServiceMenuTest extends TestCase
         $this->post('/login', [
             'userhandle' => $officer->username,
             'secrethash' => 'password',
-        ])->assertRedirect(route('my-appraisal'));
+        ])->assertRedirect(route('my-bio-data'));
     }
 
     public function test_signing_in_does_not_follow_an_officer_to_a_page_they_may_not_see(): void
@@ -293,7 +292,7 @@ class SelfServiceMenuTest extends TestCase
         $this->post('/login', [
             'userhandle' => $officer->username,
             'secrethash' => 'password',
-        ])->assertRedirect(route('my-appraisal'));
+        ])->assertRedirect(route('my-bio-data'));
     }
 
     public function test_signing_in_does_follow_an_officer_to_a_page_that_is_theirs(): void
@@ -325,7 +324,7 @@ class SelfServiceMenuTest extends TestCase
         $orphan = User::factory()->create(['role' => 'User']);
         $orphan->forceFill(['basic_information_ulid' => null])->save();
 
-        $this->actingAs($orphan)->get(route('my-appraisal'))->assertForbidden();
+        $this->actingAs($orphan)->get(route('my-bio-data'))->assertForbidden();
     }
 
     /* ------------------------------------------------- the menu as data */
@@ -335,7 +334,7 @@ class SelfServiceMenuTest extends TestCase
         $allowed = Menu::allowedRoutesFor($this->officer('User'));
 
         // Everything the menu points at, and the POSTs that belong to it.
-        foreach (['my-appraisal', 'my-leave', 'my-leave.store', 'my-training',
+        foreach (['hr-appraisal', 'my-bio-data', 'my-leave', 'my-leave.store', 'my-training',
                   'my-training.interest', 'change-password.store'] as $route) {
             $this->assertContains($route, $allowed);
         }

@@ -44,53 +44,6 @@ class SelfServicePagesTest extends TestCase
         ]);
     }
 
-    /* ----------------------------------------- performance appraisal */
-
-    public function test_the_appraisal_page_carries_their_standing(): void
-    {
-        $user = $this->officer([
-            'surname' => 'Asuquo', 'firstname' => 'Bassey',
-            'grade_level' => 9, 'step' => 4,
-            'date_of_birth' => '1980-05-10', 'date_of_employment' => '2008-01-04',
-        ]);
-
-        $response = $this->actingAs($user)->get(route('my-appraisal'));
-
-        $response->assertOk();
-        $response->assertSee('Asuquo');
-        $response->assertSee('GL 09');
-        $response->assertSee('Step 4');
-        // 60 years from the 1980 birth comes before 35 years from 2008.
-        $response->assertSee('2040-05-10');
-        $response->assertSee('Retirement by Age');
-        $response->assertSee('30 days a year');
-    }
-
-    public function test_the_appraisal_page_says_where_they_are_posted(): void
-    {
-        $user = $this->officer();
-
-        $state = State::where('name', 'Cross River')->firstOrFail();
-        $lga = Lga::where('state_id', $state->id)->firstOrFail();
-
-        Posting::create([
-            'basic_information_ulid' => $this->staff->ulid,
-            'posting_type' => 'deployment',
-            'to_lga' => $lga->id,
-            'effective_date' => '2025-01-06',
-            'deployed_as' => 'Registration Officer',
-        ]);
-
-        $this->actingAs($user)->get(route('my-appraisal'))
-            ->assertSee($lga->lga_name);
-    }
-
-    public function test_an_officer_not_yet_assessed_is_told_so(): void
-    {
-        $this->actingAs($this->officer())->get(route('my-appraisal'))
-            ->assertSee('You have not been assessed yet.');
-    }
-
     /* ------------------------------------------------------------ leave */
 
     public function test_an_officer_applies_for_their_own_leave(): void

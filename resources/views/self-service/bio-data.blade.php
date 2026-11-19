@@ -211,6 +211,13 @@
                     $qualifications = $staff->qualifications();
                 @endphp
 
+                <x-registry.card title="Salary"
+                                 description="Awaits the Accounting module.">
+                    <p class="text-sm text-base-content/60">
+                        Salary details are not yet available here.
+                    </p>
+                </x-registry.card>
+
                 <x-registry.card title="Children"
                                  description="Those the service should know about — at most two, with the day each was born.">
                     @if (collect($children)->isEmpty())
