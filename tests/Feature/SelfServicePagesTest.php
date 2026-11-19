@@ -247,12 +247,11 @@ class SelfServicePagesTest extends TestCase
 
         // The photograph itself comes from behind the session, not a public
         // link to the disk.
-        $response->assertSee('Photograph');
+        $response->assertSee('Profile');
         $response->assertSee('<img src="' . route('my-photo.show'), false);
-        $response->assertSee('passport.jpg');
-        $response->assertSee('Update Photo');
-        $response->assertDontSee('Upload Photograph');
-        $response->assertDontSee('No photograph on file yet');
+        $response->assertSee('Update your photograph');
+        $response->assertDontSee('Upload a photograph');
+        $response->assertDontSee('No photo on file');
     }
 
     public function test_the_bio_data_page_asks_for_a_photograph_where_there_is_none(): void
@@ -263,8 +262,8 @@ class SelfServicePagesTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('my-bio-data'));
 
-        $response->assertSee('No photograph on file yet');
-        $response->assertSee('Upload Photograph');
+        $response->assertSee('No photo on file');
+        $response->assertSee('Upload a photograph');
         $response->assertDontSee('<img src="' . route('my-photo.show'), false);
     }
 

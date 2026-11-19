@@ -82,46 +82,73 @@
         <div class="no-print" id="bio-data-screen">
             <x-registry.page title="Bio-data" crumb="My Records">
 
-                {{-- The officer's face, beside who the record is of: the one
-                     sheet the Registry keeps a photograph against. --}}
-                <x-registry.card title="Photograph"
-                                 description="What the Registry holds against your record">
-                    <div class="flex flex-col items-start gap-4 py-2 sm:flex-row sm:items-center">
+                @php
+                    $icon = fn (string $path) => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-3.5 w-3.5 shrink-0 text-base-content/40"><path stroke-linecap="round" stroke-linejoin="round" d="' . $path . '" /></svg>';
+                    $calendarIcon = 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5';
+                    $pinIcon = 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0z M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z';
+                    $mailIcon = 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75';
+                    $phoneIcon = 'M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 00-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z';
+                @endphp
+
+                {{-- Who they are, at a glance: the photograph beside the name
+                     and the handful of facts worth reading first. Everything
+                     here repeats in full further down — this is the summary,
+                     not a second source of it. --}}
+                <x-registry.card title="Profile" description="As the Registry holds it">
+                    <div class="flex flex-col gap-4 py-2 sm:flex-row sm:items-start">
                         @if ($staff->has_photo)
                             {{-- Served from behind the dashboard's session rather
                                  than a public link to the disk. --}}
                             <img src="{{ route('my-photo.show') }}" alt="Your photograph"
-                                 class="h-36 w-30 rounded-md border border-base-300 bg-base-200 object-cover object-top" />
-
-                            <div class="flex flex-col gap-1">
-                                <p class="m-0 text-sm text-base-content">
-                                    {{ $staff->photo_name }}
-                                </p>
-                                <p class="m-0 text-xs text-base-content/50">
-                                    To change it, replace it under Update Photo.
-                                </p>
-                                <a href="{{ route('my-photo') }}"
-                                   class="btn btn-sm btn-cta-outline px-4 mt-1">Update Photo</a>
-                            </div>
+                                 class="h-28 w-24 shrink-0 rounded-md border border-base-300 bg-base-200 object-cover object-top" />
                         @else
-                            <div class="flex h-36 w-30 flex-col items-center justify-center rounded-md border border-dashed border-base-300 bg-base-200/40 px-4 text-center">
-                                <p class="m-0 text-xs text-base-content/50">
-                                    No photograph on file yet.
-                                </p>
-                            </div>
-
-                            <div class="flex flex-col gap-1">
-                                <p class="m-0 text-sm text-base-content">
-                                    Your record has no photograph against it.
-                                </p>
-                                <p class="m-0 text-xs text-base-content/50">
-                                    A passport photograph is the first thing the
-                                    Registry turns to when reading a file.
-                                </p>
-                                <a href="{{ route('my-photo') }}"
-                                   class="btn btn-sm btn-cta px-4 mt-1 shadow-md">Upload Photograph</a>
+                            <div class="flex h-28 w-24 shrink-0 flex-col items-center justify-center rounded-md border border-dashed border-base-300 bg-base-200/40 px-2 text-center">
+                                <p class="m-0 text-xs text-base-content/50">No photo on file</p>
                             </div>
                         @endif
+
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="m-0 text-lg font-semibold text-base-content">
+                                    {{ trim($staff->surname . ', ' . trim($staff->firstname . ' ' . $staff->othernames)) }}
+                                </h3>
+                                <span class="rounded-full bg-[#2E7D32]/10 px-2 py-0.5 text-xs font-medium text-[#1B5E20]">
+                                    {{ $staff->designation ?: 'Rank not recorded' }}
+                                </span>
+                            </div>
+                            <p class="m-0 mt-0.5 text-xs text-base-content/50">
+                                {{ $staff->staff_number ?: 'Staff number not recorded' }}
+                                &middot; {{ $staff->grade_level_label ?: 'GL not recorded' }}, {{ $staff->step_label ?: 'step not recorded' }}
+                            </p>
+
+                            <dl class="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-xs sm:grid-cols-2">
+                                <div class="m-0 flex items-center gap-1.5 text-base-content/70">
+                                    {!! $icon($calendarIcon) !!}
+                                    <span>Employed {{ $staff->date_of_employment ?: '—' }}</span>
+                                </div>
+                                <div class="m-0 flex items-center gap-1.5 text-base-content/70">
+                                    {!! $icon($pinIcon) !!}
+                                    <span>{{ $posting['station'] ?: ($posting['lga'] ?: 'Duty station not recorded') }}</span>
+                                </div>
+                                <div class="m-0 flex items-center gap-1.5 text-base-content/70">
+                                    {!! $icon($calendarIcon) !!}
+                                    <span>Born {{ $staff->date_of_birth ?: '—' }}</span>
+                                </div>
+                                <div class="m-0 flex items-center gap-1.5 text-base-content/70">
+                                    {!! $icon($mailIcon) !!}
+                                    <span>{{ $staff->email ?: 'Email not recorded' }}</span>
+                                </div>
+                                <div class="m-0 flex items-center gap-1.5 text-base-content/70">
+                                    {!! $icon($phoneIcon) !!}
+                                    <span>{{ $staff->phone_number ?: 'Phone not recorded' }}</span>
+                                </div>
+                            </dl>
+
+                            <a href="{{ route('my-photo') }}"
+                               class="mt-3 inline-block text-xs font-medium text-[#1B5E20] hover:underline">
+                                {{ $staff->has_photo ? 'Update your photograph' : 'Upload a photograph' }}
+                            </a>
+                        </div>
                     </div>
                 </x-registry.card>
 
@@ -184,7 +211,135 @@
                     $leaveRecorded = $staff->leave?->leave_record ?? [];
                     $leaveApplications = $staff->leaveApplications()->newestFirst()->get();
                     $children = $staff->children ?? [];
+
+                    // A date out of a free-typed sheet is not guaranteed to
+                    // parse; a promotion with a date that does not reads as
+                    // one with no date, rather than breaking the page.
+                    $safeDate = fn ($value) => filled($value) ? rescue(fn () => \Carbon\Carbon::parse($value), null, false) : null;
+
+                    // Everything worth a glance before the full record: leave
+                    // applications and promotions, newest first, five deep.
+                    $activity = collect()
+                        ->concat($leaveApplications->take(5)->map(fn ($application) => [
+                            'title' => $application->leave_type . ' leave application',
+                            'subtitle' => \App\Models\LeaveApplication::STATUSES[$application->status] ?? $application->status,
+                            'date' => $application->created_at,
+                        ]))
+                        ->concat($promotions->reverse()->take(3)->map(fn ($promotion) => [
+                            'title' => 'Promoted to ' . ($promotion['designation'] ?? 'a new rank'),
+                            'subtitle' => 'Effective ' . ($promotion['effective_from'] ?? 'a date not recorded'),
+                            'date' => $safeDate($promotion['effective_from'] ?? null),
+                        ]))
+                        ->sortByDesc(fn ($event) => $event['date'])
+                        ->take(5)
+                        ->values();
                 @endphp
+
+                {{-- The shape of the dashboard, before the full record beneath
+                     it: how far they have risen, the handful of figures worth
+                     a quick read, and the latest few things that happened on
+                     their record. --}}
+                <div class="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                    <div class="lg:col-span-2">
+                        <x-registry.card title="Career Progression"
+                                         description="How you have risen through the service">
+                            @if ($promotions->isEmpty())
+                                <p class="text-sm text-base-content/60">
+                                    No promotions are recorded here yet.
+                                </p>
+                            @else
+                                <div class="relative pl-6">
+                                    <div class="absolute bottom-1 left-[11px] top-1 w-px bg-base-300"></div>
+
+                                    @foreach ($promotions as $promotion)
+                                        @php $isLatest = $loop->last; @endphp
+                                        <div class="relative mb-5 last:mb-0">
+                                            <span class="absolute -left-6 top-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 {{ $isLatest ? 'border-[#1B5E20] bg-[#1B5E20]' : 'border-base-300 bg-white' }}">
+                                                <span class="h-2 w-2 rounded-full {{ $isLatest ? 'bg-white' : 'bg-base-300' }}"></span>
+                                            </span>
+
+                                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                                <p class="m-0 text-sm font-medium text-base-content">
+                                                    {{ $promotion['designation'] ?? 'Promotion' }}
+                                                </p>
+                                                <span class="rounded-full px-2 py-0.5 text-xs {{ $isLatest ? 'bg-[#2E7D32]/10 text-[#1B5E20]' : 'bg-base-200 text-base-content/60' }}">
+                                                    {{ $isLatest ? 'Current' : 'Reached' }}
+                                                </span>
+                                            </div>
+                                            <p class="m-0 mt-0.5 text-xs text-base-content/50">
+                                                GL {{ str_pad($promotion['grade_level'] ?? '', 2, '0', STR_PAD_LEFT) ?: '—' }},
+                                                Step {{ $promotion['step'] ?? '—' }}
+                                                &middot; effective {{ $promotion['effective_from'] ?? '—' }}
+                                            </p>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <a href="#career-history"
+                                   class="mt-1 inline-block text-xs font-medium text-[#1B5E20] hover:underline">
+                                    View full career history
+                                </a>
+                            @endif
+                        </x-registry.card>
+                    </div>
+
+                    <div class="flex flex-col gap-4">
+                        <x-registry.card title="Service Summary" description="At a glance">
+                            <dl class="m-0 flex flex-col gap-3 text-sm">
+                                <div class="flex items-center justify-between gap-2">
+                                    <dt class="m-0 text-base-content/50">Grade Level &amp; Step</dt>
+                                    <dd class="m-0 font-medium text-base-content">
+                                        {{ $staff->grade_level_label ?: '—' }}, {{ $staff->step_label ?: '—' }}
+                                    </dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <dt class="m-0 text-base-content/50">Department</dt>
+                                    <dd class="m-0 font-medium text-base-content">{{ $staff->department ?: '—' }}</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <dt class="m-0 text-base-content/50">Unit</dt>
+                                    <dd class="m-0 font-medium text-base-content">{{ $staff->unit ?: '—' }}</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <dt class="m-0 text-base-content/50">File Number</dt>
+                                    <dd class="m-0 font-medium text-base-content">
+                                        {{ $staff->file_number ?: ($staff->computer_number ?: '—') }}
+                                    </dd>
+                                </div>
+                            </dl>
+                        </x-registry.card>
+
+                        <div class="w-full rounded-lg bg-gradient-to-br from-[#1B5E20] to-[#2E7D32] px-4 py-4 text-white shadow-md">
+                            <p class="m-0 text-sm font-semibold">Salary</p>
+                            <p class="mt-2 mb-0 text-xs text-white/80">
+                                Awaits the Accounting module — nothing is held
+                                here yet.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <x-registry.card title="Recent Activity" description="The latest on your record">
+                    @if ($activity->isEmpty())
+                        <p class="text-sm text-base-content/60">
+                            Nothing has happened on your record yet.
+                        </p>
+                    @else
+                        <div class="divide-y divide-base-200">
+                            @foreach ($activity as $event)
+                                <div class="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                                    <div class="min-w-0">
+                                        <p class="m-0 truncate text-sm text-base-content">{{ $event['title'] }}</p>
+                                        <p class="m-0 mt-0.5 truncate text-xs text-base-content/50">{{ $event['subtitle'] }}</p>
+                                    </div>
+                                    <span class="shrink-0 text-xs text-base-content/40">
+                                        {{ $event['date']?->diffForHumans() ?? '—' }}
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </x-registry.card>
 
                 @foreach ($sections as $heading => $fields)
                     <x-registry.card :title="$heading"
@@ -211,13 +366,6 @@
                     $qualifications = $staff->qualifications();
                 @endphp
 
-                <x-registry.card title="Salary"
-                                 description="Awaits the Accounting module.">
-                    <p class="text-sm text-base-content/60">
-                        Salary details are not yet available here.
-                    </p>
-                </x-registry.card>
-
                 <x-registry.card title="Children"
                                  description="Those the service should know about — at most two, with the day each was born.">
                     @if (collect($children)->isEmpty())
@@ -238,6 +386,7 @@
                     @endif
                 </x-registry.card>
 
+                <div id="career-history">
                 <x-registry.card title="Career History"
                                  description="How you rose through the service, and what you left behind to join it.">
                     @if ($promotions->isEmpty() && $career === null)
@@ -292,6 +441,7 @@
                         @endif
                     @endif
                 </x-registry.card>
+                </div>
 
                 <x-registry.card title="Leave History"
                                  description="The leave you have taken and the applications they answer to.">
