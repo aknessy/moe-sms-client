@@ -33,6 +33,25 @@ class StateLgaReferenceTest extends TestCase
         return $user->fresh();
     }
 
+    /** Amendment requests are decided by HOD GAP alone. */
+    private function reviewer(): User
+    {
+        $user = User::firstOrNew(['username' => 'reference-reviewer']);
+        $user->fill([
+            'basic_information_ulid' => \App\Models\BasicInformation::factory()
+                ->create(['surname' => 'Reviewer', 'firstname' => 'Tester', 'othernames' => ''])
+                ->ulid,
+            'email' => 'reference-reviewer@inec.gov.ng',
+            'permissions' => json_encode([]),
+            'role' => 'HOD GAP',
+            'is_active' => 1,
+        ]);
+        $user->password = 'password';
+        $user->save();
+
+        return $user->fresh();
+    }
+
     public function test_every_state_and_lga_ships_with_the_schema(): void
     {
         $this->assertSame(37, State::count(), 'the 36 states and the FCT');
@@ -188,7 +207,7 @@ class StateLgaReferenceTest extends TestCase
 
         $amendment = \App\Models\RecordAmendment::where('basic_information_ulid', $officer->ulid)->firstOrFail();
 
-        $this->actingAs($this->actor())
+        $this->actingAs($this->reviewer())
             ->post(route('record-amendments.review', $amendment->ulid), ['decision' => 'approved']);
 
         $this->assertSame($lagos->id, $officer->fresh()->state_of_origin);

@@ -183,7 +183,8 @@ class Menu
                 'label' => 'Profile',
                 'icon' => 'user',
                 'children' => [
-                    ['label' => 'Bio-data', 'route' => 'my-bio-data'],
+                    ['label' => 'Bio-data', 'route' => 'my-bio-data',
+                     'also' => ['my-record-amendment', 'my-record-amendment.store']],
                     ['label' => 'Change Password', 'route' => 'change-password',
                      'also' => ['change-password.store']],
                     // Update Photo is not here: it lives in the navbar's
@@ -243,6 +244,9 @@ class Menu
                      'also' => ['query-discipline.store', 'query-response', 'query-response.decide']],
                     ['label' => 'Record Amendments', 'route' => 'record-amendments',
                      'also' => ['record-amendments.store', 'record-amendments.review']],
+                    ['label' => 'Family & Referees', 'route' => 'family-referees',
+                     'also' => ['family-referees.next-of-kin.store', 'family-referees.next-of-kin.update',
+                                'family-referees.next-of-kin.remove', 'family-referees.referees.store']],
                 ],
             ],
             [

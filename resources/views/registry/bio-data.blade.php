@@ -23,6 +23,9 @@
                             <td class="px-3 py-2 text-right">
                                 <a href="{{ route('record-of-service', ['staff' => $person->ulid]) }}"
                                    class="text-[#2E7D32] hover:underline">Record of Service</a>
+                                <span class="text-base-content/30">·</span>
+                                <a href="{{ route('family-referees', ['staff' => $person->ulid]) }}"
+                                   class="text-[#2E7D32] hover:underline">Family & Referees</a>
                             </td>
                         </tr>
                     @endforeach

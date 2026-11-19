@@ -144,10 +144,16 @@
                                 </div>
                             </dl>
 
-                            <a href="{{ route('my-photo') }}"
-                               class="btn btn-sm btn-cta-outline mt-3 px-4">
-                                {{ $staff->has_photo ? 'Update your photograph' : 'Upload a photograph' }}
-                            </a>
+                            <div class="mt-3 flex flex-wrap items-center gap-2">
+                                <a href="{{ route('my-photo') }}"
+                                   class="btn btn-sm btn-cta-outline px-4">
+                                    {{ $staff->has_photo ? 'Update your photograph' : 'Upload a photograph' }}
+                                </a>
+                                <a href="{{ route('my-record-amendment') }}"
+                                   class="btn btn-sm btn-cta-outline px-4">
+                                    Information Incorrect? Request for Update
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -193,6 +199,7 @@
                             'Gender' => $staff->gender,
                             'Date of Birth' => $staff->date_of_birth,
                             'Marital Status' => $staff->marital_status,
+                            'Spouse' => $staff->spouse_name,
                         ],
                         'Service' => [
                             'File Number' => $staff->file_number,
@@ -648,6 +655,7 @@
                     <div><dt>Gender</dt><dd>{{ $staff->gender ?: '—' }}</dd></div>
                     <div><dt>Date of Birth</dt><dd>{{ $staff->date_of_birth ?: '—' }}</dd></div>
                     <div><dt>Marital Status</dt><dd>{{ $staff->marital_status ?: '—' }}</dd></div>
+                    <div><dt>Spouse</dt><dd>{{ $staff->spouse_name ?: '—' }}</dd></div>
                     <div>
                         <dt>Address</dt>
                         <dd>{{ $staff->address ?: '—' }}</dd>

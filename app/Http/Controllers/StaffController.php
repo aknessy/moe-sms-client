@@ -956,6 +956,94 @@ class StaffController extends Controller
             ->with('status', 'Outcome recorded against this query.');
     }
 
+    /**
+     * Next of kin and referees for a staff member already on record — the
+     * edit the Add Staff wizard has no way back to once a record is
+     * complete, and where an amendment request against either lands someone
+     * who has to make the change by hand.
+     */
+    public function family_referees(Request $request){
+        $selected = $request->query('staff');
+
+        return $this->registryPage('registry/family-referees', 'Family & Referees', 'family-referees', [
+            'selected' => $selected,
+            'staff' => $selected ? BasicInformation::where('ulid', $selected)->first() : null,
+            'nextOfKins' => $selected ? NextOfKin::where('basic_information_ulid', $selected)->orderBy('id')->get() : collect(),
+            'refereeSheet' => $selected ? Referee::where('basic_information_ulid', $selected)->first() : null,
+        ]);
+    }
+
+    public function store_next_of_kin(Request $request){
+        $data = $request->validate([
+            'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
+            'nok_name' => ['required', 'string', 'max:160'],
+            'nok_relationship' => ['required', 'string', 'max:80'],
+            'nok_address' => ['required', 'string', 'max:300'],
+            'nok_phone_number' => ['required', 'string', 'max:30'],
+        ]);
+
+        NextOfKin::create($data);
+
+        return redirect()->route('family-referees', ['staff' => $data['basic_information_ulid']])
+            ->with('status', 'Next of kin added.');
+    }
+
+    public function update_next_of_kin(Request $request, NextOfKin $nextOfKin){
+        $data = $request->validate([
+            'nok_name' => ['required', 'string', 'max:160'],
+            'nok_relationship' => ['required', 'string', 'max:80'],
+            'nok_address' => ['required', 'string', 'max:300'],
+            'nok_phone_number' => ['required', 'string', 'max:30'],
+        ]);
+
+        $nextOfKin->update($data);
+
+        return redirect()->route('family-referees', ['staff' => $nextOfKin->basic_information_ulid])
+            ->with('status', 'Next of kin updated.');
+    }
+
+    public function remove_next_of_kin(NextOfKin $nextOfKin){
+        $staffUlid = $nextOfKin->basic_information_ulid;
+        $nextOfKin->delete();
+
+        return redirect()->route('family-referees', ['staff' => $staffUlid])
+            ->with('status', 'Next of kin removed.');
+    }
+
+    /**
+     * Referees are held as one sheet per staff member — a JSON list rather
+     * than a row each — so saving replaces the whole list rather than one
+     * entry at a time.
+     */
+    public function store_referees(Request $request){
+        $data = $request->validate([
+            'basic_information_ulid' => ['required', 'exists:basic_informations,ulid'],
+            'referee-name.*' => ['nullable', 'string', 'max:160'],
+            'referee-address.*' => ['nullable', 'string', 'max:300'],
+            'referee-phone.*' => ['nullable', 'string', 'max:30'],
+            'referee-email.*' => ['nullable', 'email', 'max:160'],
+        ]);
+
+        $rows = collect($request->input('referee-name', []))
+            ->keys()
+            ->map(fn ($i) => [
+                'name' => $request->input("referee-name.{$i}"),
+                'address' => $request->input("referee-address.{$i}"),
+                'phone' => $request->input("referee-phone.{$i}"),
+                'email' => $request->input("referee-email.{$i}"),
+            ])
+            ->filter(fn ($row) => collect($row)->filter()->isNotEmpty())
+            ->values();
+
+        Referee::updateOrCreate(
+            ['basic_information_ulid' => $data['basic_information_ulid']],
+            ['referees_record' => $rows->all()],
+        );
+
+        return redirect()->route('family-referees', ['staff' => $data['basic_information_ulid']])
+            ->with('status', 'Referees updated.');
+    }
+
     public function record_amendments(){
         return $this->registryPage('registry/record-amendments', 'Record Amendments', 'record-amendments', [
             'amendments' => RecordAmendment::with('staff')->latest()->paginate(self::PER_PAGE)->withQueryString(),
@@ -970,6 +1058,8 @@ class StaffController extends Controller
             'requested_value' => ['required', 'string', 'max:160'],
             'reason' => ['nullable', 'string', 'max:1000'],
             'supporting_document' => ['nullable', 'string', 'max:160'],
+        ], [
+            'basic_information_ulid.required' => 'Pick a staff.',
         ]);
 
         // Grade level and step are numbers now, so an amendment to either has
@@ -1026,6 +1116,10 @@ class StaffController extends Controller
      * staff record when approved.
      */
     public function review_amendment(Request $request, string $ulid){
+        if (! RecordAmendment::mayApprove(auth()->user())) {
+            abort(403, 'An amendment request is decided by HOD GAP.');
+        }
+
         $data = $request->validate([
             'decision' => ['required', 'in:approved,rejected'],
             'reviewed_by' => ['nullable', 'string', 'max:120'],
@@ -1033,7 +1127,10 @@ class StaffController extends Controller
 
         $amendment = RecordAmendment::where('ulid', $ulid)->firstOrFail();
 
-        if ($data['decision'] === 'approved') {
+        // A next of kin or referee has no single column to write into —
+        // approving marks the request decided, but the correction itself is
+        // made by hand, through Family & Referees.
+        if ($data['decision'] === 'approved' && ! $amendment->is_indirect) {
             $value = $amendment->requested_value;
 
             if (in_array($amendment->field, ['state_of_origin', 'lga_of_origin'], true)) {
@@ -1055,9 +1152,13 @@ class StaffController extends Controller
         // `validate()` omits nullable keys that were never submitted, so default it here.
         $amendment->update([
             'status' => $data['decision'],
-            'reviewed_by' => $data['reviewed_by'] ?? 'Administrator',
+            'reviewed_by' => $data['reviewed_by'] ?? 'HOD GAP',
             'reviewed_at' => now()->toDateString(),
         ]);
+
+        if ($data['decision'] === 'approved') {
+            $amendment->notifyApplicant();
+        }
 
         return redirect()->route('record-amendments')
             ->with('status', "Amendment {$data['decision']}.");

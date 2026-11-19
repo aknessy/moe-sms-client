@@ -59,6 +59,9 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
 
         Route::get('/bio-data', [SelfServiceController::class, 'bioData'])->name('my-bio-data');
 
+        Route::get('/record-amendment', [SelfServiceController::class, 'recordAmendment'])->name('my-record-amendment');
+        Route::post('/record-amendment', [SelfServiceController::class, 'store_record_amendment'])->name('my-record-amendment.store');
+
         Route::get('/photo', [SelfServiceController::class, 'photo'])->name('my-photo');
         Route::post('/photo', [SelfServiceController::class, 'store_photo'])->name('my-photo.store');
         Route::get('/photo/view', [SelfServiceController::class, 'show_photo'])->name('my-photo.show');
@@ -134,6 +137,12 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::get('/record-amendments', [StaffController::class, 'record_amendments'])->name('record-amendments');
         Route::post('/record-amendments', [StaffController::class, 'store_amendment'])->name('record-amendments.store');
         Route::post('/record-amendments/{ulid}/review', [StaffController::class, 'review_amendment'])->name('record-amendments.review');
+
+        Route::get('/family-referees', [StaffController::class, 'family_referees'])->name('family-referees');
+        Route::post('/family-referees/next-of-kin', [StaffController::class, 'store_next_of_kin'])->name('family-referees.next-of-kin.store');
+        Route::post('/family-referees/next-of-kin/{nextOfKin}', [StaffController::class, 'update_next_of_kin'])->name('family-referees.next-of-kin.update');
+        Route::post('/family-referees/next-of-kin/{nextOfKin}/remove', [StaffController::class, 'remove_next_of_kin'])->name('family-referees.next-of-kin.remove');
+        Route::post('/family-referees/referees', [StaffController::class, 'store_referees'])->name('family-referees.referees.store');
     });
 
     Route::prefix('pension-gratuity')->group(function(){

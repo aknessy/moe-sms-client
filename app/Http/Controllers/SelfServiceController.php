@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BasicInformation;
 use App\Models\LeaveApplication;
+use App\Models\RecordAmendment;
 use App\Models\Setting;
 use App\Models\Training;
 use App\Models\TrainingInterest;
@@ -235,6 +236,55 @@ class SelfServiceController extends Controller
     public function photo()
     {
         return $this->page('self-service/photo', 'Update Photo', 'my-photo');
+    }
+
+    /**
+     * Something on the record reads wrong: rather than typing over it
+     * themselves, an officer says what it should read, and the request
+     * waits on the Registry — the same way one raised on their behalf
+     * through the Registry's own form does.
+     */
+    public function recordAmendment()
+    {
+        $staff = $this->staff();
+
+        return $this->page('self-service/record-amendment', 'Request an Update', 'my-bio-data', [
+            'requests' => RecordAmendment::where('basic_information_ulid', $staff->ulid)->latest()->get(),
+        ]);
+    }
+
+    public function store_record_amendment(Request $request)
+    {
+        $staff = $this->staff();
+
+        $data = $request->validate([
+            'field' => ['required', Rule::in(array_keys(RecordAmendment::AMENDABLE_FIELDS))],
+            'current_value' => ['nullable', 'string', 'max:160'],
+            'requested_value' => ['required', 'string', 'max:160'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'field.required' => 'Choose which field needs correcting.',
+            'requested_value.required' => 'Say what it should read instead.',
+        ]);
+
+        // Grade level and step are numbers now, so a request against either
+        // has to be one — the same rule the Registry's own form holds
+        // requests to.
+        if (in_array($data['field'], ['grade_level', 'step'], true)
+            && ! ctype_digit(trim($data['requested_value']))) {
+
+            return back()->withInput()->withErrors([
+                'requested_value' => 'Grade level and step are recorded as numbers — give the number alone, e.g. 8.',
+            ]);
+        }
+
+        RecordAmendment::create($data + [
+            'basic_information_ulid' => $staff->ulid,
+            'status' => 'pending',
+        ]);
+
+        return redirect()->route('my-record-amendment')
+            ->with('status', 'Your request has been submitted for the Registry\'s review.');
     }
 
     public function store_photo(Request $request)

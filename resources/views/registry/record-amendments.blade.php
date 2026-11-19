@@ -8,24 +8,8 @@
 
                     <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
                         <x-registry.picker name="basic_information_ulid" label="Staff" :options="$staffOptions" required />
-                        <x-registry.field name="field" label="Field to Amend" required :options="[
-                            'file_number' => 'File Number',
-                            'computer_number' => 'Establishment/Computer Number',
-                            'surname' => 'Surname',
-                            'firstname' => 'First Name',
-                            'othernames' => 'Other Names',
-                            'department' => 'Department',
-                            'division' => 'Division / Unit',
-                            'designation' => 'Designation',
-                            'grade_level' => 'Grade Level',
-                            'step' => 'Step',
-                            'date_of_birth' => 'Date of Birth',
-                            'phone_number' => 'Phone Number',
-                            'email' => 'Email',
-                            'state_of_origin' => 'State of Origin',
-                            'lga_of_origin' => 'LGA of Origin',
-                            'address' => 'Address',
-                        ]" />
+                        <x-registry.field name="field" label="Field to Amend" required
+                                         :options="\App\Models\RecordAmendment::AMENDABLE_FIELDS" />
                     </div>
 
                     <div class="mb-3 w-full flex flex-col gap-4 lg:flex-row">
@@ -54,7 +38,7 @@
                                 {{ $amendment->staff?->surname }}, {{ $amendment->staff?->firstname }}
                                 <span class="block text-base-content/50">{{ $amendment->staff?->staff_number }}</span>
                             </td>
-                            <td class="px-3 py-2">{{ str_replace('_', ' ', $amendment->field) }}</td>
+                            <td class="px-3 py-2">{{ \App\Models\RecordAmendment::AMENDABLE_FIELDS[$amendment->field] ?? str_replace('_', ' ', $amendment->field) }}</td>
                             <td class="px-3 py-2 text-base-content/60">{{ $amendment->current_value ?: '—' }}</td>
                             <td class="px-3 py-2">{{ $amendment->requested_value }}</td>
                             <td class="px-3 py-2">
@@ -63,19 +47,29 @@
                             </td>
                             <td class="px-3 py-2">{{ $amendment->reviewed_by ?: '—' }}</td>
                             <td class="px-3 py-2">
+                                @if ($amendment->is_indirect)
+                                    {{-- No single column to write into: the correction is made by hand. --}}
+                                    <a href="{{ route('family-referees', ['staff' => $amendment->basic_information_ulid]) }}"
+                                       class="text-[#2E7D32] hover:underline">Open Family & Referees</a>
+                                @endif
+
                                 @if ($amendment->status === 'pending')
-                                    <div class="flex items-center gap-2">
-                                        <form method="POST" action="{{ route('record-amendments.review', $amendment->ulid) }}">
-                                            @csrf
-                                            <input type="hidden" name="decision" value="approved">
-                                            <button type="submit" class="text-[#2E7D32] hover:underline">Approve</button>
-                                        </form>
-                                        <form method="POST" action="{{ route('record-amendments.review', $amendment->ulid) }}">
-                                            @csrf
-                                            <input type="hidden" name="decision" value="rejected">
-                                            <button type="submit" class="text-error hover:underline">Reject</button>
-                                        </form>
-                                    </div>
+                                    @if (\App\Models\RecordAmendment::mayApprove(auth()->user()))
+                                        <div class="mt-1 flex items-center gap-2">
+                                            <form method="POST" action="{{ route('record-amendments.review', $amendment->ulid) }}">
+                                                @csrf
+                                                <input type="hidden" name="decision" value="approved">
+                                                <button type="submit" class="text-[#2E7D32] hover:underline">Approve</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('record-amendments.review', $amendment->ulid) }}">
+                                                @csrf
+                                                <input type="hidden" name="decision" value="rejected">
+                                                <button type="submit" class="text-error hover:underline">Reject</button>
+                                            </form>
+                                        </div>
+                                    @else
+                                        <span class="mt-1 block text-base-content/40">Awaiting HOD GAP's decision.</span>
+                                    @endif
                                 @else
                                     <span class="text-base-content/40">{{ $amendment->reviewed_at ?: '—' }}</span>
                                 @endif

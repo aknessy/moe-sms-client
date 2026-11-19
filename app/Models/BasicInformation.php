@@ -30,6 +30,7 @@ class BasicInformation extends Model
       // How the officer is married, and the children the service should know
       // about — held as up to two {name, date_of_birth} rows in one write.
       'marital_status',
+      'spouse_name',
       'children',
       'department',
       // The office they sit in — "Calabar HQ" — which belongs to no

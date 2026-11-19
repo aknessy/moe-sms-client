@@ -26,6 +26,8 @@
                             'Grade Level' => $record->grade_level_label,
                             'Step' => $record->step_label,
                             'Date of Birth' => $record->date_of_birth,
+                            'Marital Status' => $record->marital_status,
+                            'Spouse' => $record->spouse_name,
                             'Phone Number' => $record->phone_number,
                             'Email' => $record->email,
                             'State of Origin' => $record->state?->name,
