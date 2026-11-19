@@ -157,7 +157,7 @@ class SelfServiceMenuTest extends TestCase
     public function test_the_self_service_menu_runs_in_the_order_asked_for(): void
     {
         $this->assertSame(
-            ['Performance Appraisal', 'Leave Management', 'Training', 'Accounts', 'Profile'],
+            ['Dashboard', 'Performance Appraisal', 'Leave Management', 'Training', 'Accounts', 'Profile'],
             array_column(Menu::selfService(), 'label'),
         );
     }

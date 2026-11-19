@@ -138,6 +138,13 @@ class Menu
     {
         return [
             [
+                // Their own landing page — the bio-data the Registry holds
+                // on them, which is also where signing in sends them.
+                'label' => 'Dashboard',
+                'icon' => 'dashboard',
+                'route' => 'my-bio-data',
+            ],
+            [
                 // The same report the Registry works through, but scoped to
                 // their own record there — see `appraisalStaff()`, which
                 // reads it off the session and ignores whatever a `staff`
