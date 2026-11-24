@@ -7,6 +7,8 @@ use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FinanceAndAccountController;
+use App\Http\Controllers\GapDelegateController;
+use App\Http\Controllers\LeaveRosterController;
 use App\Http\Controllers\HumanResourceController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\NotificationController;
@@ -33,6 +35,13 @@ Route::middleware('auth.session')->get('/storage/{path}', function (string $path
 
     return Storage::disk('local')->response($path);
 })->where('path', '.*')->name('storage.local');
+
+// An administrator working as the staff member they are first. Outside the role
+// wall below, because the way back has to stay reachable from staff view.
+Route::middleware('auth.session')->group(function () {
+    Route::post('/view/staff', [ProfileSettingsController::class, 'switchToStaffView'])->name('view.staff');
+    Route::post('/view/admin', [ProfileSettingsController::class, 'switchToAdminView'])->name('view.admin');
+});
 
 // Everything past this point requires a valid session, and an account may only
 // reach what its role's menu points at — see App\Support\Menu.
@@ -93,6 +102,8 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::post('/performance-appraisal/general-remarks', [HumanResourceController::class, 'store_appraisal_general_remarks'])->name('hr-appraisal.general-remarks');
         Route::post('/performance-appraisal/suggestions', [HumanResourceController::class, 'store_appraisal_suggestions'])->name('hr-appraisal.suggestions');
         Route::post('/performance-appraisal/staff-declaration', [HumanResourceController::class, 'store_appraisal_staff_declaration'])->name('hr-appraisal.staff-declaration');
+        Route::post('/performance-appraisal/reporting-officer-declaration', [HumanResourceController::class, 'store_appraisal_reporting_officer_declaration'])->name('hr-appraisal.reporting-officer-declaration');
+        Route::post('/performance-appraisal/counter-signing-officer-report', [HumanResourceController::class, 'store_appraisal_counter_signing_officer_report'])->name('hr-appraisal.counter-signing-officer-report');
         Route::get('/recruitment', [HumanResourceController::class, 'recruitment'])->name('hr-recruitment');
         Route::get('/training', [HumanResourceController::class, 'training'])->name('hr-training');
         Route::get('/establishment-strength', [HumanResourceController::class, 'establishment'])->name('hr-establishment');
@@ -157,6 +168,19 @@ Route::middleware(['auth.session', 'within.role'])->prefix('dashboard')->group(f
         Route::post('/benefit-payments', [PensionGratuityController::class, 'store_payment'])->name('benefit-payments.store');
         Route::get('/benefit-payments/{ulid}/receipt', [PensionGratuityController::class, 'receipt'])->name('benefit-payments.receipt');
     });
+
+    // HOD GAP designates the officers who work alongside them as Registry
+    // Officers. The controller refuses anyone else.
+    Route::get('/gap-delegates', [GapDelegateController::class, 'index'])->name('gap-delegates');
+    Route::post('/gap-delegates', [GapDelegateController::class, 'store'])->name('gap-delegates.store');
+    Route::post('/gap-delegates/{ulid}/revoke', [GapDelegateController::class, 'revoke'])->name('gap-delegates.revoke');
+
+    // The department's Leave Roster, put together by HOD GAP and the Registry
+    // Officers they designate. The controller refuses anyone else.
+    Route::get('/leave-roster', [LeaveRosterController::class, 'index'])->name('leave-roster');
+    Route::post('/leave-roster', [LeaveRosterController::class, 'store'])->name('leave-roster.store');
+    Route::post('/leave-roster/remind', [LeaveRosterController::class, 'remind'])->name('leave-roster.remind');
+    Route::post('/leave-roster/{ulid}/remove', [LeaveRosterController::class, 'remove'])->name('leave-roster.remove');
 
     Route::prefix('finance-account')->group(function(){
         Route::get('/salary-structure', [FinanceAndAccountController::class, 'salaryStructure'])->name('salary-structure');

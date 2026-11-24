@@ -40,15 +40,8 @@
                 <div class="{{ $locked ? 'pointer-events-none select-none opacity-40' : '' }}">
                     {{-- Who the report is on comes first: there is nothing to
                          open until an officer has been chosen. A self-service
-                         account has nobody to choose, so it reads on instead. --}}
-                    @if ($selfService)
-                        <x-registry.card title="Your Report"
-                                         description="The Annual Performance Evaluation Report on you">
-                            <p class="m-0 py-3 text-sm text-base-content/80">
-                                {{ $staff ? trim($staff->surname . ', ' . trim($staff->firstname . ' ' . $staff->othernames)) : '' }}
-                            </p>
-                        </x-registry.card>
-                    @else
+                         account has nobody to choose, so it shows no card here. --}}
+                    @unless ($selfService)
                         <x-registry.card title="Select Staff"
                                          description="The officer this Annual Performance Evaluation Report is on">
                             {{-- No section travels with this: a report opens at the
@@ -74,7 +67,7 @@
                                 </div>
                             </form>
                         </x-registry.card>
-                    @endif
+                    @endunless
 
                     {{-- Which year this report is being read against. Self
                          Reporting is the only section that holds anything by
@@ -107,7 +100,9 @@
 
                     <x-registry.card :title="$sectionLabel"
                                      :description="$staff
-                                        ? 'For ' . trim($staff->surname . ', ' . trim($staff->firstname . ' ' . $staff->othernames))
+                                        ? ($selfService
+                                            ? ''
+                                            : 'For ' . trim($staff->surname . ', ' . trim($staff->firstname . ' ' . $staff->othernames)))
                                         : 'Choose an officer above to begin'">
 
                         @if ($staff === null)
@@ -119,10 +114,25 @@
                         @else
                             {{-- A section renders its own partial where it has one,
                                  and says so plainly where it has not. --}}
-                            @includeFirst([
-                                'human-resources.appraisal.' . $section,
-                                'human-resources.appraisal.not-built',
-                            ])
+                            @if ($readOnly)
+                                <p class="mb-0 mt-3 rounded-md bg-base-200 px-3 py-2 text-xs text-base-content/70">
+                                    @if (\App\Support\ReportingAuthority::isGapDelegate(auth()->user()))
+                                        You are reading another officer's report. Signing and acting on it is HOD GAP's.
+                                    @else
+                                        You are reading another officer's report. The only part you act on is
+                                        Suggestions (By Superior Officer).
+                                    @endif
+                                </p>
+                            @endif
+
+                            {{-- Disabled wholesale rather than section by section: the
+                                 one HOD GAP may act on stays open. --}}
+                            <fieldset class="m-0 min-w-0 border-0 p-0" @disabled($readOnly && $section !== 'suggestions')>
+                                @includeFirst([
+                                    'human-resources.appraisal.' . $section,
+                                    'human-resources.appraisal.not-built',
+                                ])
+                            </fieldset>
 
                             {{-- A section with a form of its own carries its own way
                                  onward, saving as it goes. The rest only move. --}}

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use App\Models\Resource;
+use App\Models\User;
+use App\Support\Menu;
 class ProfileSettingsController
 {
     static string $page_title = 'MOE | Staff Management';
@@ -19,6 +21,29 @@ class ProfileSettingsController
                 'app_version' => config('app.app_version'),
                 'resources' => $resources,
             ]);
+    }
+
+    /**
+     * An administrator works as the staff member they are first: their own
+     * bio-data, leave, appraisal and the rest, through the same menu a staff
+     * account has. Nothing about the account changes; the choice is only the
+     * session's.
+     */
+    public function switchToStaffView(Request $request)
+    {
+        abort_unless($request->user()?->actual_role === User::ADMIN_ROLE, 403,
+            'Only an administrator has a second view to switch to.');
+
+        $request->session()->put(User::STAFF_VIEW_KEY, true);
+
+        return redirect()->route(Menu::SELF_SERVICE_HOME);
+    }
+
+    public function switchToAdminView(Request $request)
+    {
+        $request->session()->forget(User::STAFF_VIEW_KEY);
+
+        return redirect()->route('dashboard');
     }
 
     public function changePassword(Request $request){

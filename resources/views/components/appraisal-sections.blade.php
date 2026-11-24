@@ -2,6 +2,7 @@
 
 @php
     use App\Support\Appraisal;
+    use App\Support\Menu;
 
     // The same rail the staff wizard uses, so the two modules read alike.
     $step_base = 'shrink-0 whitespace-nowrap rounded-lg border py-2 px-3 text-sm transition-all';
@@ -18,7 +19,11 @@
 {{-- Which part of the report is open, and how far through it that is. --}}
 <div class="mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
     <p class="m-0 text-sm text-base-content/60">
-        @if ($open)
+        @if ($open && Menu::isSelfService(auth()->user()))
+            {{-- A staff account only ever reads its own report. --}}
+            Appraisal for
+            <span class="font-semibold text-[#1B5E20]">you</span>
+        @elseif ($open)
             Appraisal for
             <span class="font-semibold text-[#1B5E20]">{{ $staff->surname }}, {{ $staff->firstname }}</span>
             <span class="text-base-content/50">({{ $staff->staff_number }})</span>

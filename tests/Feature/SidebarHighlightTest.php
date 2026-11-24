@@ -138,11 +138,10 @@ class SidebarHighlightTest extends TestCase
         return [
             'their payslip' => ['my-payslip', 'Payslip'],
             'their deductions' => ['my-deductions', 'Deductions'],
-            'their bio-data' => ['my-bio-data', 'Bio-data'],
+            'requesting an update' => ['my-record-amendment', 'Request Update'],
             'changing their password' => ['change-password', 'Change Password'],
             // Update Photo is not in any sidebar: it is reached from the
             // navbar's Options menu.
-            'voluntary retirement' => ['my-retirement', 'Voluntary Retirement'],
         ];
     }
 
@@ -154,6 +153,16 @@ class SidebarHighlightTest extends TestCase
     public function test_an_officers_own_pages_are_told_apart(string $route, string $label): void
     {
         $this->assertSame($label, $this->highlighted($route, 'User'));
+    }
+
+    public function test_voluntary_retirement_is_a_top_level_entry_carrying_the_tab_itself(): void
+    {
+        $html = $this->actingAs($this->actor('User'))->get(route('my-retirement'))->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<a[^>]*' . preg_quote(self::ACTIVE_GROUP, '/') . '.*?<span>Voluntary Retirement<\/span>/s',
+            $html,
+        );
     }
 
     public function test_only_one_of_an_officers_entries_is_current(): void

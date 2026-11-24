@@ -11,7 +11,7 @@
         $suggestion === null ? null : ($suggestion->different_job_suggested ? 'yes' : 'no'));
 @endphp
 
-@if ($mayComment)
+@if ($maySuggest)
     <form method="POST" action="{{ route('hr-appraisal.suggestions') }}" class="py-3"
           data-suggestions>
         @csrf
@@ -55,6 +55,30 @@
             @error('different_job_details')
                 <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
             @enderror
+        </div>
+
+        {{-- Whoever acts on the appraisal signs it and says the day. --}}
+        <div class="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div class="w-full">
+                <label for="acted_on" class="mb-1 block text-xs font-semibold text-base-content/70">Date Acted*</label>
+                <input id="acted_on" name="acted_on" type="date" required
+                       value="{{ old('acted_on', $suggestion?->acted_on?->toDateString() ?? now()->toDateString()) }}"
+                       class="w-full rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50" />
+                @error('acted_on')
+                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="w-full">
+                <label for="signature" class="mb-1 block text-xs font-semibold text-base-content/70">Signature*</label>
+                <input id="signature" name="signature" type="text" required
+                       value="{{ old('signature', $suggestion?->signature) }}"
+                       placeholder="Type your name to sign"
+                       class="w-full rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50" />
+                @error('signature')
+                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         <div class="flex flex-wrap items-center justify-end gap-2 border-t border-base-200 py-3">
@@ -105,10 +129,17 @@
             </div>
         @endif
 
+        @if ($suggestion?->signature)
+            <dl class="mb-3 grid grid-cols-1 gap-2 text-sm text-base-content/80 md:grid-cols-2">
+                <div><dt class="text-xs font-semibold text-base-content/60">Date Acted</dt><dd class="m-0">{{ $suggestion->acted_on?->format('d M Y') }}</dd></div>
+                <div><dt class="text-xs font-semibold text-base-content/60">Signature</dt><dd class="m-0">{{ $suggestion->signature }}</dd></div>
+            </dl>
+        @endif
+
         <p class="mt-0.5 mb-0 text-xs text-base-content/40">
             Suggestions is given by the Electoral Officer of the local
             government the officer is deployed to, the head of the officer's
-            department, or an administrator.
+            department, HOD GAP, or an administrator.
         </p>
 
         @if ($continueLabel)

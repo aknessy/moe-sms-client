@@ -31,6 +31,29 @@
             @enderror
         </div>
 
+        <div class="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div class="w-full">
+                <label for="declared_on" class="mb-1 block text-xs font-semibold text-base-content/70">Date*</label>
+                <input id="declared_on" name="declared_on" type="date" required
+                       value="{{ old('declared_on', $staffDeclaration?->declared_on?->toDateString() ?? now()->toDateString()) }}"
+                       class="w-full rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50" />
+                @error('declared_on')
+                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="w-full">
+                <label for="signature" class="mb-1 block text-xs font-semibold text-base-content/70">Signature*</label>
+                <input id="signature" name="signature" type="text" required
+                       value="{{ old('signature', $staffDeclaration?->signature) }}"
+                       placeholder="Type your name to sign"
+                       class="w-full rounded-md border border-base-300 bg-white px-3 py-2 text-xs text-base-content/80 transition duration-300 ease focus:border-primary focus:outline-none hover:border-primary/50" />
+                @error('signature')
+                    <p class="mt-1 mb-0 text-xs text-error">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
         @if ($staffDeclaration)
             <p class="mt-0.5 mb-3 text-xs text-base-content/40">
                 Last declared on {{ $staffDeclaration->updated_at->format('d M Y') }}.
@@ -57,6 +80,13 @@
                 {{ $staffDeclaration?->comments ?? 'Nothing has been declared here yet.' }}
             </p>
         </div>
+
+        @if ($staffDeclaration?->signature)
+            <dl class="mb-3 grid grid-cols-1 gap-2 text-sm text-base-content/80 md:grid-cols-2">
+                <div><dt class="text-xs font-semibold text-base-content/60">Date</dt><dd class="m-0">{{ $staffDeclaration->declared_on?->format('d M Y') }}</dd></div>
+                <div><dt class="text-xs font-semibold text-base-content/60">Signature</dt><dd class="m-0">{{ $staffDeclaration->signature }}</dd></div>
+            </dl>
+        @endif
 
         @if ($staffDeclaration)
             <p class="mt-0.5 mb-3 text-xs text-base-content/40">

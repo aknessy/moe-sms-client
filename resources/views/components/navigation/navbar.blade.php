@@ -97,6 +97,20 @@
 						</div>
 					</a>
 			  	</div>
+				{{-- An administrator is a staff member first: this moves
+				     them between the two views without signing out. --}}
+				@if (auth()->user()?->actual_role === \App\Models\User::ADMIN_ROLE)
+					<div class="py-1" role="none">
+						<form method="POST"
+						      action="{{ auth()->user()->in_staff_view ? route('view.admin') : route('view.staff') }}"
+						      role="none">
+							@csrf
+							<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-neutral-content hover:opacity-25 active:bg-opacity-35 focus:bg-opacity-40 hover:text-neutral-content focus:text-neutral-content active:text-neutral-content" role="menuitem" tabindex="-1" id="menu-item-switch-view">
+								{{ auth()->user()->in_staff_view ? 'Switch to administrator view' : 'Switch to staff view' }}
+							</button>
+						</form>
+					</div>
+				@endif
 				<div class="py-1" role="none">
 					<form method="POST" action="{{ route('logout') }}" role="none">
 						@csrf

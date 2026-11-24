@@ -13,8 +13,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StaffDeclaration extends Model
 {
     protected $fillable = [
-        'basic_information_ulid', 'comments',
+        'basic_information_ulid', 'comments', 'declared_on', 'signature',
     ];
+
+    protected function casts(): array
+    {
+        return ['declared_on' => 'date'];
+    }
 
     public function staff(): BelongsTo
     {

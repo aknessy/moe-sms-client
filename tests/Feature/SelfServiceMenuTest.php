@@ -157,7 +157,7 @@ class SelfServiceMenuTest extends TestCase
     public function test_the_self_service_menu_runs_in_the_order_asked_for(): void
     {
         $this->assertSame(
-            ['Dashboard', 'Performance Appraisal', 'Leave Management', 'Training', 'Accounts', 'Profile'],
+            ['Dashboard', 'Performance Appraisal', 'Leave Management', 'Training', 'Voluntary Retirement', 'Accounts', 'Profile'],
             array_column(Menu::selfService(), 'label'),
         );
     }
@@ -176,7 +176,7 @@ class SelfServiceMenuTest extends TestCase
         // Update Photo is not among them: it sits in the navbar's Options
         // menu, which every role carries.
         $this->assertSame(
-            ['Bio-data', 'Change Password', 'Voluntary Retirement'],
+            ['Request Update', 'Change Password'],
             array_column($profile['children'], 'label'),
         );
     }

@@ -79,6 +79,8 @@ class AppraisalSuggestionsTest extends TestCase
                 'section' => 'suggestions',
                 'different_job_suggested' => 'yes',
                 'different_job_details' => 'Registration Officer, for the exposure to field operations.',
+                'acted_on' => '2026-11-23',
+                'signature' => 'A. Signer',
             ], $overrides));
     }
 
@@ -116,6 +118,8 @@ class AppraisalSuggestionsTest extends TestCase
                 'section' => 'suggestions',
                 'different_job_suggested' => 'yes',
                 'different_job_details' => 'Registration Officer, for the exposure to field operations.',
+                'acted_on' => '2026-11-23',
+                'signature' => 'A. Signer',
             ], $overrides));
     }
 

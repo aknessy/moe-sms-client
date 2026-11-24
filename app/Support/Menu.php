@@ -71,8 +71,9 @@ class Menu
         }
 
         $allowed = self::allowedRoutesFor($user);
+        $denied = self::deniedRoutesFor($user);
 
-        if ($allowed === null) {
+        if ($allowed === null && $denied === []) {
             return true;
         }
 
@@ -83,13 +84,172 @@ class Menu
             return false;
         }
 
-        return in_array($route->getName(), $allowed, true);
+        if (in_array($route->getName(), $denied, true)) {
+            return false;
+        }
+
+        return $allowed === null || in_array($route->getName(), $allowed, true);
+    }
+
+    /**
+     * The Finance/Account pages HOD GAP does not work in: everything under it
+     * but what their own menu lists.
+     */
+    public const HOD_GAP_DENIED = [
+        'salary-structure', 'payroll', 'arrears-variations', 'remittances',
+        // Nothing under ICT/Voter Registry is theirs.
+        'voter-registry', 'adhoc-staff', 'voter-registration', 'polling-units', 'device-register',
+    ];
+
+    /**
+     * Routes this account may not reach even though its menu is otherwise
+     * the full one: what only the Administrator runs, and for the GAP desk,
+     * the Finance and ICT pages that are not theirs.
+     */
+    public static function deniedRoutesFor(?User $user): array
+    {
+        $denied = self::isAdministrator($user) ? [] : self::ADMINISTRATOR_ONLY;
+
+        if (ReportingAuthority::atGapDesk($user)) {
+            $denied = array_merge($denied, self::HOD_GAP_DENIED);
+        }
+
+        return $denied;
+    }
+
+    /**
+     * What only the Administrator runs: the system's settings, its accounts
+     * and roles, its notification templates, and its backups. Everyone else —
+     * HOD GAP, Registry Officers, the other heads of department, Electoral
+     * Officers — is kept out of them, by menu and by url alike.
+     */
+    public const ADMINISTRATOR_ONLY = [
+        'config', 'config.organisation', 'config.rules', 'config.printing',
+        'users-roles', 'users-roles.store', 'users-roles.toggle', 'users-roles.permissions',
+        'notification-templates',
+        'backup-data',
+    ];
+
+    public static function isAdministrator(?User $user): bool
+    {
+        return $user?->role === User::ADMIN_ROLE;
+    }
+
+    /** The menu without what only the Administrator may open. */
+    private static function withoutAdministratorOnly(array $menu): array
+    {
+        foreach ($menu as &$group) {
+            if (isset($group['children'])) {
+                $group['children'] = array_values(array_filter(
+                    $group['children'],
+                    fn ($child) => ! in_array($child['route'] ?? null, self::ADMINISTRATOR_ONLY, true),
+                ));
+            }
+        }
+        unset($group);
+
+        return $menu;
     }
 
     /** The menu this account should see. */
     public static function forUser(?User $user): array
     {
-        return self::isSelfService($user) ? self::selfService() : self::full();
+        if (self::isSelfService($user)) {
+            return self::selfService();
+        }
+
+        if (ReportingAuthority::atGapDesk($user)) {
+            return self::withoutAdministratorOnly(
+                self::forHodGap(self::full(), ReportingAuthority::isHodGap($user)));
+        }
+
+        $menu = self::full();
+
+        // The head of any other department builds that department's roster,
+        // so it is on their sidebar under Human Resources.
+        if (ReportingAuthority::headsOwnDepartment($user)) {
+            foreach ($menu as &$group) {
+                if ($group['label'] === 'Human Resources') {
+                    $group['children'][] = ['label' => 'Leave Roster', 'route' => 'leave-roster',
+                                            'also' => ['leave-roster.store', 'leave-roster.remove']];
+                }
+            }
+            unset($group);
+        }
+
+        return self::isAdministrator($user) ? $menu : self::withoutAdministratorOnly($menu);
+    }
+
+    /**
+     * HOD GAP acts on every officer's appraisal, so it sits on their sidebar
+     * in its own right, straight under the Dashboard, rather than inside
+     * Human Resources — and is taken out of there so it is not listed twice.
+     */
+    private static function forHodGap(array $menu, bool $isHead = true): array
+    {
+        foreach ($menu as &$group) {
+            if (isset($group['children'])) {
+                $group['children'] = array_values(array_filter(
+                    $group['children'],
+                    fn ($child) => ($child['route'] ?? null) !== 'hr-appraisal',
+                ));
+            }
+        }
+        unset($group);
+
+        // Finance/Account is cut down to what HOD GAP deals with, and the
+        // ICT/Voter Registry is not theirs at all.
+        $menu = array_values(array_filter($menu, fn ($group) => $group['label'] !== 'ICT/Voter Registry'));
+
+        foreach ($menu as &$group) {
+            if ($group['label'] === 'Finance/Account') {
+                $group['children'] = [
+                    // There is no separate request page yet; it opens the
+                    // Pay Slip page.
+                    ['label' => 'Pay Slip Request', 'route' => 'payslip'],
+                    ['label' => 'Loans & Advances', 'route' => 'loans-advances'],
+                    ['label' => 'Deductions', 'route' => 'staff-deductions'],
+                    ['label' => 'Allowances', 'route' => 'allowances'],
+                ];
+            }
+        }
+        unset($group);
+
+        $appraisal = [
+            'label' => 'Performance Appraisal',
+            'icon' => 'chart',
+            'route' => 'hr-appraisal',
+            'also' => ['hr-appraisal.bio-data', 'hr-appraisal.career-history',
+                       'hr-appraisal.qualifications', 'hr-appraisal.self-reporting',
+                       'hr-appraisal.character-traits', 'hr-appraisal.commendations',
+                       'hr-appraisal.sanctions', 'hr-appraisal.leadership-traits',
+                       'hr-appraisal.general-remarks', 'hr-appraisal.suggestions',
+                       'hr-appraisal.staff-declaration',
+                       'hr-appraisal.reporting-officer-declaration',
+                       'hr-appraisal.counter-signing-officer-report'],
+        ];
+
+        $added = [$appraisal, [
+            'label' => 'Leave Roster',
+            'icon' => 'users',
+            'route' => 'leave-roster',
+            'also' => ['leave-roster.store', 'leave-roster.remove'],
+        ]];
+
+        // Designating a Registry Officer is the head's alone; the officers
+        // they designate do not designate others.
+        if ($isHead) {
+            $added[] = [
+                'label' => 'Registry Officer Delegates',
+                'icon' => 'users',
+                'route' => 'gap-delegates',
+                'also' => ['gap-delegates.store', 'gap-delegates.revoke'],
+            ];
+        }
+
+        array_splice($menu, 1, 0, $added);
+
+        return $menu;
     }
 
     /**
@@ -157,7 +317,9 @@ class Menu
                            'hr-appraisal.character-traits', 'hr-appraisal.commendations',
                            'hr-appraisal.sanctions', 'hr-appraisal.leadership-traits',
                            'hr-appraisal.general-remarks', 'hr-appraisal.suggestions',
-                           'hr-appraisal.staff-declaration'],
+                           'hr-appraisal.staff-declaration',
+                           'hr-appraisal.reporting-officer-declaration',
+                           'hr-appraisal.counter-signing-officer-report'],
             ],
             [
                 'label' => 'Leave Management',
@@ -172,6 +334,12 @@ class Menu
                 'also' => ['my-training.interest'],
             ],
             [
+                'label' => 'Voluntary Retirement',
+                'icon' => 'archive',
+                'route' => 'my-retirement',
+                'also' => ['my-retirement.store'],
+            ],
+            [
                 'label' => 'Accounts',
                 'icon' => 'wallet',
                 'children' => [
@@ -183,15 +351,16 @@ class Menu
                 'label' => 'Profile',
                 'icon' => 'user',
                 'children' => [
-                    ['label' => 'Bio-data', 'route' => 'my-bio-data',
-                     'also' => ['my-record-amendment', 'my-record-amendment.store']],
+                    // The Dashboard already is the bio-data, so this entry
+                    // is the one thing the Profile group adds to it: asking
+                    // for a correction.
+                    ['label' => 'Request Update', 'route' => 'my-record-amendment',
+                     'also' => ['my-record-amendment.store']],
                     ['label' => 'Change Password', 'route' => 'change-password',
                      'also' => ['change-password.store']],
                     // Update Photo is not here: it lives in the navbar's
                     // Options menu, which every role carries, so it is the
                     // one place it need not be repeated per menu.
-                    ['label' => 'Voluntary Retirement', 'route' => 'my-retirement',
-                     'also' => ['my-retirement.store']],
                 ],
             ],
         ];

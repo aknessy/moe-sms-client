@@ -73,10 +73,37 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    /** The role's name, read through the reference. */
-    public function getRoleAttribute(): ?string
+    /** The session key an administrator's switch to staff view is kept under. */
+    public const STAFF_VIEW_KEY = 'staff_view';
+
+    /**
+     * The role the account actually holds, whatever view it is working in.
+     */
+    public function getActualRoleAttribute(): ?string
     {
         return $this->roleRecord?->role;
+    }
+
+    /**
+     * Whether this is the signed-in administrator, working as the staff
+     * member they are first.
+     */
+    public function getInStaffViewAttribute(): bool
+    {
+        return $this->actual_role === self::ADMIN_ROLE
+            && auth()->id() === $this->id
+            && session(self::STAFF_VIEW_KEY) === true;
+    }
+
+    /**
+     * The role this account is working as. An administrator who has switched
+     * to staff view reads as a plain staff account — menu, access and
+     * everything that asks — until they switch back. Only the signed-in
+     * account is ever switched, and the role actually held never changes.
+     */
+    public function getRoleAttribute(): ?string
+    {
+        return $this->in_staff_view ? 'User' : $this->actual_role;
     }
 
     /**

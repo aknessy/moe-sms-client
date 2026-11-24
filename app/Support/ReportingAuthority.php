@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\BasicInformation;
 use App\Models\Department;
+use App\Models\GapDelegate;
 use App\Models\User;
 
 /**
@@ -73,6 +74,80 @@ final class ReportingAuthority
             && $viewer->role === Department::roleFor($staff->department);
     }
 
+    /** The head of General Administration & Planning: acts on every officer's report. */
+    public const HOD_GAP_ROLE = 'HOD GAP';
+
+    public static function isHodGap(?User $viewer): bool
+    {
+        return $viewer?->role === self::HOD_GAP_ROLE;
+    }
+
+    /**
+     * An officer HOD GAP has designated a Registry Officer. They work as HOD
+     * GAP does, but sign and approve nothing on the head's behalf.
+     */
+    public static function isGapDelegate(?User $viewer): bool
+    {
+        return GapDelegate::holds($viewer);
+    }
+
+    /** The head of the department on their own staff record. */
+    public static function headsOwnDepartment(?User $viewer): bool
+    {
+        $role = $viewer?->role;
+
+        return $role !== null && $role === Department::roleFor($viewer->staff?->department);
+    }
+
+    /** HOD GAP or their designated officer: the two who share the GAP desk. */
+    public static function atGapDesk(?User $viewer): bool
+    {
+        return self::isHodGap($viewer) || self::isGapDelegate($viewer);
+    }
+
+    /**
+     * Whether this account may act on the Suggestions (By Superior Officer)
+     * section: the desks that report on the officer, and HOD GAP, who acts on
+     * every officer's report by signing it and saying the day they did.
+     */
+    public static function mayActOnSuggestions(?User $viewer, ?BasicInformation $staff): bool
+    {
+        return self::mayCommentOn($viewer, $staff)
+            || ($viewer !== null && $staff !== null && self::isHodGap($viewer));
+    }
+
+    /**
+     * Whether this account is only reading this report. HOD GAP is a staff
+     * member first: their own report is theirs to fill, but on anyone else's
+     * they may act on the Suggestions and nothing more.
+     */
+    public static function readsOnly(?User $viewer, ?BasicInformation $staff): bool
+    {
+        return self::atGapDesk($viewer)
+            && $staff !== null
+            && $viewer->basic_information_ulid !== $staff->ulid;
+    }
+
+    /** The desks above the reporting officers: they countersign, rather than report. */
+    public const COUNTERSIGNING_ROLES = [
+        ApplicationRouting::ADMIN_ROLE,
+        ApplicationRouting::SECRETARY_ROLE,
+        'Commissioner',
+    ];
+
+    /**
+     * Whether this account may write the Countersigning Officer's Report.
+     *
+     * The countersigning officer is normally the immediate superior of the
+     * reporting officer, so it is the desks above the department heads and
+     * Electoral Officers — not those heads themselves — that answer here.
+     */
+    public static function mayCounterSign(?User $viewer, ?BasicInformation $staff): bool
+    {
+        return $viewer !== null && $staff !== null
+            && in_array($viewer->role, self::COUNTERSIGNING_ROLES, true);
+    }
+
     /**
      * Whether this account may make the Staff Declaration on this officer's
      * report.
@@ -95,7 +170,10 @@ final class ReportingAuthority
             return true;
         }
 
-        return $viewer->role === self::STAFF_ROLE
+        // HOD GAP is a staff member first, so their own report is theirs to
+        // declare on too.
+        return (in_array($viewer->role, [self::STAFF_ROLE, self::HOD_GAP_ROLE], true)
+                || self::isGapDelegate($viewer))
             && $viewer->basic_information_ulid === $staff->ulid;
     }
 }

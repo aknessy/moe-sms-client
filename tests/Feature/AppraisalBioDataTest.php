@@ -455,10 +455,4 @@ class AppraisalBioDataTest extends TestCase
             ->assertSee('Choose the officer this report is on.')
             ->assertDontSee('Continue to Career History');
     }
-
-    public function test_a_section_with_nothing_built_says_so(): void
-    {
-        $this->section($this->officer(), 'reporting-officer-declaration')
-            ->assertSee('This section has not been built yet.');
-    }
 }

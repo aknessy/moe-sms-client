@@ -9,6 +9,8 @@ use App\Models\Department;
 use App\Models\EduProgress;
 use App\Models\GeneralRemark;
 use App\Models\LeaveApplication;
+use App\Models\CounterSigningReport;
+use App\Models\ReportingOfficerDeclaration;
 use App\Models\StaffDeclaration;
 use App\Models\Suggestion;
 use App\Models\Lga;
@@ -77,7 +79,7 @@ class HumanResourceController extends Controller
      * `staff` field in the url or the form happens to carry is ignored
      * rather than trusted.
      */
-    private function appraisalStaff(Request $request): BasicInformation
+    private function appraisalStaff(Request $request, bool $actsAsSuperior = false): BasicInformation
     {
         if (Menu::isSelfService(auth()->user())) {
             $staff = auth()->user()->staff;
@@ -88,7 +90,14 @@ class HumanResourceController extends Controller
             return $staff;
         }
 
-        return BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+        $staff = BasicInformation::where('ulid', $request->input('staff'))->firstOrFail();
+
+        // HOD GAP reads every report but may only write their own, or act
+        // on the Suggestions section of anyone's.
+        abort_if(! $actsAsSuperior && ReportingAuthority::readsOnly(auth()->user(), $staff), 403,
+            "HOD GAP may only act on the Suggestions of another officer's report.");
+
+        return $staff;
     }
 
     /** Officers an application may be raised for, as the picker lists them. */
@@ -292,6 +301,10 @@ class HumanResourceController extends Controller
             // The comment beside an activity is the reporting officer's, and
             // the section holds to that rather than asking the form to.
             'mayComment' => ReportingAuthority::mayCommentOn(auth()->user(), $staff),
+            // Suggestions is also acted on by HOD GAP, who otherwise only
+            // reads an officer's report that is not their own.
+            'maySuggest' => ReportingAuthority::mayActOnSuggestions(auth()->user(), $staff),
+            'readOnly' => ReportingAuthority::readsOnly(auth()->user(), $staff),
             // The Character Traits grade, where one has been given already.
             'characterTraits' => $staff === null ? null
                 : CharacterTraitAssessment::where('basic_information_ulid', $staff->ulid)->first(),
@@ -321,6 +334,16 @@ class HumanResourceController extends Controller
             'mayDeclare' => ReportingAuthority::mayDeclare(auth()->user(), $staff),
             'staffDeclaration' => $staff === null ? null
                 : StaffDeclaration::where('basic_information_ulid', $staff->ulid)->first(),
+            // The Reporting Officer Declaration is the reporting officer's,
+            // so it answers to the same desks as the comments before it.
+            'reportingOfficerDeclaration' => $staff === null ? null
+                : ReportingOfficerDeclaration::where('basic_information_ulid', $staff->ulid)->first(),
+            'declarant' => auth()->user()?->staff,
+            // The Countersigning Officer's Report is the reporting officer's
+            // superior's, so it answers to a question of its own.
+            'mayCounterSign' => ReportingAuthority::mayCounterSign(auth()->user(), $staff),
+            'counterSigningReport' => $staff === null ? null
+                : CounterSigningReport::where('basic_information_ulid', $staff->ulid)->first(),
             // Nobody has said when the present appointment began, so the
             // form opens on the day their last promotion took effect. It is
             // a suggestion until it is saved.
@@ -736,13 +759,13 @@ class HumanResourceController extends Controller
      */
     public function store_appraisal_suggestions(Request $request)
     {
-        $staff = $this->appraisalStaff($request);
+        $staff = $this->appraisalStaff($request, actsAsSuperior: true);
         $this->requireOnAppraisalBrief($staff);
 
-        // The suggestion is the reporting officer's to make, the same desks
+        // The suggestion is the superior officer's to make: the same desks
         // that answer for Character Traits, Leadership Traits and General
-        // Remarks.
-        if (! ReportingAuthority::mayCommentOn(auth()->user(), $staff)) {
+        // Remarks, and HOD GAP, who acts on every officer's report.
+        if (! ReportingAuthority::mayActOnSuggestions(auth()->user(), $staff)) {
             abort(403, "Suggestions is given by the officer's reporting officer.");
         }
 
@@ -752,9 +775,13 @@ class HumanResourceController extends Controller
             // Only worth asking once the answer is yes.
             'different_job_details' => [Rule::requiredIf($request->input('different_job_suggested') === 'yes'),
                                         'nullable', 'string', 'max:1000'],
+            'acted_on' => ['required', 'date'],
+            'signature' => ['required', 'string', 'max:160'],
         ], [
             'different_job_suggested.required' => 'Say whether the officer is suggested for a different job in the same grade.',
             'different_job_details.required' => 'Indicate the kind of job and give reasons.',
+            'acted_on.required' => 'Give the date you acted on this appraisal.',
+            'signature.required' => 'Sign to confirm you acted on this appraisal.',
         ]);
 
         Suggestion::updateOrCreate(
@@ -764,6 +791,8 @@ class HumanResourceController extends Controller
                 // Not asked for once the answer is no, so nothing is kept.
                 'different_job_details' => $data['different_job_suggested'] === 'yes'
                     ? $data['different_job_details'] : null,
+                'acted_on' => $data['acted_on'],
+                'signature' => $data['signature'],
             ],
         );
 
@@ -790,16 +819,108 @@ class HumanResourceController extends Controller
         $data = $request->validate([
             'staff' => ['required', 'exists:basic_informations,ulid'],
             'comments' => ['required', 'string', 'max:2000'],
+            'declared_on' => ['required', 'date'],
+            'signature' => ['required', 'string', 'max:160'],
         ], [
             'comments.required' => 'Say what comments you have to make, or that you have none.',
+            'declared_on.required' => 'Give the date of the declaration.',
+            'signature.required' => 'Sign the declaration.',
         ]);
 
         StaffDeclaration::updateOrCreate(
             ['basic_information_ulid' => $staff->ulid],
-            ['comments' => $data['comments']],
+            [
+                'comments' => $data['comments'],
+                'declared_on' => $data['declared_on'],
+                'signature' => $data['signature'],
+            ],
         );
 
         return $this->onwardFrom($request, $staff, 'Staff declaration saved.');
+    }
+
+    /**
+     * The Declaration by Reporting Officer section: the reporting officer
+     * states that they assessed the officer with the highest sense of
+     * responsibility, giving the post and grade they hold, the date and their
+     * signature.
+     */
+    public function store_appraisal_reporting_officer_declaration(Request $request)
+    {
+        $staff = $this->appraisalStaff($request);
+        $this->requireOnAppraisalBrief($staff);
+
+        // An administrator, the head of the officer's department or the
+        // Electoral Officer of their LGA — the same desks that comment on
+        // the sections before this one.
+        if (! ReportingAuthority::mayCommentOn(auth()->user(), $staff)) {
+            abort(403, "The Reporting Officer Declaration is made by the officer's reporting officer.");
+        }
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'officer_name' => ['required', 'string', 'max:160'],
+            'post_held' => ['required', 'string', 'max:160'],
+            'grade_level' => ['required', 'string', 'max:20'],
+            'declared_on' => ['required', 'date'],
+            'signature' => ['required', 'string', 'max:160'],
+        ], [
+            'officer_name.required' => 'Give the name of the reporting officer.',
+            'post_held.required' => 'Say what post you hold.',
+            'grade_level.required' => 'Give your grade level.',
+            'declared_on.required' => 'Give the date of the declaration.',
+            'signature.required' => 'Sign the declaration.',
+        ]);
+
+        ReportingOfficerDeclaration::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            collect($data)->except('staff')->all(),
+        );
+
+        return $this->onwardFrom($request, $staff, 'Reporting officer declaration saved.');
+    }
+
+    /**
+     * The Countersigning Officer's Report section: whether the immediate
+     * superior of the reporting officer agrees with the assessment, how
+     * long the officer has served under them, and who they are.
+     */
+    public function store_appraisal_counter_signing_officer_report(Request $request)
+    {
+        $staff = $this->appraisalStaff($request);
+        $this->requireOnAppraisalBrief($staff);
+
+        if (! ReportingAuthority::mayCounterSign(auth()->user(), $staff)) {
+            abort(403, "The Countersigning Officer's Report is written by the reporting officer's superior.");
+        }
+
+        $data = $request->validate([
+            'staff' => ['required', 'exists:basic_informations,ulid'],
+            'comments' => ['required', 'string', 'max:3000'],
+            'served_years' => ['required', 'integer', 'min:0', 'max:60'],
+            'served_months' => ['required', 'integer', 'min:0', 'max:11'],
+            'post_held' => ['required', 'string', 'max:160'],
+            'grade_level' => ['required', 'string', 'max:20'],
+            'officer_name' => ['required', 'string', 'max:160'],
+            'declared_on' => ['required', 'date'],
+            'signature' => ['required', 'string', 'max:160'],
+        ], [
+            'comments.required' => 'Say whether you agree with the reporting officer\'s assessment, and any comment you have.',
+            'served_years.required' => 'Give the years the officer has served under you.',
+            'served_months.required' => 'Give the months the officer has served under you.',
+            'post_held.required' => 'Say what post you hold.',
+            'grade_level.required' => 'Give your grade level.',
+            'officer_name.required' => 'Give the name of the countersigning officer.',
+            'declared_on.required' => 'Give the date of the report.',
+            'signature.required' => 'Sign the report.',
+        ]);
+
+        CounterSigningReport::updateOrCreate(
+            ['basic_information_ulid' => $staff->ulid],
+            collect($data)->except('staff')->all(),
+        );
+
+        return $this->onwardFrom($request, $staff, "Countersigning officer's report saved.");
     }
 
     /**
@@ -864,7 +985,9 @@ class HumanResourceController extends Controller
     private function onwardFrom(Request $request, BasicInformation $staff, string $message)
     {
         return redirect()->route('hr-appraisal', array_filter([
-            'section' => Appraisal::next($request->input('section')),
+            // The last section has nothing after it, so it stays put.
+            'section' => Appraisal::next($request->input('section'))
+                ?? Appraisal::resolve($request->input('section')),
             'staff' => $staff->ulid,
             // Only Self Reporting's form carries this; kept along so the
             // year chosen there is still the one showing on the section

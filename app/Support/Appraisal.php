@@ -80,7 +80,9 @@ class Appraisal
     public const WITH_FORMS = ['bio-data', 'career-history', 'qualifications',
                                'self-reporting', 'character-traits', 'commendations',
                                'sanctions', 'leadership-traits', 'general-remarks',
-                               'suggestions', 'staff-declaration'];
+                               'suggestions', 'staff-declaration',
+                               'reporting-officer-declaration',
+                               'counter-signing-officer-report'];
 
     public static function hasForm(?string $section): bool
     {

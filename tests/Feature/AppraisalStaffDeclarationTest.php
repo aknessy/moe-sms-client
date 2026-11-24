@@ -87,6 +87,8 @@ class AppraisalStaffDeclarationTest extends TestCase
                 'staff' => $staff->ulid,
                 'section' => 'staff-declaration',
                 'comments' => 'I have no comments to make.',
+                'declared_on' => '2026-11-23',
+                'signature' => 'B. Asuquo',
             ], $overrides));
     }
 
@@ -165,6 +167,36 @@ class AppraisalStaffDeclarationTest extends TestCase
     {
         $this->saveAs($this->self($staff = $this->officer()), $staff, ['comments' => ''])
             ->assertSessionHasErrors('comments');
+    }
+
+    public function test_the_date_and_signature_reach_the_record(): void
+    {
+        $staff = $this->officer();
+
+        $this->saveAs($this->self($staff), $staff);
+
+        $declaration = StaffDeclaration::sole();
+
+        $this->assertSame('2026-11-23', $declaration->declared_on->toDateString());
+        $this->assertSame('B. Asuquo', $declaration->signature);
+    }
+
+    public function test_the_date_and_signature_are_required(): void
+    {
+        $staff = $this->officer();
+        $self = $this->self($staff);
+
+        $this->saveAs($self, $staff, ['declared_on' => ''])->assertSessionHasErrors('declared_on');
+        $this->saveAs($self, $staff, ['signature' => ''])->assertSessionHasErrors('signature');
+    }
+
+    public function test_the_form_asks_for_a_date_and_signature(): void
+    {
+        $staff = $this->officer();
+
+        $this->sectionAs($this->self($staff), $staff)
+            ->assertSee('name="declared_on"', false)
+            ->assertSee('name="signature"', false);
     }
 
     /* ------------------------------------------- who makes the declaration */

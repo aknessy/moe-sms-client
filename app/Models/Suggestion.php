@@ -14,10 +14,12 @@ class Suggestion extends Model
 {
     protected $fillable = [
         'basic_information_ulid', 'different_job_suggested', 'different_job_details',
+        'acted_on', 'signature',
     ];
 
     protected $casts = [
         'different_job_suggested' => 'boolean',
+        'acted_on' => 'date',
     ];
 
     public function staff(): BelongsTo

@@ -23,12 +23,16 @@ class EnsureWithinRole
     public function handle(Request $request, Closure $next): Response
     {
         $allowed = Menu::allowedRoutesFor($request->user());
+        $route = $request->route()?->getName();
+
+        // An account on the full menu may still be kept out of a few pages.
+        if (in_array($route, Menu::deniedRoutesFor($request->user()), true)) {
+            abort(403, 'That part of the system is not open to your role.');
+        }
 
         if ($allowed === null) {
             return $next($request);
         }
-
-        $route = $request->route()?->getName();
 
         if (in_array($route, $allowed, true)) {
             return $next($request);
